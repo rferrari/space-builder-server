@@ -1,0 +1,1 @@
+Object.defineProperty(exports,"__esModule",{value:!0}),exports.EventBusImpl=void 0;class EventBusImpl{constructor(){this.subscribers=new Map}publish(s,e){s=this.subscribers.get(s);s&&s.forEach(s=>s(e))}subscribe(s,e){var r=this.subscribers.get(s);r?r.push(e):this.subscribers.set(s,[e])}}exports.EventBusImpl=EventBusImpl;

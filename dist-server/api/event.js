@@ -1,0 +1,1 @@
+Object.defineProperty(exports,"__esModule",{value:!0}),exports.saveLatestEventId=saveLatestEventId,exports.getLatestEvent=getLatestEvent;var latestEventId=0;async function saveLatestEventId(t){latestEventId=t}async function getLatestEvent(){return latestEventId||void 0}

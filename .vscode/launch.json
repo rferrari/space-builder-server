@@ -1,0 +1,29 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Start Server",
+            "preLaunchTask": "tsc: build - tsconfig.json",
+            "program": "${workspaceFolder}/build/server.js",
+            "console": "integratedTerminal",
+            "outFiles": [
+                "${workspaceFolder}/build/**/*.js"
+            ]
+        },
+        {
+            "name": "Start Client",
+            "type": "node",
+            "request": "launch",
+            "runtimeExecutable": "react-scripts",
+            "runtimeArgs": [
+                "start",
+            ],
+            "skipFiles": [
+                "<node_internals>/**"
+            ],
+            "console": "integratedTerminal"
+        }
+    ]
+}

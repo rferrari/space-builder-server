@@ -1,0 +1,27 @@
+{
+  "compilerOptions": {
+    "module": "CommonJS",
+    "esModuleInterop": true,
+    "target": "es2017",
+    "noImplicitAny": false,
+    "moduleResolution": "node",
+    "sourceMap": true,
+    "removeComments": true,
+    "skipLibCheck": true,
+    "strictFunctionTypes": false,
+    "outDir": "build",
+    "baseUrl": ".",
+    "paths": {
+      "*": [
+        "node_modules/*",
+        "server/types/*"
+      ]
+    }
+  },
+  "include": [
+    "server/**/*"
+  ],
+  "exclude": [
+    "node_modules/*"
+  ]
+}

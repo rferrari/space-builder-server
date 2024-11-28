@@ -1,0 +1,1 @@
+Object.defineProperty(exports,"__esModule",{value:!0});let nodejs_sdk_1=require("@neynar/nodejs-sdk"),config_1=require("../config"),neynarClient=new nodejs_sdk_1.NeynarAPIClient(config_1.NEYNAR_API_KEY);exports.default=neynarClient;
