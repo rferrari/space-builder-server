@@ -6,6 +6,7 @@
   "main": "index.js",
   "scripts": {
     "dev": "tsc -p . && node build/server.js",
+    "build:dev": "tsc -p .",
     "start:dev": "node build/server.js",
     "start:prod": "node dist-server/server.js",
     "build": "gulp build"
