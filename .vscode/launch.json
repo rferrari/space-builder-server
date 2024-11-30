@@ -13,17 +13,12 @@
             ]
         },
         {
-            "name": "Start Client",
-            "type": "node",
+            "name": "Open Local UI",
+            "type":"chrome",
             "request": "launch",
-            "runtimeExecutable": "react-scripts",
             "runtimeArgs": [
-                "start",
-            ],
-            "skipFiles": [
-                "<node_internals>/**"
-            ],
-            "console": "integratedTerminal"
+                "${workspaceFolder}/local-ui/index.html",
+            ]
         }
     ]
 }
