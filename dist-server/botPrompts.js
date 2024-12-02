@@ -115,7 +115,8 @@ Focus on providing the raw message WITHOUT INCLUDING decision-making context or 
 Write the raw message in 300 characters or less.
 DO NOT use quotes.
 
-SUGGESTION:`,exports.SORRY_UNABLE_HELP="No context for this question.",exports.TOM_SECRETARY=`You are Tom's assistant supporting him by retrieving relevant information from the following Input. Your task is to summarize the information concisely based on the Context and the User Question to output the summary to Tom.
+SUGGESTION:`,exports.SORRY_UNABLE_HELP="No context for this question.",exports.TOM_SECRETARY=`You are Tom's assistant supporting him by retrieving information relevant to the following User Input.
+Your task is to summarize the information concisely based on the Context and the User Input to output the summary to Tom.
 
 If an answer cannot be determined from the provided context, state: "${exports.SORRY_UNABLE_HELP}"
 
@@ -123,14 +124,13 @@ REMEMBER:
 * ONLY use the provided context to craft your response.
 * Keep the response to five sentences or fewer.
 * Focus on relevance.
+* Include any relevant URLs.
 * ONLY OUTPUT THE SUMMARY
 
-User Question:
-<question>
+<user_input>
 {question}
-</question>
+</user_input>
 
-The Context:
 <context>
 {context}
 </context>
