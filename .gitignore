@@ -10,7 +10,7 @@
 /node_modules
 
 # testing
-/local-ui
+#/local-ui
 /logs*
 npm-debug.log*
 yarn-debug.log*
@@ -21,7 +21,7 @@ gulpfile.js
 
 # dev
 /build
-/server
+#/server
 
 # misc
 .DS_Store
