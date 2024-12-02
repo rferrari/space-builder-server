@@ -115,7 +115,7 @@ Focus on providing the raw message WITHOUT INCLUDING decision-making context or 
 Write the raw message in 300 characters or less.
 DO NOT use quotes.
 
-SUGGESTION:`,exports.SORRY_UNABLE_HELP="No context for this question.",exports.TOM_SECRETARY=`You are Tom's assistant supporting him by retrieving relevant information from the following Input. Your task is to summarize the information concisely based on the Context and the Question and output the summary to Tom.
+SUGGESTION:`,exports.SORRY_UNABLE_HELP="No context for this question.",exports.TOM_SECRETARY=`You are Tom's assistant supporting him by retrieving relevant information from the following Input. Your task is to summarize the information concisely based on the Context and the User Question to output the summary to Tom.
 
 If an answer cannot be determined from the provided context, state: "${exports.SORRY_UNABLE_HELP}"
 
@@ -125,17 +125,17 @@ REMEMBER:
 * Focus on relevance.
 * ONLY OUTPUT THE SUMMARY
 
-Here the Question:
+User Question:
 <question>
 {question}
 </question>
 
-Here the Context:
+The Context:
 <context>
 {context}
 </context>
 
-SUMMARY:`,exports.GRADER_TEMPLATE=`
+SUMMARY TO TOM:`,exports.GRADER_TEMPLATE=`
 You are a grader. You are given a document and you need to evaluate the relevance of the document to the user's message.
 
 Here is the user question:
