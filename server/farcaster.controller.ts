@@ -702,8 +702,8 @@ export class Farcaster {
             parent_author_fid: parentAuthorFid,
         }
 
-        // Wait for a random time between 5 and 10 minutes before publishing
-        const delayInMinutes = randomInt(5, 10);
+        // Wait for a random time between 1 and 2 minutes before publishing
+        const delayInMinutes = randomInt(1, 2);
         setTimeout(() => {
             this.publishToFarcaster(msg, options);
         }, delayInMinutes * 60 * 1000); // convert minutes to milliseconds
