@@ -488,16 +488,16 @@ export class Farcaster {
         try {
             const data = await neynarClient.fetchBulkUsers([fid]);
             let result: any;
-            if(data.users.length > 0) {
+            if (data.users.length > 0) {
                 result = {
                     username: data.users[0].username,
                     display_name: data.users[0].display_name,
                     // verified_accounts is not being returned here
                 };
 
-                if(data.users[0].experimental) {
-                    if(data.users[0].experimental.neynar_user_score){
-                    result.neynar_user_score = data.users[0].experimental.neynar_user_score;
+                if (data.users[0].experimental) {
+                    if (data.users[0].experimental.neynar_user_score) {
+                        result.neynar_user_score = data.users[0].experimental.neynar_user_score;
                     }
                 }
             } else {
@@ -530,68 +530,68 @@ export class Farcaster {
     //             }
     //         }
 
-                // botConfig.TARGETS[0]
+    // botConfig.TARGETS[0]
 
-                // {
-                //     "users": [
-                //       {
-                //         "object": "user",
-                //         "fid": 3,
-                //         "username": "string",
-                //         "display_name": "string",
-                //         "custody_address": "string",
-                //         "pfp_url": "string",
-                //         "profile": {
-                //           "bio": {
-                //             "text": "string",
-                //             "mentioned_profiles": [
-                //               "string"
-                //             ]
-                //           },
-                //           "location": {
-                //             "latitude": 0,
-                //             "longitude": 0,
-                //             "address": {
-                //               "city": "string",
-                //               "state": "string",
-                //               "state_code": "string",
-                //               "country": "string",
-                //               "country_code": "string"
-                //             }
-                //           }
-                //         },
-                //         "follower_count": 0,
-                //         "following_count": 0,
-                //         "verifications": [
-                //           "string"
-                //         ],
-                //         "verified_addresses": {
-                //           "eth_addresses": [
-                //             "string"
-                //           ],
-                //           "sol_addresses": [
-                //             "string"
-                //           ]
-                //         },
-                //         "verified_accounts": [
-                //           {
-                //             "platform": "x",
-                //             "username": "string"
-                //           }
-                //         ],
-                //         "power_badge": true,
-                //         "experimental": {
-                //           "neynar_user_score": 0
-                //         },
-                //         "viewer_context": {
-                //           "following": true,
-                //           "followed_by": true,
-                //           "blocking": true,
-                //           "blocked_by": true
-                //         }
-                //       }
-                //     ]
-                //   }
+    // {
+    //     "users": [
+    //       {
+    //         "object": "user",
+    //         "fid": 3,
+    //         "username": "string",
+    //         "display_name": "string",
+    //         "custody_address": "string",
+    //         "pfp_url": "string",
+    //         "profile": {
+    //           "bio": {
+    //             "text": "string",
+    //             "mentioned_profiles": [
+    //               "string"
+    //             ]
+    //           },
+    //           "location": {
+    //             "latitude": 0,
+    //             "longitude": 0,
+    //             "address": {
+    //               "city": "string",
+    //               "state": "string",
+    //               "state_code": "string",
+    //               "country": "string",
+    //               "country_code": "string"
+    //             }
+    //           }
+    //         },
+    //         "follower_count": 0,
+    //         "following_count": 0,
+    //         "verifications": [
+    //           "string"
+    //         ],
+    //         "verified_addresses": {
+    //           "eth_addresses": [
+    //             "string"
+    //           ],
+    //           "sol_addresses": [
+    //             "string"
+    //           ]
+    //         },
+    //         "verified_accounts": [
+    //           {
+    //             "platform": "x",
+    //             "username": "string"
+    //           }
+    //         ],
+    //         "power_badge": true,
+    //         "experimental": {
+    //           "neynar_user_score": 0
+    //         },
+    //         "viewer_context": {
+    //           "following": true,
+    //           "followed_by": true,
+    //           "blocking": true,
+    //           "blocked_by": true
+    //         }
+    //       }
+    //     ]
+    //   }
     //         })
     //         .catch(error => {
     //             console.log(error);
@@ -633,53 +633,59 @@ export class Farcaster {
 
         if (!botConfig.PUBLISH_TO_FARCASTER) {
             this.farcasterLog.log("PUBLISH_TO_FARCASTER OFF", "INFO")
-            // console.log(Yellow + "PUBLISH_TO_FARCASTER OFF" + Reset);
             return
         }
 
         neynarClient
             .publishCast(botConfig.SIGNER_UUID, msg, options)
             .then(response_data => {
-                this.farcasterLog.log("Cast published successfully: "+response_data.hash, "INFO")
-                // console.log(Yellow + "Cast published successfully: " + response_data.hash + Reset);
+                this.farcasterLog.log("Cast published successfully: " + response_data.hash, "INFO")
             })
             .catch(error => {
                 if (isApiErrorResponse(error)) {
-                    this.farcasterLog.log("Failed to publish cast: "+error.response.data, "ERROR")
+                    const errorCastObj = {
+                        error: error.response.data,
+                        msg,
+                        options
+                    }
+                    this.eventBus.publish("ERROR_FC_PUBLISH", errorCastObj);
+
+                    this.farcasterLog.log("Failed to publish cast: " + error.response.data, "ERROR")
                     this.farcasterLog.log(msg, "ERROR")
                     this.farcasterLog.log(options, "ERROR")
-                    // console.error(Red + "Failed to publish cast: " + error.response.data + + Reset);
                 } else {
-                    this.farcasterLog.log("Failed to publish cast: "+JSON.stringify(error), "ERROR")
+                    const errorCastObj = {
+                        error: JSON.stringify(error),
+                        msg,
+                        options
+                    }
+                    this.eventBus.publish("ERROR_FC_PUBLISH", errorCastObj);
+
+                    this.farcasterLog.log("Failed to publish cast: " + JSON.stringify(error), "ERROR")
                     this.farcasterLog.log(msg, "ERROR")
                     this.farcasterLog.log(options, "ERROR")
-                    // console.error(Red + "Failed to publish cast: " + error + + Reset);
                 }
             });
 
 
-        try {
-            if ((options.replyTo) && (options.parent_author_fid)) {
-                neynarClient.publishReactionToCast(
-                    botConfig.SIGNER_UUID,
-                    'like',
-                    options.replyTo,
-                    options.parent_author_fid
-                ).then(response => {
-                    this.farcasterLog.log("Reaction published successfully ", "INFO")
-                    // console.log('Publish Reaction Operation Status:', response); // Outputs the status of the reaction post
-                }).catch(error => {
-                    if (isApiErrorResponse(error)) {
-                        // console.error(Red + error.response.data + Reset);
-                        this.farcasterLog.log("Failed to publish reaction: "+error.response.data, "ERROR")
-                    } else {
-                        this.farcasterLog.log("Failed to publish reaction: "+JSON.stringify(error), "ERROR")
-                        // console.error(Red + "Failed to publish Reaction: " + error + + Reset);
-                    }
-                });
-            }
-        } catch (error) {
-            console.error(Red + "Failed to publish Reaction: " + JSON.stringify(error) + + Reset);
+        if ((options.replyTo) && (options.parent_author_fid)) {
+            neynarClient.publishReactionToCast(
+                botConfig.SIGNER_UUID,
+                'like',
+                options.replyTo,
+                options.parent_author_fid
+            ).then(response => {
+                this.farcasterLog.log("Reaction published successfully ", "INFO")
+                // console.log('Publish Reaction Operation Status:', response); // Outputs the status of the reaction post
+            }).catch(error => {
+                if (isApiErrorResponse(error)) {
+                    // console.error(Red + error.response.data + Reset);
+                    this.farcasterLog.log("Failed to publish reaction: " + error.response.data, "ERROR")
+                } else {
+                    this.farcasterLog.log("Failed to publish reaction: " + JSON.stringify(error), "ERROR")
+                    // console.error(Red + "Failed to publish Reaction: " + error + + Reset);
+                }
+            });
         }
     }
 
@@ -703,7 +709,7 @@ export class Farcaster {
         }
 
         // Wait for a random time between 5 and 10 minutes before publishing
-        const delayInMinutes = randomInt(5, 10);
+        const delayInMinutes = randomInt(1, 2);
         setTimeout(() => {
             this.publishToFarcaster(msg, options);
         }, delayInMinutes * 60 * 1000); // convert minutes to milliseconds
