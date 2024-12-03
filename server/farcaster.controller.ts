@@ -482,6 +482,119 @@ export class Farcaster {
         return trendingFeed;
     }
 
+    private async fetchUserData(fid: number): Promise<any> {
+        try {
+            const data = await neynarClient.fetchBulkUsers([fid]);
+            let result: any;
+            if(data.users.length > 0) {
+                result = {
+                    username: data.users[0].username,
+                    display_name: data.users[0].display_name,
+                    // verified_accounts is not being returned here
+                };
+
+                if(data.users[0].experimental) {
+                    if(data.users[0].experimental.neynar_user_score){
+                    result.neynar_user_score = data.users[0].experimental.neynar_user_score;
+                    }
+                }
+            } else {
+                // handle the case where data.users.length is 0
+            }
+        } catch (error) {
+            // handle the error
+            console.log(error)
+        }
+    }
+
+    // private async getUserData(fid: number) {
+    //     neynarClient.fetchBulkUsers([fid])
+    //         .then((data) => {
+    //             // console.log(response);
+
+    //             const result = {};
+
+    //             if(data.users.length>0) {
+    //              result.username = data.users[0].username);
+    //              result.display_name = data.users[0].display_name)
+
+    //             if(data.users[0].experimental)
+    //                 result.neynar_user_score = data.users[0].experimental.neynar_user_score)
+
+    //             if (data.users[0].verified_accounts.length > 0) {
+    //                 const verified_accounts_platform = data.users[0].verified_accounts[0].platform)
+    //                 const verified_accounts_username = data.users[0].verified_accounts[0].username)
+    //             }
+    //         }
+
+                // botConfig.TARGETS[0]
+
+                // {
+                //     "users": [
+                //       {
+                //         "object": "user",
+                //         "fid": 3,
+                //         "username": "string",
+                //         "display_name": "string",
+                //         "custody_address": "string",
+                //         "pfp_url": "string",
+                //         "profile": {
+                //           "bio": {
+                //             "text": "string",
+                //             "mentioned_profiles": [
+                //               "string"
+                //             ]
+                //           },
+                //           "location": {
+                //             "latitude": 0,
+                //             "longitude": 0,
+                //             "address": {
+                //               "city": "string",
+                //               "state": "string",
+                //               "state_code": "string",
+                //               "country": "string",
+                //               "country_code": "string"
+                //             }
+                //           }
+                //         },
+                //         "follower_count": 0,
+                //         "following_count": 0,
+                //         "verifications": [
+                //           "string"
+                //         ],
+                //         "verified_addresses": {
+                //           "eth_addresses": [
+                //             "string"
+                //           ],
+                //           "sol_addresses": [
+                //             "string"
+                //           ]
+                //         },
+                //         "verified_accounts": [
+                //           {
+                //             "platform": "x",
+                //             "username": "string"
+                //           }
+                //         ],
+                //         "power_badge": true,
+                //         "experimental": {
+                //           "neynar_user_score": 0
+                //         },
+                //         "viewer_context": {
+                //           "following": true,
+                //           "followed_by": true,
+                //           "blocking": true,
+                //           "blocked_by": true
+                //         }
+                //       }
+                //     ]
+                //   }
+    //         })
+    //         .catch(error => {
+    //             console.log(error);
+    //         })
+    // }
+
     /**
      * Function to publish a message (cast) using neynarClient.
      * @param msg - The message to be published.
@@ -523,7 +636,7 @@ export class Farcaster {
         neynarClient
             .publishCast(botConfig.SIGNER_UUID, msg, options)
             .then(response_data => {
-                // console.log(Yellow + "Cast published successfully: " + response_data.hash + Reset);
+                console.log(Yellow + "Cast published successfully: " + response_data.hash + Reset);
             })
             .catch(error => {
                 if (isApiErrorResponse(error)) {
@@ -565,6 +678,10 @@ export class Farcaster {
     //     this.publishToFarcaster(msg, options);
     // }
     public async publishUserReply(msg: string, parentHash: string, parentAuthorFid: number) {
+        //experimental
+        // const userdata = await this.fetchUserData(parentAuthorFid);
+        // console.dir(userdata);
+
         // Using the neynarClient to publish the cast.
         const options = {
             replyTo: parentHash,
@@ -576,6 +693,7 @@ export class Farcaster {
         setTimeout(() => {
             this.publishToFarcaster(msg, options);
         }, delayInMinutes * 60 * 1000); // convert minutes to milliseconds
+        console.log(`Scheduling msg to fid '${parentAuthorFid}' in ${delayInMinutes} minutes`);
     }
 
     public async publishNewChannelCast(msg: string) {
