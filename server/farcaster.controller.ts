@@ -9,6 +9,8 @@ const Reset = "\x1b[0m",
     Cyan = "\x1b[36m",
     Gray = "\x1b[90m";
 
+import { randomInt } from 'crypto';
+
 
 import {
     HubEvent, HubEventType,
@@ -554,6 +556,14 @@ export class Farcaster {
         }
     }
 
+    // public async publishUserReply(msg: string, parentHash: string, parentAuthorFid: number) {
+    //     // Using the neynarClient to publish the cast.
+    //     const options = {
+    //         replyTo: parentHash,
+    //         parent_author_fid: parentAuthorFid,
+    //     }
+    //     this.publishToFarcaster(msg, options);
+    // }
     public async publishUserReply(msg: string, parentHash: string, parentAuthorFid: number) {
         // Using the neynarClient to publish the cast.
         const options = {
@@ -561,8 +571,11 @@ export class Farcaster {
             parent_author_fid: parentAuthorFid,
         }
 
-        this.publishToFarcaster(msg, options);
-
+        // Wait for a random time between 5 and 10 minutes before publishing
+        const delayInMinutes = randomInt(5, 10);
+        setTimeout(() => {
+            this.publishToFarcaster(msg, options);
+        }, delayInMinutes * 60 * 1000); // convert minutes to milliseconds
     }
 
     public async publishNewChannelCast(msg: string) {
