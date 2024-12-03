@@ -55,7 +55,7 @@ export class Farcaster {
     private isConnected: boolean;
     private isReconnecting: boolean;
 
-    // private farcasterLog: FileLogger;
+    private farcasterLog: FileLogger;
 
     constructor(eventBus: EventBus) {
         this.eventBus = eventBus;
@@ -66,7 +66,7 @@ export class Farcaster {
         this.isConnected = false;
         this.isReconnecting = false;
 
-        // this.farcasterLog = new FileLogger({ folder: './logs-farcaster-out', printconsole: true });
+        this.farcasterLog = new FileLogger({ folder: './logs-farcaster-out', printconsole: true });
 
         this.subscriberStream();
     }
@@ -300,14 +300,15 @@ export class Farcaster {
                 })
 
                 stream.on('end', async () => {
-                    console.warn(`Hub stream ended`)
+                    this.farcasterLog.log(`Hub stream ended`, "EVENTS")
                     // console.log(`Stream object details on END:`);
                     // this.logRelevantStreamDetails(stream);
                     // this.isConnected = false;
                 })
 
                 stream.on('close', async () => {
-                    console.warn(`Hub stream closed`)
+                    this.farcasterLog.log(`Hub stream closed`, "EVENTS")
+                    // console.warn(`Hub stream closed`)
                     // console.log(`Stream object details on CLOSE:`);
                     // this.logRelevantStreamDetails(stream);
                     this.isConnected = false;
@@ -320,7 +321,7 @@ export class Farcaster {
     private reconnect() {
         console.log(`Reconnect!`);
         if (!this.isConnected && !this.isReconnecting) {
-            console.log(`Reconnecting in 1 second...`);
+            this.farcasterLog.log(`Reconnecting in 1 second...`, "EVENTS")
             this.isReconnecting = true;
 
             setTimeout(() => {
@@ -459,7 +460,8 @@ export class Farcaster {
             }
             default: {
                 // log.debug('UNHANDLED HUB EVENT', event.id)
-                console.log('UNHANDLED HUB EVENT', event.id)
+                this.farcasterLog.log(`'UNHANDLED HUB EVENT ${event.id}`, "EVENTS")
+                // console.log('UNHANDLED HUB EVENT', event.id)
                 // this.eventBus.publish("LOG", 'UNHANDLED HUB EVENT ' + event.id);
                 break
             }
@@ -503,7 +505,8 @@ export class Farcaster {
             }
         } catch (error) {
             // handle the error
-            console.log(error)
+            // console.log(error)
+            this.farcasterLog.log(error, "ERROR")
         }
     }
 
@@ -629,20 +632,28 @@ export class Farcaster {
         }
 
         if (!botConfig.PUBLISH_TO_FARCASTER) {
-            console.log(Yellow + "PUBLISH_TO_FARCASTER OFF" + Reset);
+            this.farcasterLog.log("PUBLISH_TO_FARCASTER OFF", "INFO")
+            // console.log(Yellow + "PUBLISH_TO_FARCASTER OFF" + Reset);
             return
         }
 
         neynarClient
             .publishCast(botConfig.SIGNER_UUID, msg, options)
             .then(response_data => {
-                console.log(Yellow + "Cast published successfully: " + response_data.hash + Reset);
+                this.farcasterLog.log("Cast published successfully: "+response_data.hash, "INFO")
+                // console.log(Yellow + "Cast published successfully: " + response_data.hash + Reset);
             })
             .catch(error => {
                 if (isApiErrorResponse(error)) {
-                    console.error(Red + error.response.data + Reset);
+                    this.farcasterLog.log("Failed to publish cast: "+error.response.data, "ERROR")
+                    this.farcasterLog.log(msg, "ERROR")
+                    this.farcasterLog.log(options, "ERROR")
+                    // console.error(Red + "Failed to publish cast: " + error.response.data + + Reset);
                 } else {
-                    console.error(Red + "Failed to publish cast: " + error + + Reset);
+                    this.farcasterLog.log("Failed to publish cast: "+JSON.stringify(error), "ERROR")
+                    this.farcasterLog.log(msg, "ERROR")
+                    this.farcasterLog.log(options, "ERROR")
+                    // console.error(Red + "Failed to publish cast: " + error + + Reset);
                 }
             });
 
@@ -655,17 +666,20 @@ export class Farcaster {
                     options.replyTo,
                     options.parent_author_fid
                 ).then(response => {
+                    this.farcasterLog.log("Reaction published successfully ", "INFO")
                     // console.log('Publish Reaction Operation Status:', response); // Outputs the status of the reaction post
                 }).catch(error => {
                     if (isApiErrorResponse(error)) {
-                        console.error(Red + error.response.data + Reset);
+                        // console.error(Red + error.response.data + Reset);
+                        this.farcasterLog.log("Failed to publish reaction: "+error.response.data, "ERROR")
                     } else {
-                        console.error(Red + "Failed to publish Reaction: " + error + + Reset);
+                        this.farcasterLog.log("Failed to publish reaction: "+JSON.stringify(error), "ERROR")
+                        // console.error(Red + "Failed to publish Reaction: " + error + + Reset);
                     }
                 });
             }
         } catch (error) {
-            console.error(Red + "Failed to publish Reaction: " + error + + Reset);
+            console.error(Red + "Failed to publish Reaction: " + JSON.stringify(error) + + Reset);
         }
     }
 
