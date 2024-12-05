@@ -177,8 +177,7 @@ If an answer cannot be determined from the provided context, state: "${SORRY_UNA
 
 REMEMBER:
 * ONLY use the provided context to craft your response.
-* Keep the response to five sentences or fewer.
-* Focus on relevance.
+* Be concise and only provide relevant context that will be useful for Tom.
 * Include any relevant URLs.
 * ONLY OUTPUT THE SUMMARY
 
