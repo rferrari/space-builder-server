@@ -3,16 +3,20 @@ dotenv.config();
 
 // configs 
 export const BotName = "nounspacetom";
+export const BotFID = 527313;
 export const BotIcon = " ⌐◨-◨  ";
 export const TIMEZONE = process.env.TIMEZONE || "America/Chicago";
 
 export const NOTION_PAGE_IDS = [
-  "https://nounspace.notion.site/Tom-s-Background-1460572746cd804a8216f6a0a2f34e5c",
-  "https://nounspace.notion.site/nounspace-app-info-1460572746cd802fb2dbf6a7ce99eecd",
-  "https://nounspace.notion.site/nounspace-DAO-info-1460572746cd8049b9bcf3605c7a2dda",
-  "https://nounspace.notion.site/SPACE-token-info-1460572746cd80dbbee1fa3125a5d9bd",
-  "https://nounspace.notion.site/nOGs-info-1460572746cd80f2a3b7ef6e52034424",
-  "https://nounspace.notion.site/nounspace-Fidgets-1480572746cd80eaae5ae86e630277ab"
+  "https://nounspace.notion.site/1510572746cd80c0bb93e2115d44340f?v=7806bb82cd494b69b6e0e4af97552c85"
+  // "https://nounspace.notion.site/1510572746cd80c0bb93e2115d44340f?v=7806bb82cd494b69b6e0e4af97552c85"
+  // "https://nounspace.notion.site/Rag-V2-14d0572746cd807e88a5d0441e5d376b"
+  // "https://nounspace.notion.site/Tom-s-Background-1460572746cd804a8216f6a0a2f34e5c",
+  // "https://nounspace.notion.site/nounspace-app-info-1460572746cd802fb2dbf6a7ce99eecd",
+  // "https://nounspace.notion.site/nounspace-DAO-info-1460572746cd8049b9bcf3605c7a2dda",
+  // "https://nounspace.notion.site/SPACE-token-info-1460572746cd80dbbee1fa3125a5d9bd",
+  // "https://nounspace.notion.site/nOGs-info-1460572746cd80f2a3b7ef6e52034424",
+  // "https://nounspace.notion.site/nounspace-Fidgets-1480572746cd80eaae5ae86e630277ab"
 ]
 
 // interval in minutes bot will cast new messages
@@ -68,7 +72,11 @@ const llama3_70b_8192 = "llama3-70b-8192";
 const llama32_90b_vision = "llama-3.2-90b-vision-preview";
 const llama_32_11b_vision = "llama-3.2-11b-vision-preview";
 
-export const BotLLMModel = llama3_8b_8192;
+// export const BotLLMModel = llama3_70b_8192;
+export const BotLLMModel = process.env.BOT_LLM_MODEL || llama3_8b_8192;
+export const BotLLMModel_TEMP = parseFloat(process.env.BOT_LLM_MODEL_TEMP) || 0.7;
+export const ChatBackupLLMModel = llama3_8b_8192;
+
 export const RAGLLMModel = llama3_8b_8192;
 export const JSONLLMModel = llama3_8b_8192;
 export const AssistentModel = llama3_8b_8192;

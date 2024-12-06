@@ -8,8 +8,8 @@
     "dev": "tsc -p . && node build/server.js",
     "build:dev": "tsc -p .",
     "start:dev": "node build/server.js",
-    "start:prod": "node dist-server/server.js",
-    "build": "gulp build"
+    "start:prod": "node build/server.js",
+    "build": "tsc -p ."
   },
   "dependencies": {
     "@ethersproject/abstract-signer": "^5.7.0",

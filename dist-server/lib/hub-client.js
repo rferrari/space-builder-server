@@ -1,1 +1,0 @@
-Object.defineProperty(exports,"__esModule",{value:!0}),exports.hubClient=void 0;let hub_nodejs_1=require("@farcaster/hub-nodejs"),HUB_RPC=process.env.HUB_RPC,HUB_SSL=process.env.HUB_SSL||"false";if(!HUB_RPC)throw new Error("HUB_RPC env variable is not set");exports.hubClient=("true"===HUB_SSL?(0,hub_nodejs_1.getSSLHubRpcClient):(0,hub_nodejs_1.getInsecureHubRpcClient))(HUB_RPC);

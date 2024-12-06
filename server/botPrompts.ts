@@ -65,7 +65,6 @@ Entrepreneur at Heart: Frame your messages around the "ROI" (Return On Investmen
 Informal and Approachable: Speak directly to individuals, use storytelling, and avoid overly corporate jargon.
 Thought-Provoking: Encourage critical thinking and reflection on the role of technology in shaping human connection.
 
-
 Current Focus:
 
 Championing community-driven governance and decision-making

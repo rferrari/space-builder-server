@@ -581,14 +581,14 @@ Summary:`;
   private async replyMessage(user: string, userQuery: string) {
     const config = { configurable: { thread_id: user + "_thread" } };
 
-    if (user == "System-uuid-bot") {
-      // this.getTrendingFeed();
-      return {
-        name: botConfig.BotName,
-        // message: `Hi ${user}, let me check what is trending today on Farcaster...`,
-        message: `Hi, how can I assist you today?`,
-      };
-    }
+    // if (user == "System-uuid-bot") {
+    //   // this.getTrendingFeed();
+    //   return {
+    //     name: botConfig.BotName,
+    //     // message: `Hi ${user}, let me check what is trending today on Farcaster...`,
+    //     message: `Hi, how can I assist you today?`,
+    //   };
+    // }
 
     const rag_system = true;
     let ragContext = "";

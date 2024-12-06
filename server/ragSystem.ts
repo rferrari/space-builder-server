@@ -174,6 +174,7 @@ class RAGSystem {
         // Start the document loading process.
         this.docsLoading = true;
 
+        /* Load Notion Pages
         const urls = NOTION_PAGE_IDS;
         const docs = await Promise.all(urls.map(url => {
             const reged = new RegExp(/(?<!=)[0-9a-f]{32}/);
@@ -193,14 +194,38 @@ class RAGSystem {
 
                 return loader.load();
             }
-        }))
+        }))*/
 
-        // Test Split form Language
-        //console.warn("Text Splitter");
-        const textSplitter = RecursiveCharacterTextSplitter.fromLanguage("markdown", {
-            chunkSize: 500,
-            chunkOverlap: 0,
+        // notion load database
+        const dbLoader = new NotionAPILoader({
+            clientOptions: { auth: NOTION_INTEGRATION_TOKEN! },
+            id: "1510572746cd80c0bb93e2115d44340f",
+            type: "database",
+            propertiesAsHeader: true,
         });
+        const dbDocs = await dbLoader.load();
+        const docs = dbDocs;
+        // return loader.load();
+
+        //console.warn("Text Splitter");
+
+
+        // Test Split form Language (good results with larger chucksize)
+        // Split the documents
+        // const textSplitter = new RecursiveCharacterTextSplitter({
+        //     chunkSize: 1000,
+        //     chunkOverlap: 0,
+        // });
+
+        const textSplitter = RecursiveCharacterTextSplitter.fromLanguage("markdown", {
+            chunkSize: 1200,
+            chunkOverlap: 125,
+        });
+
+        // const textSplitter = RecursiveCharacterTextSplitter.fromLanguage("markdown", {    (original V ZERO 0.5  goods)
+        //     chunkSize: 500,
+        //     chunkOverlap: 0,
+        // });
         const splittedDocs = await textSplitter.splitDocuments(docs.flat());
 
         try {
@@ -261,13 +286,14 @@ class RAGSystem {
         let logId = "RAG"
         this.logSecretary.log("", logId)
         this.logSecretary.log(`----- RETRIVED ${goodDocuments.length} DOCUMENTS ------`, logId)
-        this.logSecretary.log(`For: ${state.question}`, logId);
+        this.logSecretary.log(`Subject: ${state.question}`, logId);
         this.logSecretary.log("", logId)
         // console.log("gradedDocs: " + gradedDocs.filter(Boolean))
         goodDocuments.forEach((doc) => {
             if (doc) {
                 this.logSecretary.log(Yellow+`Title: ${doc.metadata.properties.title}`+Reset, logId);
-                this.logSecretary.log(`${doc.pageContent}`, logId);
+                // this.logSecretary.log(`${doc.pageContent}`, logId);
+                this.logSecretary.log(`${doc.pageContent.replace(/\n+/g, '\n')}`, logId);
                 this.logSecretary.log("--------", logId)
                 this.logSecretary.log("", logId)
             }

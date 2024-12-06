@@ -17,7 +17,9 @@ const Reset = "\x1b[0m",
       Cyan = "\x1b[36m",
       Gray = "\x1b[90m";
 
-class WebSocketServer {
+class BotCustomServer {
+  //public MEM_USED: NodeJS.MemoryUsage;
+
   private wss: WebSocket.Server;
   private botAvatar: BotAvatar;
   private farcaster: Farcaster;
@@ -205,7 +207,10 @@ class WebSocketServer {
   }
 
 
-
 }
 
-new WebSocketServer();
+process.on('uncaughtException', (err) => {
+  console.error('Crash Prevent! Uncaught Exception:', err);
+});
+
+new BotCustomServer();
