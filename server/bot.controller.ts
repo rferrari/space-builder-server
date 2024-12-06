@@ -424,7 +424,9 @@ Summary:`;
     // Return the new BufferMemory with relevant history
 
     console.log("-----------relevant Memory-----------")
-    console.dir(relevantMemory)
+    // Retrieve messages from the chat history
+    const debugMessages = await relevantMemory.chatHistory.getMessages();
+    console.dir(debugMessages, { depth: null, colors: true });
     console.log("-------------------------------------")
 
     return relevantMemory;
