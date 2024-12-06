@@ -680,10 +680,28 @@ Summary:`;
     //   };
     // }
 
+    // Swap Memories retrieving the relevant messages based on keywords
+    // experimental
+    // this.chatChain.memory = await this.getCombinedMemory(user, userQuery);
+    const relevantMemory = await this.getRelevantUserMemory(user, userQuery);
+    this.chatChain.memory = relevantMemory;
+
+    // filter and create a conversation content history for RAG System
+    const chatHistoryMessages = await relevantMemory.chatHistory.getMessages();
+    const filteredMessages = chatHistoryMessages.slice(-5); // Adjust the number as needed
+    const conversationContent = filteredMessages.map((message) => {
+      // Check the type of the message and assign the name accordingly
+      const name = message instanceof AIMessage ? botConfig.BotName :
+                   message instanceof HumanMessage ? user : 'User'; // Fallback in case of an unexpected type
+      return `${name}: ${message.content}`;
+    }).join('\n'); // Join all messages with a newline
+
+
+    // if using RAG system... include conversationContent + userQuery
     const rag_system = true;
     let ragContext = "";
     if (rag_system) {
-      const ragResponse = await ragSystem.invokeRAG(user, userQuery)
+      const ragResponse = await ragSystem.invokeRAG(user, `${conversationContent} \n ${userQuery}`)
         .catch(err => { console.error("Failed to generate RAG response", err); }) as GraphInterface;
 
       if (ragResponse && ragResponse.generatedAnswer) {
@@ -691,16 +709,13 @@ Summary:`;
       }
     }
 
-    // Swap Memories retrieving the relevant messages based on keywords
-    // experimental
-    // this.chatChain.memory = await this.getCombinedMemory(user, userQuery);
-    this.chatChain.memory = await this.getRelevantUserMemory(user, userQuery);
-
+    // send the response from RAG to Bot Chat Chain that has relevant user memory and last messages
     const response = await this.chatChain.invoke({
       context: ragContext,
       userquery: userQuery,
     }, config);
 
+    // debug output
     let logid = "MESSAGES";
     this.messagesLog.log("", logid)
     this.messagesLog.log(`@${user}: ${userQuery}`, logid)
@@ -708,9 +723,11 @@ Summary:`;
     this.messagesLog.log("", logid)
     this.messagesLog.log("", logid)
 
+    // add new response to user memory and sumarize it if needed
     await this.addtoUserMemory(user, userQuery, response.response)
     await this.sumarizeUserHistoryMemory(user);
 
+    // return response to be published
     return {
       name: botConfig.BotName,
       message: response.response,
