@@ -422,6 +422,11 @@ Summary:`;
     // Add relevant messages to the new BufferMemory
     await relevantMemory.chatHistory.addMessages(lastMemories)
     // Return the new BufferMemory with relevant history
+
+    console.log("-----------relevant Memory-----------")
+    console.dir(relevantMemory)
+    console.log("-------------------------------------")
+
     return relevantMemory;
   }
 
