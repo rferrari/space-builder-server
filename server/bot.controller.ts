@@ -263,7 +263,7 @@ export class BotAvatar {
   public async preloadNotionDocuments(): Promise<boolean> {
     console.log("Loading Notions Documents...")
     console.time("Document Load Time");             // Start the timer
-    
+
     ragSystem.preloadDocuments()
       .then((chunks) => {
         console.log(`Documents loaded successfully. Created ${chunks} vector chunks.`);
@@ -408,13 +408,19 @@ Summary:`;
       keywords.some(keyword => entry.content.toLowerCase().includes(keyword.toLowerCase()))
     );
 
+    // Get the last 5 messages from the history
+    const latestMessages = storedMessages.history.slice(-5);
+
+    // Merge the relevant memories and latest messages
+    const lastMemories = [...relevantMemories, ...latestMessages];
+
     // Create a new BufferMemory instance to hold the relevant messages
     // Create a memory key for the prompt history 
     const userMemoryKey = `history`;
     const relevantMemory = new BufferMemory({ returnMessages: true, memoryKey: userMemoryKey, inputKey: "userquery" });
 
     // Add relevant messages to the new BufferMemory
-    await relevantMemory.chatHistory.addMessages(relevantMemories)
+    await relevantMemory.chatHistory.addMessages(lastMemories)
     // Return the new BufferMemory with relevant history
     return relevantMemory;
   }
@@ -637,7 +643,7 @@ Summary:`;
 
     // const wordCount = this.countWords(text);
     const wordCount = this.countChars(text);
-    
+
     const isQuestion = this.isQuestion(text);
     const keywords = ["good morning", "gm"]; // List of keywords to check
     // Normalize text for case-insensitive comparison
@@ -978,7 +984,7 @@ Summary:`;
 
     const resumoConversa = await this.summarizeConversation();
     const smSugestion = await this.socialMediaSugestion(resumoConversa, this.lastTrendingSummary);
-    
+
     // Experimental
     // this.resumoAll.log(resumoConversa);
     // const resumoConversaHumanos = await this.summarizeConversationHumans();
@@ -1065,7 +1071,7 @@ Summary:`;
         ${connStatus};
         The last Farcaster Event ID processed was ${lastEventId};
         `
-        //        Mem. Usage: ${Math.round(this.MEM_USED.rss / 1024 / 1024 * 100) / 100} MB
+    //        Mem. Usage: ${Math.round(this.MEM_USED.rss / 1024 / 1024 * 100) / 100} MB
 
     return { name: botConfig.BotName, message: message }
   }
@@ -1185,7 +1191,7 @@ OUTPUT:`);
     //   });
     //   return chatCompletion.choices[0].message.content;
     // } catch (error) {
-      return "";
+    return "";
     // }
   }
 

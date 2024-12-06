@@ -186,12 +186,14 @@ class DiscordBot {
       }
 
       try {
+        // if env set GUILD_ID, deploy commands on GUILD_ID
         if (this.settings.GUILD_ID) {
           data = await this.rest.put(
             Routes.applicationGuildCommands(
               this.settings.CLIENT_ID, this.settings.GUILD_ID),
             { body: slashCommands }) as RESTPutAPIApplicationGuildCommandsJSONBody[];
         } else {
+          // not GUILD_ID, deploy commands globaly
           data = await this.rest.put(
             Routes.applicationCommands(process.env.CLIENT_ID),
             { body: slashCommands }) as RESTPutAPIApplicationCommandsJSONBody[];
