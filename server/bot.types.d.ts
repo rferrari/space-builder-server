@@ -7,6 +7,7 @@ export type CastIdJson = {
     hash: Hex;
 };
 
+
 export type CastAddBodyJson = {
     text: string;
     textWithMentions?: string;

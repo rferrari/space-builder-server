@@ -34,7 +34,7 @@ import { err, ok, Result } from "neverthrow";
 import { hubClient } from './lib/hub-client'
 import { EventBus } from './eventBus.interface'
 
-import { saveLatestEventId } from './api/event'
+import { saveLatestEventId, getLatestEvent } from './api/event'
 import * as botConfig from "./config";
 
 import GraphemeSplitter from 'grapheme-splitter';
@@ -54,6 +54,7 @@ export class Farcaster {
 
     private isConnected: boolean;
     private isReconnecting: boolean;
+    private isStopped: boolean; // set by external discord command
 
     private farcasterLog: FileLogger;
 
@@ -65,10 +66,9 @@ export class Farcaster {
 
         this.isConnected = false;
         this.isReconnecting = false;
-
+        this.isStopped = false;
         this.farcasterLog = new FileLogger({ folder: './logs-farcaster-out', printconsole: true });
-
-        this.subscriberStream();
+        // setTimeout(() => {this.subscriberStream();}, 2000);
     }
 
     private bytesToHex(value: Uint8Array): `0x${string}` {
@@ -265,17 +265,19 @@ export class Farcaster {
         return body;
     }
 
-    private async subscriberStream() {
+    private async subscriberStream(fromEventId: number | undefined) {
         const result = await hubClient.subscribe({
             eventTypes: [
                 HubEventType.MERGE_MESSAGE, HubEventType.PRUNE_MESSAGE,
                 HubEventType.REVOKE_MESSAGE, HubEventType.MERGE_ON_CHAIN_EVENT,
-            ], // fromId: fromEventId,       // the last event we processed
+            ],
+            fromId: fromEventId,       // the last event we processed
         })
 
 
         if (result.isErr()) {
             console.error(result.error + '\nError starting stream');
+            if (!this.isStopped)
             this.reconnect();
             return
         }
@@ -283,20 +285,27 @@ export class Farcaster {
         this.isConnected = true;
         this.isReconnecting = false;
 
-
         result.match(
             (stream) => {
-                // `Subscribed to stream from ${fromEventId ? `event ${fromEventId}` : 'head'}`
-                console.info(`Subscribed to Farcaster Stream: HEAD`)         //current event
+                console.log(`Subscribed to Farcaster Stream from: ${fromEventId ? `event ${fromEventId}` : 'HEAD'}`);
+                // console.info(`Subscribed to Farcaster Stream: HEAD`)         //current event
 
                 // Manually trigger the 'close' event for testing // Simulate close after 3 seconds
+
                 // setTimeout(() => { console.log("Simulating stream end..."); stream.emit('end'); }, 10000);
                 // setTimeout(() => { console.log("Simulating stream close..."); stream.emit('close'); stream.emit('close'); }, 10000);
 
                 stream.on('data', async (e: HubEvent) => {
                     this.handleEvent(e)
                     saveLatestEventId(e.id)
-                    this.eventBus.publish("LAST_EVENT_ID", e.id);
+                    // console.log(e.id)
+
+                    // Manually trigger the 'close' event from command
+                    if (this.isStopped) {
+                        this.isConnected = false;
+                        stream.destroy();
+                    }
+                    // this.eventBus.publish("LAST_EVENT_ID", e.id);
                 })
 
                 stream.on('end', async () => {
@@ -311,8 +320,11 @@ export class Farcaster {
                     // console.warn(`Hub stream closed`)
                     // console.log(`Stream object details on CLOSE:`);
                     // this.logRelevantStreamDetails(stream);
+                    if (!this.isStopped) {
+                        //if we did not received external command to stop, try to reconect
                     this.isConnected = false;
                     this.reconnect();
+                    }
                 })
             }, (e) => { console.error(e, 'Error streaming data.') })
     }
@@ -324,9 +336,9 @@ export class Farcaster {
             this.farcasterLog.log(`Reconnecting in 1 second...`, "EVENTS")
             this.isReconnecting = true;
 
-            setTimeout(() => {
-                if (!this.isConnected)
-                    this.subscriberStream();
+            setTimeout(async () => {
+                if ((!this.isConnected) && (!this.isStopped))
+                    this.subscriberStream(await getLatestEvent());
             }, 2777); // 1-second delay
         }
     }
@@ -411,17 +423,14 @@ export class Farcaster {
                 switch (msgType) {
                     case MessageType.CAST_ADD: {
                         // await pruneCasts([msg])
-                        // this.handleData_new([msg]);
                         break
                     }
                     case MessageType.REACTION_ADD: {
                         // await pruneReactions([msg])
-                        // this.handleData_new([msg]);
                         break
                     }
                     case MessageType.LINK_ADD: {
                         // await pruneLinks([msg])
-                        // this.handleData_new([msg]);
                         break
                     }
                     default: {
@@ -512,11 +521,15 @@ export class Farcaster {
         }
      */
     private async publishToFarcaster(msg: string, options: any) {
+        if (this.isStopped) return
+
         if (botConfig.LOG_MESSAGES) {
             let logid = "publishToFarcaster";
-            // this.farcasterLog.log(`msg: ${msg}`, logid);
-            // this.farcasterLog.log(`options:`, logid);
-            // this.farcasterLog.log(options, logid);
+            if (!botConfig.PUBLISH_TO_FARCASTER)
+                this.farcasterLog.log("PUBLISH_TO_FARCASTER OFF", logid)
+            this.farcasterLog.log(`message: ${msg}`, logid);
+            this.farcasterLog.log(`options:`, logid);
+            this.farcasterLog.log(options, logid);
         }
 
         if (!botConfig.PUBLISH_TO_FARCASTER) {
@@ -536,7 +549,7 @@ export class Farcaster {
                         msg,
                         options
                     }
-                    this.eventBus.publish("ERROR_FC_PUBLISH", errorCastObj);
+                    // this.eventBus.publish("ERROR_FC_PUBLISH", errorCastObj);
 
                     this.farcasterLog.log("Failed to publish cast: "+error.response.data, "ERROR")
                     this.farcasterLog.log(msg, "ERROR")
@@ -547,13 +560,14 @@ export class Farcaster {
                         msg,
                         options
                     }
-                    this.eventBus.publish("ERROR_FC_PUBLISH", errorCastObj);
+                    // this.eventBus.publish("ERROR_FC_PUBLISH", errorCastObj);
 
                     this.farcasterLog.log("Failed to publish cast: "+JSON.stringify(error), "ERROR")
                     this.farcasterLog.log(msg, "ERROR")
                     this.farcasterLog.log(options, "ERROR")
                 }
             });
+
 
 
             if ((options.replyTo) && (options.parent_author_fid)) {
@@ -601,7 +615,10 @@ export class Farcaster {
         setTimeout(() => {
             this.publishToFarcaster(msg, options);
         }, delayInMinutes * 60 * 1000); // convert minutes to milliseconds
-        console.log(`Scheduling msg to fid '${parentAuthorFid}' in ${delayInMinutes} minutes`);
+
+        const fName = (await this.handleUserFid(parentAuthorFid)).toUpperCase();
+        if(botConfig.PUBLISH_TO_FARCASTER)
+            console.log(`Scheduling msg to fid '${fName}' in ${delayInMinutes} minutes`);
     }
 
     public async publishNewChannelCast(msg: string) {
@@ -733,6 +750,7 @@ export class Farcaster {
     }
 
 
+    // handle when bot targest posst new message
     private async handleTargetAddCast(message: Message) {
         const body = this.convertProtobufMessageBodyToJson(message);
         const tName = await this.handleTargetFid(message.data.fid);  // target Name
@@ -808,4 +826,66 @@ export class Farcaster {
         }
     }
 
+    public stop() {
+        try {
+            this.isStopped = true;
+            return true;
+        } catch {
+            return false;
+        }
+    }
+
+    public async start(from: string) {
+        try {
+            this.isStopped = false;
+            if (from == "head") {
+                this.subscriberStream(undefined);
+            } else {
+                const lastid = await getLatestEvent();
+                this.subscriberStream(lastid);
+            }
+            return true;
+        } catch {
+            return false;
+        }
+    }
+
+    public getConnectionStatus() {
+        return this.isConnected;
+    }
+
+    // public async getConversationHistory(castHashOrUrl: string, castParamType: CastParamType = CastParamType.Hash): Promise<string> {
+    //     var lastMessages = "";
+    //     try {
+    //         const response = await neynarClient.lookupCastConversation(
+    //             castHashOrUrl, castParamType,
+    //             {
+    //                 replyDepth: 2,
+    //                 includeChronologicalParentCasts: true,
+    //                 viewerFid: botConfig.TARGETS[0],
+    //                 limit: 10,
+    //                 // cursor: "nextPageCursor" // Omit this parameter for the initial request
+    //             }
+    //         )
+
+    //         const messages: CastWithInteractions[] = response.conversation.chronological_parent_casts.slice().reverse();
+    //         const lastThreeMessages: string[] = messages
+    //             .slice(0, 3)
+    //             .reverse()
+    //             .map((message: CastWithInteractions) => {
+    //                 return `@${message.author.username}: ${message.text}\n`;
+    //             });
+
+    //         lastMessages = lastThreeMessages.join('\n');
+
+    //         // this.farcasterLog.log("Cast Conversation Information:", "Conversation");
+    //         // this.farcasterLog.log(response, "Conversation"); // Displays the detailed structure of the specified cast conversation
+    //         // return response;
+    //     }
+    //     catch (error) {
+    //         console.log('Get Cast Conversation Fail:');
+    //     };
+
+    //     return lastMessages;
+    // }
 }

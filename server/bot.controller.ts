@@ -10,30 +10,87 @@ const Reset = "\x1b[0m",
   Gray = "\x1b[90m";
 
 
+interface ArtStyle {
+  [key: string]: string;
+}
+
+const artStyle: ArtStyle = {
+  'Sunday': '64-bit Pixel Art',
+  'Monday': '64-bit Oil Painting ',
+  'Tuesday': 'Solarpunk Pixel Art',
+  'Wednesday': '64-bit Watercolor Painting',
+  'Thursday': '64-bit Retro Sci-fi Art',
+  'Friday': 'Psychedelic 64-bit Pixel Art',
+  'Saturday': '64-bit Abstract Pixel Art'
+};
+
+
+//// DEBUG_WEEK_DAYS_PERIODS //////////
 const DEBUG_WEEK_DAYS_PERIODS = false;
 const test_run_counter_week = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 const test_run_counter_period = [
-  "Morning",
-  // "Afternoon",
+  // "Morning",
+  "Afternoon",
   // "Night", 
-  "Late Night",
+  // "Late Night",
   // "Early Morning"
 ];
 let weekdayCounter = 0;
 let dayPeriodCounter = 0;
+//////////////////////////////////////////
 
+const TOM_PICTURE = `
+..................=##=....................................--
+.......:=-.......:#@#+@+=-..:-............................:-
+.......-%#%%*--....=%@%++*#%##%%%#---:...:-.................
+......:-@%*++##****##***+++++***###**#+.:#@#:...............
+........+@@%*#*+-:-=++=-+++**##*++**#%##*#@@%+:.............
+.........+@@%#******+::=++#%%###*++*#%%#*%@@%%%=............
+........-#@@@@%%#+===-=#%%####%@@@**##%%##+#*#%%:.-*-.......
+........:+@@@@%%%*+#%%%%%%%#++##%#++**@%%%***##%@=@%#:......
+.-%@@@@@%%#**#%%%%%@@@@@@@@@@@@%#+*#%#**#%###%#*#%%@%:-=:...
+.-=#@@@%%%%%%@@@@@@@%#*%%@@@@#*##@@%***####*+*#*#%%@%++%=...
+....+@@@@@@@@@@@@@@@@%@@#**@%%@@@@#++**#%@%@####%@@@##%%=...
+......:*@@@@@@@%+==+#@+:::%%++++==%@@@@@@@@#%#*#%%@@@@@-....
+....:*%%@@@@@#+-::-*-::::::::::-=%%*++@@@%*#%%%%%%##@@@@+...
+...+#%**@@@@%=:::::::::::::::::--::::::@%**%@@@%%@%%%%%%@%-.
+...::*@@%%@@+-:::::::::::+*****#-:::::*###@@@@%@@%%@@@@%+*#-
+...:----=@@@@@@@%=:::::-%@@@@@@@@@#-:::+%@@@@@@@@%@@@@@@@=..
+......:+#%%%%%%%%#+=-::%#+-=----#@%#+::%@@%%@@@@%@@@@@@@@@=.
+......-+===-+*****#*+:=++****+*+*%#*+=:-%@@@@@@@@@@@@@@@#*-.
+......-++:...=@@@@###-=#=-...-%@@@%+*-:-#@@@@@@@@@@@@@@@+:..
+......-**:...=@@@@#*##***-...-@@@@%##=*##*+*@@@@@@@@@@@*:...
+......+*+:...=@@@@*+===++:...-@@@@%#*=+**###*-==-#@@@@@=....
+......:*#:...-@@@@*++::+*-...:#@@@@%*-::-#+:-+++*-=@@@:.....
+......-*#-.::-%@@@#++::**-::--*@@@%#*-:-#%=-++===*=@@-......
+......:+==*+-=+*==+*+::*=++++*###%*++-:-#+:+@*-:-==%#:......
+.......:::.=*:::-++-::::---------==-::::::*%#*+=--+-........
+...........=#:::---::::::::::-=-::::::::::==+=-:=*:.........
+...........=#::::---------#%%@@+:::::::------+*#:.........:-
+...........=@+:::%@+------....*+:::::::=*%@@@@%-.........:--
+...........:*#=:::=+:.......-+-:::::---*%+=%@%-.........::.:
+.............-#+:::+*+....+*+::::-=-=+%#+=::*%:.........--::
+...............#*-::::::::::::::+=-#@@#*=:::-#:.........----
+................+#+::::::::::-=#*#@%##*=-:::-#+:.........:--
+.................:#*-::::-#=@@@@@%*=*#+-:::::+#-...........:
+...................=%%%%%%%%@@@@@#+**+--------=%%%-.........
+............................#@##*=+####+++++++++.=++-.......
+`
 
+import OpenAI from 'openai';
+import { ChatOpenAI } from "@langchain/openai";
+import { Groq } from 'groq-sdk';
 import { GraphInterface, ragSystem } from "./ragSystem";
 import { ConversationChain } from "langchain/chains";
 import { ChatGroq } from "@langchain/groq";
 
 import {
+  PromptTemplate,
   ChatPromptTemplate,
   MessagesPlaceholder,
   SystemMessagePromptTemplate,
 } from "@langchain/core/prompts";
 
-import { PromptTemplate } from "@langchain/core/prompts";
 import { BufferMemory } from "langchain/memory";
 
 ///
@@ -58,6 +115,8 @@ import { BotCastObj } from './bot.types';
 import * as botConfig from "./config";
 import * as botPrompts from "./botPrompts";
 
+import { getLatestEvent } from './api/event'
+
 import FileLogger from './lib/FileLogger'
 import { cat } from "@xenova/transformers";
 import { config } from "dotenv";
@@ -77,6 +136,7 @@ const WEEKDAYS = [
 interface ChatMessage {
   name: string;
   message: string;
+  imageUrl?: string;
 }
 
 interface UserMemory {
@@ -90,6 +150,10 @@ export class BotAvatar {
 
   private botLLM: ChatGroq;
   private assistentLLM: ChatGroq;
+
+  private isStopped: boolean;
+  private userAskToStart: string;
+  private userAskToStop: string;
 
   private stringPromptMemory: BufferMemory;
   private chatChain: ConversationChain;
@@ -122,6 +186,12 @@ export class BotAvatar {
   // Constructor
   //
   constructor(eventBus: EventBus, farcaster: Farcaster) {
+    this.printTomPicture();
+
+    //this.MEM_USED = process.memoryUsage();
+
+    this.isStopped = false;
+
     this.eventBus = eventBus;
     this.farcaster = farcaster;
 
@@ -129,6 +199,7 @@ export class BotAvatar {
     this.eventBus.subscribe("WAS_MENTIONED", (data: BotCastObj) => this.handleMention(data));
     this.eventBus.subscribe("WAS_REPLIED", (data: BotCastObj) => this.handleReply(data));
     this.eventBus.subscribe("CHANNEL_NEW_MESSAGE", (data: BotCastObj) => this.handleChannelNewMessage(data));
+
     // this.eventBus.subscribe("COMMAND", (data: BotCastObj) => this.handleReply(data));
 
     this.messagesLog = new FileLogger({ folder: './logs-messages', printconsole: true });
@@ -168,6 +239,8 @@ export class BotAvatar {
       prompt: chatPrompt,
       llm: this.botLLM,
     });
+
+    this.farcaster.start("lastid");
 
     // Schedule periodic cleanup
     setInterval(() =>
@@ -304,6 +377,7 @@ Summary:`;
   //
   // Return the relevant Yser Memory entries based on keywords
   // create a new one if do not exist
+  //
   private async getRelevantUserMemory(userId: string, userQuery: string): Promise<BufferMemory> {
     // Check if the BufferMemory for the user already exists
     if (!this.userMemories.has(userId)) {
@@ -516,7 +590,7 @@ Summary:`;
     }
 
     this.lastTrendingSummary = trendingSummary;
-    this.eventBus.publish("PRINT_MSG", chatmessage);
+    // this.eventBus.publish("PRINT_MSG", chatmessage);
   }
 
   private countChars(text: string): number {
@@ -557,7 +631,10 @@ Summary:`;
 
 
 
-  private shouldReply(text: string): boolean {
+  private shouldReply(fid: number, text: string): boolean {
+    // is Own message? Should Reply?
+    if (fid == botConfig.BotFID) return false
+
     // const wordCount = this.countWords(text);
     const wordCount = this.countChars(text);
     
@@ -578,7 +655,7 @@ Summary:`;
   }
 
 
-  private async replyMessage(user: string, userQuery: string) {
+  private async replyMessage(user: string, userQuery: string, vision: string = "", conversation: string = "") {
     const config = { configurable: { thread_id: user + "_thread" } };
 
     // if (user == "System-uuid-bot") {
@@ -639,9 +716,9 @@ Summary:`;
 
     if (botConfig.LOG_MESSAGES) {
       let logid = "NEW_CAST";
-      this.newCasts.log("", logid);
-      this.newCasts.log("NEW_CAST:", logid);
-      this.newCasts.log("", logid);
+      this.newCasts.log("---- NEW TARGET MESSAGES WAS PUBLISHED by @" + castObj.fName, logid);
+      // this.newCasts.log("NEW_CAST:", logid);
+      // this.newCasts.log("", logid);
       this.newCasts.log(message, logid);
       this.newCasts.log("", logid);
     }
@@ -652,15 +729,15 @@ Summary:`;
   private async handleReply(castObj: BotCastObj): Promise<void> {
     // handle bot reply
     const userChatMessage = { name: castObj.fName, message: castObj.body.textWithMentions }
-    if (!this.shouldReply(castObj.body.textWithMentions)) {
+    if (!this.shouldReply(castObj.fid, castObj.body.textWithMentions)) {
       console.dir(userChatMessage);
       return;
     }
 
     const tomChatMessage = await this.replyMessage(castObj.fName, castObj.body.textWithMentions);
 
-    this.eventBus.publish("PRINT_MSG", userChatMessage);
-    this.eventBus.publish("PRINT_MSG", tomChatMessage);
+    //this.eventBus.publish("PRINT_MSG", userChatMessage);
+    //this.eventBus.publish("PRINT_MSG", tomChatMessage);
 
     this.farcaster.publishUserReply(tomChatMessage.message, castObj.hash, castObj.fid);
   }
@@ -678,29 +755,66 @@ Summary:`;
 
   private async handleChannelNewMessage(castObj: BotCastObj): Promise<void> {
     // handle channel new message
-    if (!this.shouldReply(castObj.body.textWithMentions)) return
+    if (!this.shouldReply(castObj.fid, castObj.body.textWithMentions)) return
 
     const userChatMessage = { name: castObj.fName, message: castObj.body.textWithMentions }
     const tomChatMessage = await this.replyMessage(castObj.fName, castObj.body.textWithMentions);
 
-    this.eventBus.publish("PRINT_MSG", userChatMessage);
-    this.eventBus.publish("PRINT_MSG", tomChatMessage);
+    //this.eventBus.publish("PRINT_MSG", userChatMessage);
+    //this.eventBus.publish("PRINT_MSG", tomChatMessage);
 
     this.farcaster.publishUserReply(tomChatMessage.message, castObj.hash, castObj.fid);
   }
 
-  public async handleCommand(command: ChatMessage) {
-    // const userChatMessage = { name: castObj.fName, message: castObj.body.textWithMentions }
-    if (!this.shouldReply(command.message)) {
-      console.dir(command);
-      return;
+  public async handleCommand(command: string, message: ChatMessage) {
+    let tomReply = { name: botConfig.BotName, message: "" }
+
+    switch (command) {
+      case "start":
+        this.userAskToStart = message.name;
+        tomReply = this.setBotStart(message.message);
+        break;
+      case "stop":
+        this.userAskToStop = message.name;
+        this.setBotStop();
+        break;
+      case "status":
+        tomReply = await this.getBotStatus();
+        break;
+      case "pixelart":
+        tomReply = await this.drawingTool(message.message)
+        break;
+      case "reload":
+        switch (message.message) {
+          case "reloadVars":
+            tomReply.message = "Sorry I cant do that.";
+            // tomReply.message = "Reloading env vars (experimental)...";
+            // const loadConfig = () => {
+            //   const newBotConfig = require('./config');
+            //   return newBotConfig;
+            // };
+            // botConfig = loadConfig();
+            break
+          case "reloadDocs":
+            const result = await ragSystem.reloadDocuments();
+            tomReply.message = result >= 0 ? `Reloaded in ${result} seconds!` : "Failed reloading docs. Try Again.";
+            break
+        }
+        break;
+      default:
+        // messages from discord dont have fid -1 set
+        if (!this.shouldReply(-1, message.message)) {
+          tomReply = { name: botConfig.BotName, message: "Message Too Short!" };
+          break;
+        }
+        tomReply = await this.replyMessage(message.name, message.message);
+        break;
     }
 
-    const tomChatMessage = await this.replyMessage(command.name, command.message);
-
-    // this.eventBus.publish("PRINT_MSG", userChatMessage);
-    this.eventBus.publish("PRINT_MSG", tomChatMessage);
+    // this.eventBus.publish("PRINT_MSG", tomReply);
+    return tomReply;
   }
+
 
   // Get Groq chat completion
   async socialMediaSugestion(resumoConversa: MessageContent, trendingTopics: MessageContent): Promise<any> {
@@ -800,6 +914,9 @@ Summary:`;
     this.dayPeriod = this.formatTimeOfDay(this.hour);
   }
 
+  private printTomPicture() {
+    // console.log(TOM_PICTURE);
+  }
 
   public async displayInternalClock() {
     this.updateInternalClockTime();
@@ -815,6 +932,13 @@ Summary:`;
     ⌐◨-◨      
     ⌐◨-◨  ⌐◨-◨  ⌐◨-◨  ⌐◨-◨  ⌐◨-◨  ⌐◨-◨  ⌐◨-◨  ⌐◨-◨  ⌐◨-◨  ⌐◨-◨
     ${Reset}`);
+
+    return {
+      weekday: this.weekday,
+      today: this.today,
+      nowis: this.nowis,
+      dayPeriod: this.dayPeriod
+    }
   }
 
   private fakeTodaySpaceTime() {
@@ -838,6 +962,8 @@ Summary:`;
   }
 
   async castNewMessagetoChannel(): Promise<ChatMessage> {
+    if (this.isStopped) return { name: botConfig.BotName, message: "Zzzzzzzzzz" };
+
     // update Space Time Awereness
     this.updateInternalClockTime();
 
@@ -916,4 +1042,152 @@ Summary:`;
       return undefined;
     }
   }
+
+  public getMemUsed() {
+    // const memFarcaster = this.farcaster.MEM_USED.rss;
+    // const memRag = ragSystem.MEM_USED.rss;
+    // const memTLimiter = ragSystem.tokenRateLimiter.MEM_USED.rss;
+
+    // return {
+    //   memFarcaster,
+    //   memRag,
+    //   memTLimiter
+    // }
+  }
+
+  private async getBotStatus(): Promise<ChatMessage> {
+    const lastEventId = await getLatestEvent();
+    const connStatus = this.farcaster.getConnectionStatus() === true
+      ? "Im connected to Farcaster" : `Im disconnected from Farcaster cause ${this.userAskToStop} told so.`;
+    const message = `
+
+        I have ${this.userMemories.size} users on my memory;
+        ${connStatus};
+        The last Farcaster Event ID processed was ${lastEventId};
+        `
+        //        Mem. Usage: ${Math.round(this.MEM_USED.rss / 1024 / 1024 * 100) / 100} MB
+
+    return { name: botConfig.BotName, message: message }
+  }
+
+  private setBotStop(): ChatMessage {
+    let message = "Fail";
+    if (this.farcaster.stop()) {
+      this.isStopped = true;
+      message = "Stop";
+      return { name: botConfig.BotName, message: message }
+    }
+  }
+
+  private setBotStart(from: string): ChatMessage {
+    let message = "Fail";
+    if (this.farcaster.start(from)) {
+      this.isStopped = false;
+      message = "Start";
+    }
+    return { name: botConfig.BotName, message: message }
+  }
+
+  public getisRunning() {
+    return !this.isStopped;
+  }
+
+
+  async getFirstImage(embeds): Promise<string> {
+    const mimeTypes = [
+      'image/jpeg',
+      'image/png',
+      // 'image/gif',
+      // Add more image mime types as needed
+    ];
+    if (Object.keys(embeds).length > 0) {
+      const promises = Object.values(embeds).map((value) => {
+        if (typeof value === 'object' && ('url' in value)) { // Check if value is an object and has a url property
+          if (value.url) { // Check if value has a url property
+            return fetch(value.url as string, { method: 'HEAD' })
+              .then((response) => response.headers.get('Content-Type'))
+              .then((mimeType) => {
+                if (mimeTypes.includes(mimeType)) {
+                  return value.url; // Return the first image URL found
+                }
+              });
+          }
+        }
+      });
+      const imageUrls = await Promise.all(promises)
+        .then((results) => results.filter((result) => result !== null));
+
+      if (imageUrls[0])
+        return imageUrls[0].toString();
+      else return ""; // Return the first image URL found, or null if none
+    }
+
+    return null;
+  }
+
+  async drawingTool(subject: string): Promise<ChatMessage> {
+
+    const tomversion = await this.botLLM.invoke(
+      `Describe in one sentences an image to match the following text:
+${subject}
+OUTPUT:`);
+
+    var dayArtStyle = artStyle[this.weekday];
+    const DESIGNER_PROMPT = `Generate in "${dayArtStyle}" style: ` + (tomversion.content as string);
+
+    const openai = new OpenAI();
+    try {
+      console.log(tomversion.content);
+      const response = await openai.images.generate({
+        prompt: DESIGNER_PROMPT,
+        n: 1, // Number of images to generate
+        size: "1024x1024", // Image resolution
+      });
+
+      // console.log(response.data); // URL of the generated image
+      return { name: (tomversion.content as string) + " (" + dayArtStyle + ")", message: response.data[0].url }
+    } catch (error) {
+      console.error("Error generating image:", error);
+      return { name: "Error generating image:", message: "" }
+    }
+  }
+
+  async visionTool(embeddes: any) {
+    // if (!embeddes) return;
+
+    // this.botEyes = new Groq();
+    // const firstImage = await this.getFirstImage(embeddes);
+
+    // try {
+    //   const chatCompletion = await this.botEyes.chat.completions.create({
+    //     "messages": [
+    //       {
+    //         "role": "user", "content": [
+    //           {
+    //             "type": "text",
+    //             "text": "What's in this image?"
+    //           },
+    //           {
+    //             "type": "image_url",
+    //             "image_url": {
+    //               "url": firstImage
+    //             }
+    //           }
+    //         ]
+    //       }
+    //     ],
+    //     "model": "llama-3.2-11b-vision-preview",
+    //     "temperature": 1,
+    //     "max_tokens": 1024,
+    //     "top_p": 1,
+    //     "stream": false,
+    //     "stop": null
+    //   });
+    //   return chatCompletion.choices[0].message.content;
+    // } catch (error) {
+      return "";
+    // }
+  }
+
+
 }

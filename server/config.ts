@@ -92,3 +92,15 @@ export const NEYNAR_API_KEY = process.env.NEYNAR_API_KEY!;
 export const HUB_RPC = process.env.HUB_RPC!;
 export const HUB_SSL = process.env.HUB_SSL!;
 export const SIGNER_UUID = process.env.SIGNER_UUID!;
+
+
+export const DISCORD_ENABLED = process.env.DISCORD_ENABLED === 'true';
+export const DISCORD_TOKEN = process.env.DISCORD_TOKEN;
+export const DISCORD_OWNER_ID = process.env.DISCORD_OWNER_ID;
+export const DISCORD_CLIENT_ID = process.env.DISCORD_CLIENT_ID;
+export const DISCORD_GUILD_ID = process.env.DISCORD_GUILD_ID;
+export const DISCORD_CHANNEL_ID = process.env.DISCORD_CHANNEL_ID;
+
+export const PUBLISH_TO_DISCORD = process.env.PUBLISH_TO_DISCORD === 'true';
+
+

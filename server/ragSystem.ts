@@ -149,6 +149,27 @@ class RAGSystem {
     // }
 
     // Helper function to wait for documents to load.
+    public async reloadDocuments(): Promise<number> {
+        const start = new Date().getTime();
+        try {
+            this.docsLoaded = false;
+            this.docsLoading = false;
+            this.vectorStore = null;
+            await this.buildVectorStore();
+            const end = new Date().getTime();
+            console.log(`Reloaded in ${(end - start) / 1000} seconds!`);
+            return (end - start) / 1000; // Return the execution time in seconds
+        } catch (error) {
+            console.log(error);
+            return -1; // Return -1 if an error occurs
+        }
+    }
+
+    public async preloadDocuments() {
+        const response = await this.buildVectorStore();
+        return response.memoryVectors.length;
+    }
+
     private waitForDocumentsToLoad(): Promise<void> {
         return new Promise((resolve) => {
             const interval = setInterval(() => {
@@ -376,10 +397,10 @@ class RAGSystem {
         return { generatedAnswer: SORRY_UNABLE_HELP };
     }
 
-    public async preloadDocuments() {
-        const response = await this.buildVectorStore();
-        return response.memoryVectors.length;
-    }
+    // public async preloadDocuments() {
+    //     const response = await this.buildVectorStore();
+    //     return response.memoryVectors.length;
+    // }
 
     public async invokeRAG(user: string, question: string) {
         if (!this.ragApp) {

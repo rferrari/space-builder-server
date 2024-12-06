@@ -1,6 +1,7 @@
 import * as WebSocket from 'ws';
 import { BotAvatar } from './bot.controller';
 import { Farcaster } from './farcaster.controller';
+import DiscordBot from './discord/DiscordBot';
 import { EventBus, EventBusImpl } from './eventBus.interface';
 import { randomInt } from 'crypto';
 import * as botConfig from "./config";
@@ -25,6 +26,8 @@ class BotCustomServer {
   private farcaster: Farcaster;
   private eventBus: EventBus;
 
+  private discord: DiscordBot;
+
   public MEM_USED: NodeJS.MemoryUsage;
 
   constructor() {
@@ -32,7 +35,10 @@ class BotCustomServer {
     this.eventBus = new EventBusImpl();
 
     this.init();
+  }
 
+  private async initDiscordBot(avatarBot: BotAvatar) {
+    this.discord = new DiscordBot(botConfig.DISCORD_TOKEN, avatarBot);
   }
 
   private async initEventBus() {
@@ -86,22 +92,25 @@ class BotCustomServer {
   }
 
   private async init() {
-    console.log("Initializing Events Bus...");
+    console.log("Initializing Events Bus... ✅");
     this.initEventBus();
 
-    console.log("Initializing Farcaster Events...")
+    console.log("Initializing Farcaster Events... ✅")
     this.farcaster = new Farcaster(this.eventBus);
 
-    console.log("Waking up Bot " + botConfig.BotName + botConfig.BotIcon + "...");
+    console.log("Waking up Bot " + botConfig.BotName + botConfig.BotIcon + "...  ✅");
     this.botAvatar = new BotAvatar(this.eventBus, this.farcaster);
 
+    console.log("Initializing Discord Bot... ✅")
+    this.initDiscordBot(this.botAvatar);
+
     // display date time now
-    this.botAvatar.displayInternalClock();
+    const { dayPeriod } = await this.botAvatar.displayInternalClock();
 
     // preload Noticon Documents
     await this.botAvatar.preloadNotionDocuments();
 
-    console.log(botConfig.USE_WS ? "Initializing WebSockets..." : "WebSockets OFF");
+    console.log(botConfig.USE_WS ? "Initializing WebSockets...  🚨" : "WebSockets OFF  ✅");
     if (botConfig.USE_WS)
       this.initWebSockets();
 
@@ -113,19 +122,12 @@ class BotCustomServer {
 
     // init checking options
     console.log("Targets:");
-    console.dir(botConfig.TARGETS);
-    console.dir(botConfig.TARGET_CHANNELS);
-    console.dir(botConfig.CAST_TO_CHANNEL);
-
+    console.log(botConfig.TARGETS);
+    console.log(botConfig.TARGET_CHANNELS);
+    console.log(botConfig.CAST_TO_CHANNEL);
     console.log(botConfig.LOG_MESSAGES ? `LOG MESSAGES is ON` : "LOG MESSAGES is OFF");
-
-    botConfig.PUBLISH_TO_FARCASTER
-    ? console.warn(Yellow+`PUBLISH TO FARCASTER is ON`+Reset)
-    : console.warn(Yellow+"PUBLISH TO FARCASTER is OFF"+Reset);
-
-    console.log(botConfig.NEW_CASTS_INTERVAL_MIN > 0
-      ? Yellow+`Cast New Messages ${botConfig.NEW_CASTS_INTERVAL_MIN} minutes interval...`+Reset
-      : Yellow+"Cast New Messages OFF"+Reset);
+    botConfig.PUBLISH_TO_FARCASTER ? console.warn(Yellow + `PUBLISH TO FARCASTER is ON  ✅` + Reset) : console.warn(Yellow + "PUBLISH TO FARCASTER is OFF 🚨" + Reset);
+    console.log(botConfig.NEW_CASTS_INTERVAL_MIN > 0 ? Yellow + `Cast New Messages ${botConfig.NEW_CASTS_INTERVAL_MIN} minutes interval...  ✅` + Reset : Yellow + "Cast New Messages OFF 🚨" + Reset);
 
     if (botConfig.NEW_CASTS_INTERVAL_MIN > 0) {
       setInterval(async () => {
@@ -155,7 +157,7 @@ class BotCustomServer {
     if (botConfig.DISPLAY_MEM_USAGE) {
       setInterval(() => {
         this.printMemUsage();
-      }, 1 * 60 * 1000);
+      }, 10 * 60 * 1000);
       this.printMemUsage();
     }
 
@@ -179,11 +181,11 @@ class BotCustomServer {
   }
 
   private async handleCommand(wss: WebSocket.Server, data: string) {
-    const { name, message } = JSON.parse(data);
-    const commandObj = {name, message}
+    // const { name, message } = JSON.parse(data);
+    // const commandObj = {name, message}
 
     // this.eventBus.publish("COMMAND", commandObj);
-    const response = await this.botAvatar.handleCommand(commandObj);
+    // const response = await this.botAvatar.handleCommand(commandObj);
     // console.log(response);
     
     // wss.clients.forEach((client: WebSocket) => {
@@ -205,8 +207,6 @@ class BotCustomServer {
 
     return response;
   }
-
-
 }
 
 process.on('uncaughtException', (err) => {
