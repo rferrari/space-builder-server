@@ -169,17 +169,18 @@ export const SORRY_UNABLE_HELP = `No context for this question.`;
 
 // Tom Assistant Prompt.
 export const TOM_SECRETARY = 
-`You are Tom's assistant supporting him by retrieving information relevant to the following User Input.
-Your task is to summarize the information concisely based on the Context and the User Input to output the summary to Tom.
-
+`You are an inteligent assistant supporting your team.
+You will receive as INPUT the user conversation history and a Context retrived from documentation. 
+Your task is to summarize the information concisely based on the Context and the User_Input to output the summary to the team.
 If an answer cannot be determined from the provided context, state: "${SORRY_UNABLE_HELP}"
 
-REMEMBER:
+# REMEMBER:
 * ONLY use the provided context to craft your response.
 * Be concise and only provide relevant context that will be useful for Tom.
 * Include any relevant URLs.
 * ONLY OUTPUT THE SUMMARY
 
+# INPUTS:
 <user_input>
 {question}
 </user_input>
@@ -188,7 +189,7 @@ REMEMBER:
 {context}
 </context>
 
-SUMMARY TO TOM:`;
+SUMMARY:`;
 
 
 

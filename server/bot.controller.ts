@@ -423,11 +423,11 @@ Summary:`;
     await relevantMemory.chatHistory.addMessages(lastMemories)
     // Return the new BufferMemory with relevant history
 
-    console.log("-----------relevant Memory-----------")
+    // console.log("-----------relevant Memory-----------")
     // Retrieve messages from the chat history
-    const debugMessages = await relevantMemory.chatHistory.getMessages();
-    console.dir(debugMessages, { depth: null, colors: true });
-    console.log("-------------------------------------")
+    // const debugMessages = await relevantMemory.chatHistory.getMessages();
+    // console.dir(debugMessages, { depth: null, colors: true });
+    // console.log("-------------------------------------")
 
     return relevantMemory;
   }
@@ -701,7 +701,7 @@ Summary:`;
     const rag_system = true;
     let ragContext = "";
     if (rag_system) {
-      const ragResponse = await ragSystem.invokeRAG(user, `${conversationContent} \n ${userQuery}`)
+      const ragResponse = await ragSystem.invokeRAG(user, `User Name: ${user} \n ${conversationContent} \n ${userQuery}`)
         .catch(err => { console.error("Failed to generate RAG response", err); }) as GraphInterface;
 
       if (ragResponse && ragResponse.generatedAnswer) {
