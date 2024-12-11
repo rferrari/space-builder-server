@@ -11,10 +11,10 @@ import { BotAvatar } from '../../../bot.controller'
 
 module.exports = {
   name: "talk",
-  description: "Talk to tom",
+  description: "Talk to Tom",
   type: ApplicationCommandType.ChatInput,
   // default_member_permissions: 'ManageMessages',
-  cooldown: 0, // in seconds
+  cooldown: 1, // in seconds
 
   options: [
     {
