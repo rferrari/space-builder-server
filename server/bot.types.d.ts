@@ -2,6 +2,13 @@ export type VerificationProtocol = "ethereum" | "solana";
 export type Fid = number;
 export type Hex = `0x${string}`;
 
+interface BotChatMessage {
+    name: string;
+    message: string;
+    imageUrl?: string;
+}
+
+
 export type CastIdJson = {
     fid: Fid;
     hash: Hex;
