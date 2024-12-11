@@ -26,6 +26,10 @@ export const PUBLISH_TO_FARCASTER = process.env.PUBLISH_TO_FARCASTER === 'true';
 export const MIN_REPLY_WORD_COUNT = 10;
 export const MIN_REPLY_CHAR_COUNT = 10;
 
+// filter last messages from a conversation FC chronological_parent_casts
+export const LAST_CONVERSATION_LIMIT = 5;
+
+
 // targets
 // Maximum farcast fid/fname cache storage
 // channel that bot will cast new messages
@@ -80,6 +84,7 @@ export const ChatBackupLLMModel = llama3_8b_8192;
 export const RAGLLMModel = llama3_8b_8192;
 export const JSONLLMModel = llama3_8b_8192;
 export const AssistentModel = llama3_8b_8192;
+export const VisionModel = llama32_90b_vision;
 
 export const GROQ_API_KEY = process.env.GROQ_API_KEY!;
 export const OPENAI_API_KEY = process.env.OPENAI_API_KEY!;
