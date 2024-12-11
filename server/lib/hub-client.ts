@@ -28,3 +28,4 @@ export const hubClient =
   HUB_SSL === 'true'
     ? getSSLHubRpcClient(HUB_RPC, hubClientOptions)
     : getInsecureHubRpcClient(HUB_RPC)
+
