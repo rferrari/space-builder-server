@@ -287,7 +287,7 @@ export class Farcaster {
 
         result.match(
             (stream) => {
-                console.log(`Subscribed to Farcaster Stream from: ${fromEventId ? `event ${fromEventId}` : 'HEAD'}`);
+                console.log(`Subscribed to ${botConfig.HUB_RPC} Stream from: ${fromEventId ? `event ${fromEventId}` : 'HEAD'}`);
                 // console.info(`Subscribed to Farcaster Stream: HEAD`)         //current event
 
                 // Manually trigger the 'close' event for testing // Simulate close after 3 seconds
@@ -331,7 +331,7 @@ export class Farcaster {
 
 
     private reconnect() {
-        console.log(`Reconnect!`);
+        console.log(`Reconnect: `+ botConfig.HUB_RPC);
         if (!this.isConnected && !this.isReconnecting) {
             this.farcasterLog.log(`Reconnecting in 1 second...`, "EVENTS")
             this.isReconnecting = true;
