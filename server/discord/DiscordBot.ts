@@ -325,7 +325,8 @@ class DiscordBot {
           }
         }
       } catch (error) {
-        console.log(error);
+        // console.log("Discord error @ command " + interaction.commandName);
+        // console.log(error.erromsg);
       }
     })
 
