@@ -7,7 +7,7 @@ import * as botConfig from "./config";
 // import botConfig from './config.js';
 
 import FileLogger from './lib/FileLogger';
-import Table from 'cli-table3'
+// import Table from 'cli-table3'
 // import { randomInt } from 'crypto';
 // import { ChatMessage } from '@langchain/core/messages';
 
