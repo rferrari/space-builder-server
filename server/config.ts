@@ -7,7 +7,7 @@ export const BotFID = 527313;
 export const BotIcon = " ⌐◨-◨  ";
 export const TIMEZONE = process.env.TIMEZONE || "America/Chicago";
 
-export const NOTION_DATABASE_ID = "1510572746cd80c0bb93e2115d44340f"
+export const NOTION_DATABASE_ID = process.env.NOTION_DATABASE_ID || "1510572746cd80c0bb93e2115d44340f";
 export const NOTION_PAGE_IDS = [
   "https://nounspace.notion.site/Tom-s-Background-1460572746cd804a8216f6a0a2f34e5c",
   "https://nounspace.notion.site/nounspace-app-info-1460572746cd802fb2dbf6a7ce99eecd",
@@ -21,11 +21,11 @@ export const NOTION_PAGE_IDS = [
 export const NEW_CASTS_INTERVAL_MIN = parseInt(process.env.NEW_CASTS_INTERVAL_MIN) || 0;
 export const PUBLISH_TO_FARCASTER = process.env.PUBLISH_TO_FARCASTER === 'true';
 
-export const MIN_REPLY_WORD_COUNT = 10;
-export const MIN_REPLY_CHAR_COUNT = 10;
+export const MIN_REPLY_WORD_COUNT = parseInt(process.env.MIN_REPLY_WORD_COUNT) || 10;
+export const MIN_REPLY_CHAR_COUNT = parseInt(process.env.MIN_REPLY_CHAR_COUNT) || 10;
 
 // filter last messages from a conversation FC chronological_parent_casts
-export const LAST_CONVERSATION_LIMIT = 5;
+export const LAST_CONVERSATION_LIMIT = parseInt(process.env.LAST_CONVERSATION_LIMIT) || 5;
 
 
 // targets
