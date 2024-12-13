@@ -989,8 +989,15 @@ ${userPrompt}`;
     var textSize = new TextEncoder().encode(encodeURI(reply.response)).byteLength;
     var retryCounter = 0;
     while ((textSize > 1024) || retryCounter > 3) {
-      let retryPrompt =
-        `Rewrite this text to make it concise and under 1024 bytes. Output only the rewritten text: ${reply.response}`;
+      let retryPrompt = 
+`Rewrite this text to make it concise and under 1024 bytes DO NOT INCLUDE "Here is the rewritten text:" Just RAW OUTPUT.
+
+<text>
+${reply.response}
+<text>
+
+Rewritten TEXT:`;
+      
       this.messagesLog.log(`------- RETRYPROMPT  #${retryCounter} (${textSize} bytes) --------`, LOG_ID);
       // console.log(retryPrompt);
       // console.log("----------------------------");
@@ -1007,11 +1014,18 @@ ${userPrompt}`;
       await new Promise(resolve => setTimeout(resolve, delay));
     }
 
-    // ^ matches start, $ matches end, | matches either " or '
+    // Remove Quotes
     // do not misspell nounspace
-    const finalMessage = reply.response
-      .replace(/^"|"$/g, '')
-      .replace(/namespace/g, 'nounspace');
+    var finalMessage = reply.response;
+    if (/namespace/i.test(finalMessage))
+      console.warn("MISSPELL: namespace found in reply response");
+    finalMessage = finalMessage
+        .replace(/^"|"$/g, '')                  
+        .replace(/namespace/g, 'nounspace');
+
+    // const finalMessage = reply.response
+    //   .replace(/^"|"$/g, '')
+    //   .replace(/namespace/g, 'nounspace');
 
     this.addtoBotMemory(user, userQuery, finalMessage)
     await this.addtoUserMemory(user, userQuery, finalMessage)
