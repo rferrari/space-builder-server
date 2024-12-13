@@ -1008,7 +1008,10 @@ ${userPrompt}`;
     }
 
     // ^ matches start, $ matches end, | matches either " or '
-    const finalMessage = reply.response.replace(/^"|"$/g, '');
+    // do not misspell nounspace
+    const finalMessage = reply.response
+      .replace(/^"|"$/g, '')
+      .replace(/namespace/g, 'nounspace');
 
     this.addtoBotMemory(user, userQuery, finalMessage)
     await this.addtoUserMemory(user, userQuery, finalMessage)
