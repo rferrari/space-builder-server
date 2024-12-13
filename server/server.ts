@@ -3,9 +3,13 @@ import { BotAvatar } from './bot.controller';
 import { Farcaster } from './farcaster.controller';
 import DiscordBot from './discord/DiscordBot';
 import { EventBus, EventBusImpl } from './eventBus.interface';
-import { randomInt } from 'crypto';
 import * as botConfig from "./config";
-import { ChatMessage } from '@langchain/core/messages';
+// import botConfig from './config.js';
+
+import FileLogger from './lib/FileLogger';
+import Table from 'cli-table3'
+// import { randomInt } from 'crypto';
+// import { ChatMessage } from '@langchain/core/messages';
 
 const Reset = "\x1b[0m",
       Blue = "\x1b[34m",
@@ -19,21 +23,19 @@ const Reset = "\x1b[0m",
       Gray = "\x1b[90m";
 
 class BotCustomServer {
-  //public MEM_USED: NodeJS.MemoryUsage;
+  public MEM_USED: NodeJS.MemoryUsage;
 
   private wss: WebSocket.Server;
   private botAvatar: BotAvatar;
   private farcaster: Farcaster;
   private eventBus: EventBus;
-
+  private logger: FileLogger;
   private discord: DiscordBot;
-
-  public MEM_USED: NodeJS.MemoryUsage;
 
   constructor() {
     this.MEM_USED = process.memoryUsage();
+    this.logger = new FileLogger({ folder: './logs', printconsole: true, logtofile: false });
     this.eventBus = new EventBusImpl();
-
     this.init();
   }
 
@@ -42,33 +44,33 @@ class BotCustomServer {
   }
 
   private async initEventBus() {
-    this.eventBus.subscribe('LAST_EVENT_ID', (logData) => {
-      if (this.wss)
-        this.wss.clients.forEach((client: WebSocket) => {
-          if (client.readyState === WebSocket.OPEN) {
-            client.send(JSON.stringify({ type: 'LAST_EVENT_ID', message: logData }));
-          }
-        });
-    });
+    // this.eventBus.subscribe('LAST_EVENT_ID', (logData) => {
+    //   if (this.wss)
+    //     this.wss.clients.forEach((client: WebSocket) => {
+    //       if (client.readyState === WebSocket.OPEN) {
+    //         client.send(JSON.stringify({ type: 'LAST_EVENT_ID', message: logData }));
+    //       }
+    //     });
+    // });
 
-    this.eventBus.subscribe('LOG', (logData) => {
-      if (this.wss)
-        this.wss.clients.forEach((client: WebSocket) => {
-          if (client.readyState === WebSocket.OPEN) {
-            client.send(JSON.stringify({ type: 'LOG', message: logData }));
-          }
-        });
-    });
+    // this.eventBus.subscribe('LOG', (logData) => {
+    //   if (this.wss)
+    //     this.wss.clients.forEach((client: WebSocket) => {
+    //       if (client.readyState === WebSocket.OPEN) {
+    //         client.send(JSON.stringify({ type: 'LOG', message: logData }));
+    //       }
+    //     });
+    // });
 
-    this.eventBus.subscribe('PRINT_MSG', (data) => {
-      if (this.wss)
-        this.wss.clients.forEach((client: WebSocket) => {
-          if (client.readyState === WebSocket.OPEN) {
-            const message = JSON.stringify(data);
-            client.send(message);
-          }
-        });
-    });
+    // this.eventBus.subscribe('PRINT_MSG', (data) => {
+    //   if (this.wss)
+    //     this.wss.clients.forEach((client: WebSocket) => {
+    //       if (client.readyState === WebSocket.OPEN) {
+    //         const message = JSON.stringify(data);
+    //         client.send(message);
+    //       }
+    //     });
+    // });
   }
 
   private initWebSockets() {
@@ -83,7 +85,7 @@ class BotCustomServer {
           this.handleCommand(this.wss, data);
           this.wss.clients.forEach((client: WebSocket) => {
             if (client !== ws && client.readyState === WebSocket.OPEN) {
-              console.log('Sending to another client:', data);
+              this.logger.log('Sending to another client:', data);
               client.send(data);
             }
           });
@@ -92,16 +94,16 @@ class BotCustomServer {
   }
 
   private async init() {
-    console.log("Initializing Events Bus... ✅");
+    this.logger.log("Initializing Events Bus... ✅");
     this.initEventBus();
 
-    console.log("Initializing Farcaster Events... ✅")
+    this.logger.log("Initializing Farcaster Events... ✅")
     this.farcaster = new Farcaster(this.eventBus);
 
-    console.log("Waking up Bot " + botConfig.BotName + botConfig.BotIcon + "...  ✅");
+    this.logger.log("Waking up Bot " + botConfig.BotName + botConfig.BotIcon + "...  ✅");
     this.botAvatar = new BotAvatar(this.eventBus, this.farcaster);
 
-    console.log("Initializing Discord Bot... ✅")
+    this.logger.log("Initializing Discord Bot... ✅")
     this.initDiscordBot(this.botAvatar);
 
     // display date time now
@@ -110,24 +112,18 @@ class BotCustomServer {
     // preload Noticon Documents
     await this.botAvatar.preloadNotionDocuments();
 
-    console.log(botConfig.USE_WS ? "Initializing WebSockets...  🚨" : "WebSockets OFF  ✅");
+    this.logger.log(botConfig.USE_WS ? "Initializing WebSockets...  🚨" : "WebSockets OFF  ✅");
     if (botConfig.USE_WS)
       this.initWebSockets();
 
-    // Set interval to broadcast new messages
-    // const minTimeout = 0.1 * 60 * 1000; // 5 minutes in milliseconds
-    // const maxTimeout = 0.3 * 60 * 1000; // 10 minutes in milliseconds
-    // const fixedTimeout = 10 * 60 * 1000; // 10 minutes in milliseconds
-    // const randomTimeout = minTimeout + randomInt(maxTimeout - minTimeout);
-
     // init checking options
-    console.log("Targets:");
-    console.log(botConfig.TARGETS);
-    console.log(botConfig.TARGET_CHANNELS);
-    console.log(botConfig.CAST_TO_CHANNEL);
-    console.log(botConfig.LOG_MESSAGES ? `LOG MESSAGES is ON` : "LOG MESSAGES is OFF");
-    botConfig.PUBLISH_TO_FARCASTER ? console.warn(Yellow + `PUBLISH TO FARCASTER is ON  ✅` + Reset) : console.warn(Yellow + "PUBLISH TO FARCASTER is OFF 🚨" + Reset);
-    console.log(botConfig.NEW_CASTS_INTERVAL_MIN > 0 ? Yellow + `Cast New Messages ${botConfig.NEW_CASTS_INTERVAL_MIN} minutes interval...  ✅` + Reset : Yellow + "Cast New Messages OFF 🚨" + Reset);
+    this.logger.log("Targets:");
+    this.logger.log(botConfig.TARGETS);
+    this.logger.log(botConfig.TARGET_CHANNELS);
+    this.logger.log(botConfig.CAST_TO_CHANNEL);
+    this.logger.log(botConfig.LOG_MESSAGES ? `LOG MESSAGES is ON` : "LOG MESSAGES is OFF");
+    botConfig.PUBLISH_TO_FARCASTER ? this.logger.warn(Yellow + `PUBLISH TO FARCASTER is ON  ✅` + Reset) : this.logger.warn(Yellow + "PUBLISH TO FARCASTER is OFF 🚨" + Reset);
+    this.logger.log(botConfig.NEW_CASTS_INTERVAL_MIN > 0 ? Yellow + `Cast New Messages ${botConfig.NEW_CASTS_INTERVAL_MIN} minutes interval...  ✅` + Reset : Yellow + "Cast New Messages OFF 🚨" + Reset);
 
     if (botConfig.NEW_CASTS_INTERVAL_MIN > 0) {
       setInterval(async () => {
@@ -153,6 +149,12 @@ class BotCustomServer {
     //   this.getTrendingFeed(this.wss);  
     // }, 0.3 * 60 * 1000);
 
+    // Set interval to broadcast new messages
+    // const minTimeout = 0.1 * 60 * 1000; // 5 minutes in milliseconds
+    // const maxTimeout = 0.3 * 60 * 1000; // 10 minutes in milliseconds
+    // const fixedTimeout = 10 * 60 * 1000; // 10 minutes in milliseconds
+    // const randomTimeout = minTimeout + randomInt(maxTimeout - minTimeout);
+
     // Set interval to display used Memory
     if (botConfig.DISPLAY_MEM_USAGE) {
       setInterval(() => {
@@ -163,47 +165,57 @@ class BotCustomServer {
 
     if (this.wss)
       this.wss.on('listening', () => {
-        console.log('WS Server ready on port: ' + botConfig.WS_PORT);
+        this.logger.log('WS Server ready on port: ' + botConfig.WS_PORT);
       });
 
     // Print "Server is ready" when the server starts
-    console.log(`Bot ${Cyan}${botConfig.BotName}${Reset} is up! ${Cyan}${botConfig.BotIcon}${Reset}`);
-    console.log("")
+    // this.discord.sendMessageToChannel(`Good ${dayPeriod} fam! ${botConfig.BotIcon}`);
+    this.logger.log(`Bot ${Cyan}${botConfig.BotName}${Reset} is up! ${Cyan}${botConfig.BotIcon}${Reset}`);
+    this.logger.log("")
   }
 
   public async printMemUsage() {
-    console.log(Green);
-    console.log("##########################");
-    for (let key in this.MEM_USED)
-      console.log(`${key}: ${Math.round(this.MEM_USED[key] / 1024 / 1024 * 100) / 100} MB`);
-    console.log("##########################");
-    console.log(Reset);
+    let table = new Table({ head: ["Service", "MB"] })
+    let Total = 0;
+
+    const { memFarcaster, memRag, memTLimiter } = this.botAvatar.getMemUsed();
+    const GROUP_MEM_USED = {
+      Server: this.MEM_USED.rss,
+      Avatar: this.botAvatar.MEM_USED.rss,
+      Discord: this.discord.MEM_USED.rss,
+      Farcaster: memFarcaster,
+      RAG: memRag,
+      TokenLimiter: memTLimiter
+    }
+
+    for (let key in GROUP_MEM_USED) {
+      table.push([key, Math.round(GROUP_MEM_USED[key] / 1024 / 1024 * 100) / 100]);
+      Total += GROUP_MEM_USED[key];
+    }
+    table.push(["Total", Math.round(Total / 1024 / 1024 * 100) / 100]);
+    this.logger.log(table.toString());
   }
 
   private async handleCommand(wss: WebSocket.Server, data: string) {
-    // const { name, message } = JSON.parse(data);
-    // const commandObj = {name, message}
-
-    // this.eventBus.publish("COMMAND", commandObj);
-    // const response = await this.botAvatar.handleCommand(commandObj);
-    // console.log(response);
-    
-    // wss.clients.forEach((client: WebSocket) => {
-    //   if (client.readyState === WebSocket.OPEN) {
-    //     client.send(JSON.stringify(response));
-    //   }
-    // });
+    const { name, message } = JSON.parse(data);
+    const commandObj = { name, message }
+    //await
+    this.botAvatar.handleCommand("", commandObj);
   }
 
 
   private async handleCastNewMessagetoChannel() {
     const response = await this.botAvatar.castNewMessagetoChannel();
     if (!response) {
-      console.error("Error generating new Cast Message for Channel");
+      this.logger.error("Error generating new Cast Message for Channel");
       return;
     }
 
+    if(botConfig.PUBLISH_TO_FARCASTER)
     this.farcaster.publishNewChannelCast(response.message);
+
+    if(botConfig.PUBLISH_TO_DISCORD)
+      this.discord.sendMessageToChannel(response.message, response.imageUrl)
 
     return response;
   }

@@ -8,10 +8,14 @@ interface BotChatMessage {
     imageUrl?: string;
 }
 
+// export type CastIdJson = {
+//     fid: Fid;
+//     hash: Hex;
+// };
 
-export type CastIdJson = {
-    fid: Fid;
-    hash: Hex;
+type CastIdJson = {
+    fid: number;
+    hash: `0x${string}`;
 };
 
 
@@ -21,7 +25,7 @@ export type CastAddBodyJson = {
     embeds?: string[];
     mentions?: number[];
     mentionsPositions?: number[];
-    parent?: CastIdJson | string;
+    parent?: CastIdJson;
     type: CastType;
 };
 

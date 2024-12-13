@@ -20,7 +20,7 @@ import { CompiledStateGraph, END, MemorySaver, START, StateDefinition, StateGrap
 
 import { ChatGroq } from "@langchain/groq";
 import { NotionAPILoader } from "@langchain/community/document_loaders/web/notionapi";
-import { NOTION_INTEGRATION_TOKEN, NOTION_PAGE_IDS } from './config'
+import { NOTION_INTEGRATION_TOKEN, NOTION_DATABASE_ID } from './config'
 import { PromptTemplate } from "@langchain/core/prompts"; // Import the PromptTemplate class
 
 import { RAGLLMModel, JSONLLMModel } from './config'
@@ -41,6 +41,7 @@ import FileLogger from './lib/FileLogger'
 
 export interface GraphInterface {
     question: string;
+    conversationHistory: string;
     generatedAnswer: string;
     documents: Document[];
     model: ChatGroq;
@@ -50,6 +51,8 @@ export interface GraphInterface {
 }
 
 class RAGSystem {
+    public MEM_USED: NodeJS.MemoryUsage;
+
     private vectorStore: MemoryVectorStore | null = null;
     private graph: StateGraph<GraphInterface> | null = null;
     private ragApp: CompiledStateGraph<GraphInterface, Partial<GraphInterface>, "__start__", StateDefinition, StateDefinition, StateDefinition> | null = null;
@@ -60,6 +63,8 @@ class RAGSystem {
     public tokenRateLimiter: TokenRateLimiter;
 
     constructor() {
+        this.MEM_USED = process.memoryUsage();
+
         this.initializeGraph();
 
         this.docsLoaded = false;
@@ -79,7 +84,7 @@ class RAGSystem {
             // 'llama-3.2-3b-preview': 7000,
             'llama3-8b-8192': 30000,
             // 'gemma2-9b-it': 15000,
-            // 'llama3-70b-8192': 6000,
+            'llama3-70b-8192': 6000,
         });
         //await tokenRateLimiter.submit('llama-3.2-11b-text-preview', 1000);
     }
@@ -87,6 +92,7 @@ class RAGSystem {
     private initializeGraph() {
         const graphState = {
             question: null,
+            conversationHistory: null,
             generatedAnswer: null,
             documents: {
                 value: (x: Document[], y: Document[]) => y,
@@ -170,7 +176,7 @@ class RAGSystem {
         return response.memoryVectors.length;
     }
 
-    private waitForDocumentsToLoad(): Promise<void> {
+    public waitForDocumentsToLoad(): Promise<void> {
         return new Promise((resolve) => {
             const interval = setInterval(() => {
                 if (this.docsLoaded) {
@@ -220,7 +226,7 @@ class RAGSystem {
         // notion load database
         const dbLoader = new NotionAPILoader({
             clientOptions: { auth: NOTION_INTEGRATION_TOKEN! },
-            id: "1510572746cd80c0bb93e2115d44340f",
+            id: NOTION_DATABASE_ID,
             type: "database",
             propertiesAsHeader: true,
         });
@@ -292,6 +298,7 @@ class RAGSystem {
             });
 
             // console.warn("tokenUsage.totalTokens: " + gradedResponse.response_metadata.tokenUsage.totalTokens)
+            // experimental
             // await this.tokenRateLimiter.submit(
             //     state.model.modelName, 
             //     gradedResponse.response_metadata.tokenUsage.totalTokens
@@ -307,16 +314,17 @@ class RAGSystem {
         let logId = "RAG"
         this.logSecretary.log("", logId)
         this.logSecretary.log(`----- RETRIVED ${goodDocuments.length} DOCUMENTS ------`, logId)
-        this.logSecretary.log(`Subject: ${state.question}`, logId);
+        this.logSecretary.log(`INPUT: ${state.question}`, logId);
         this.logSecretary.log("", logId)
         // console.log("gradedDocs: " + gradedDocs.filter(Boolean))
         goodDocuments.forEach((doc) => {
             if (doc) {
-                this.logSecretary.log(Yellow+`Title: ${doc.metadata.properties.title}`+Reset, logId);
+                let logId = "RAG"
+                this.logSecretary.log(Yellow + `DOC: ${doc.metadata.properties.question} @ ${doc.metadata.properties._title}` + Reset, logId);
                 // this.logSecretary.log(`${doc.pageContent}`, logId);
-                this.logSecretary.log(`${doc.pageContent.replace(/\n+/g, '\n')}`, logId);
-                this.logSecretary.log("--------", logId)
-                this.logSecretary.log("", logId)
+                // this.logSecretary.log(`${doc.pageContent.replace(/\n+/g, '\n')}`, logId);
+                // this.logSecretary.log("--------", logId)
+                // this.logSecretary.log("", logId)
             }
           });
           this.logSecretary.log("----------------------------", logId)
@@ -343,7 +351,7 @@ class RAGSystem {
         // Create a PromptTemplate from the string
         const ragPrompt = new PromptTemplate({
             template: ragPromptString,
-            inputVariables: ["question", "context"], // Specify the input variables
+            inputVariables: ["context", "history", "question"], // Specify the input variables
         });
 
         const ragChain = ragPrompt.pipe(state.model).pipe(new StringOutputParser());
@@ -353,9 +361,11 @@ class RAGSystem {
 
         const generatedAnswer = await ragChain.invoke({
             context: docsContext,
+            history: state.conversationHistory,
             question: state.question
         });
 
+        // experimental
         // await this.tokenRateLimiter.submit(
         //     state.model.modelName, 
         //     generatedAnswer.length + docsContext.length + state.question.length
@@ -402,7 +412,7 @@ class RAGSystem {
     //     return response.memoryVectors.length;
     // }
 
-    public async invokeRAG(user: string, question: string) {
+    public async invokeRAG(user: string, question: string, conversationHistory: string) {
         if (!this.ragApp) {
             console.error("RAG app is not initialized");
             return "";
@@ -415,7 +425,7 @@ class RAGSystem {
         // console.log("")
 
         const graphResponse: GraphInterface = await this.ragApp.invoke(
-            { question },
+            { question, conversationHistory },
             { configurable: { thread_id: crypto.randomUUID() } }
             
             // TODO 

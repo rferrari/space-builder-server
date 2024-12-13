@@ -7,16 +7,14 @@ export const BotFID = 527313;
 export const BotIcon = " ⌐◨-◨  ";
 export const TIMEZONE = process.env.TIMEZONE || "America/Chicago";
 
+export const NOTION_DATABASE_ID = "1510572746cd80c0bb93e2115d44340f"
 export const NOTION_PAGE_IDS = [
-  "https://nounspace.notion.site/1510572746cd80c0bb93e2115d44340f?v=7806bb82cd494b69b6e0e4af97552c85"
-  // "https://nounspace.notion.site/1510572746cd80c0bb93e2115d44340f?v=7806bb82cd494b69b6e0e4af97552c85"
-  // "https://nounspace.notion.site/Rag-V2-14d0572746cd807e88a5d0441e5d376b"
-  // "https://nounspace.notion.site/Tom-s-Background-1460572746cd804a8216f6a0a2f34e5c",
-  // "https://nounspace.notion.site/nounspace-app-info-1460572746cd802fb2dbf6a7ce99eecd",
-  // "https://nounspace.notion.site/nounspace-DAO-info-1460572746cd8049b9bcf3605c7a2dda",
-  // "https://nounspace.notion.site/SPACE-token-info-1460572746cd80dbbee1fa3125a5d9bd",
-  // "https://nounspace.notion.site/nOGs-info-1460572746cd80f2a3b7ef6e52034424",
-  // "https://nounspace.notion.site/nounspace-Fidgets-1480572746cd80eaae5ae86e630277ab"
+  "https://nounspace.notion.site/Tom-s-Background-1460572746cd804a8216f6a0a2f34e5c",
+  "https://nounspace.notion.site/nounspace-app-info-1460572746cd802fb2dbf6a7ce99eecd",
+  "https://nounspace.notion.site/nounspace-DAO-info-1460572746cd8049b9bcf3605c7a2dda",
+  "https://nounspace.notion.site/SPACE-token-info-1460572746cd80dbbee1fa3125a5d9bd",
+  "https://nounspace.notion.site/nOGs-info-1460572746cd80f2a3b7ef6e52034424",
+  "https://nounspace.notion.site/nounspace-Fidgets-1480572746cd80eaae5ae86e630277ab"
 ]
 
 // interval in minutes bot will cast new messages
@@ -38,10 +36,10 @@ export const MAX_USER_CACHE = 100;
 export const TARGETS = [
   527313,            //  nounspacetom
   // 862185,            //  aethernet
-  // 874542             //  clanker
-  // 382802             //  askgina.eth
-  // 364927             //  paybot
-  // 20596              //  bountybot
+  // 874542,             //  clanker
+  // 382802,             //  askgina.eth
+  // 364927,             //  paybot
+  // 20596,              //  bountybot
 ];
 
 // channels bot will listen to new messages

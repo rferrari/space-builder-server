@@ -95,12 +95,12 @@ import { BufferMemory } from "langchain/memory";
 
 ///
 // Combined Memory Experimental
-// import { ChatOpenAI } from "@langchain/openai";
-// import {
-//   // BufferMemory,
-//   CombinedMemory,
-//   ConversationSummaryMemory,
-// } from "langchain/memory";
+
+import {
+  // BufferMemory,
+  CombinedMemory,
+  ConversationSummaryMemory,
+} from "langchain/memory";
 // Combined Memory Experimental
 ///
 
@@ -110,7 +110,7 @@ import { HumanMessage, AIMessage, filterMessages, MessageContent } from "@langch
 import { EventBus } from './eventBus.interface'
 import { Farcaster } from './farcaster.controller';
 
-import { BotCastObj } from './bot.types';
+import { BotCastObj, BotChatMessage, CastIdJson } from './bot.types';
 
 import * as botConfig from "./config";
 import * as botPrompts from "./botPrompts";
@@ -118,8 +118,16 @@ import * as botPrompts from "./botPrompts";
 import { getLatestEvent } from './api/event'
 
 import FileLogger from './lib/FileLogger'
-import { cat } from "@xenova/transformers";
-import { config } from "dotenv";
+import { cat } from '@xenova/transformers';
+import { Result } from 'neverthrow';
+import { UserResponse } from '@neynar/nodejs-sdk/build/neynar-api/v2';
+// import { cat } from "@xenova/transformers";
+// import { config, configDotenv } from "dotenv";
+
+// import { mimeTypes } from 'mimetype';
+// import { response } from 'express';
+// import neynarClient from './lib/neynarClient';
+// import { CastParamType } from '@neynar/nodejs-sdk';
 
 const IMG_URL_REGEX = /(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|gif|png)/;
 
@@ -133,22 +141,25 @@ const WEEKDAYS = [
   "Saturday",
 ];
 
-interface ChatMessage {
-  name: string;
-  message: string;
-  imageUrl?: string;
-}
-
 interface UserMemory {
   memory: BufferMemory;
   lastInteraction: number; // Timestamp
 }
 
 export class BotAvatar {
+  public MEM_USED: NodeJS.MemoryUsage;
+
   private eventBus: EventBus;
   private farcaster: Farcaster;
 
-  private botLLM: ChatGroq;
+  private openai: OpenAI;
+  private botVision: Groq;
+
+  private chatPrompt: ChatPromptTemplate;
+
+  private chatBotBackuptLLM: ChatGroq;
+  private chatBotLLM: ChatGroq;
+
   private assistentLLM: ChatGroq;
 
   private isStopped: boolean;
@@ -188,7 +199,7 @@ export class BotAvatar {
   constructor(eventBus: EventBus, farcaster: Farcaster) {
     this.printTomPicture();
 
-    //this.MEM_USED = process.memoryUsage();
+    this.MEM_USED = process.memoryUsage();
 
     this.isStopped = false;
 
@@ -203,8 +214,8 @@ export class BotAvatar {
     // this.eventBus.subscribe("COMMAND", (data: BotCastObj) => this.handleReply(data));
 
     this.messagesLog = new FileLogger({ folder: './logs-messages', printconsole: true });
-    this.memoryLog = new FileLogger({ folder: './logs-memory', printconsole: true });
-    this.newCasts = new FileLogger({ folder: './logs-newcasts', printconsole: true });
+    this.memoryLog = new FileLogger({ folder: './logs-memory', printconsole: false });
+    this.newCasts = new FileLogger({ folder: './logs-newcasts', printconsole: false });
 
     // this.resumoHumanos = new FileLogger({ folder: './logs-resumos' });
     // this.resumoTom = new FileLogger({ folder: './logs-resumos' });
@@ -215,10 +226,19 @@ export class BotAvatar {
     this.MESSAGES_HISTORY_SIZE = botConfig.MESSAGES_HISTORY_SIZE; // Set the maximum history limit
     this.MEMORY_EXPIRATION_MIN = botConfig.MEMORY_EXPIRATION_MIN * 60 * 1000; // 24 hours
 
-    this.updateInternalClockTime();  // this.displayInternalClock();
+    // this.botAvatar = new Groq({ apiKey: botConfig.GROQ_API_KEY });
 
-    this.botLLM = new ChatGroq({
-      temperature: 0.7,
+    this.updateInternalClockTime();
+    // this.displayInternalClock();
+
+    this.chatBotBackuptLLM = new ChatGroq({
+      temperature: botConfig.BotLLMModel_TEMP,
+      model: botConfig.ChatBackupLLMModel,
+      stop: null,
+    });
+
+    this.chatBotLLM = new ChatGroq({
+      temperature: botConfig.BotLLMModel_TEMP,
       model: botConfig.BotLLMModel,
       stop: null,
     });
@@ -229,16 +249,24 @@ export class BotAvatar {
       stop: null,
     });
 
-    const chatPrompt = ChatPromptTemplate.fromMessages([
+    this.chatPrompt = ChatPromptTemplate.fromMessages([
       ["system", botPrompts.BOT_SYSTEM_PROMPT,],
       ["human", "{userquery}"],
     ]);
 
     this.chatChain = new ConversationChain({
+      // memory: this.getCurrentUserMemory(user),
+      // memory: await this.getRelevantUserMemory(user, userQuery),
       memory: null,
-      prompt: chatPrompt,
-      llm: this.botLLM,
+      prompt: this.chatPrompt,
+      llm: this.chatBotLLM,
     });
+
+    this.stringPromptMemory = new BufferMemory({
+      returnMessages: true,
+      memoryKey: "history",
+      inputKey: "userquery",
+    })
 
     this.farcaster.start("lastid");
 
@@ -247,23 +275,32 @@ export class BotAvatar {
       this.cleanupOldMemories.call(this)
       , botConfig.MEMORY_CLEANUP_MIN * 60 * 1000); // Run every hour
 
-
     // Schedule get Farcasater Trendings Feed 
     setInterval(() =>
       this.getFarcasaterTrendingFeed()
       , botConfig.FARCASTER_TRENDING_MIN * 60 * 1000); // Run 24 hour
 
-    this.stringPromptMemory = new BufferMemory({
-      returnMessages: true,
-      memoryKey: "history",
-      inputKey: "userquery",
-    })
+    // const chatPrompt = ChatPromptTemplate.fromMessages([
+    //   ["system",
+    //     botPrompts.BOT_SYSTEM_PROMPT2,
+    //   ],
+    //   new MessagesPlaceholder("history"),
+    //   ["human", "{input}"],
+    // ]);
+
+    // this.chatChain = new ConversationChain({
+    //   memory: this.stringPromptMemory,
+    //   prompt: chatPrompt,
+    //   llm: this.botLLM,
+    // });
+
+    // this.printMemorySummary();
   }
 
   public async preloadNotionDocuments(): Promise<boolean> {
     console.log("Loading Notions Documents...")
     console.time("Document Load Time");             // Start the timer
-
+    // ragSystem.preloadDocuments();
     ragSystem.preloadDocuments()
       .then((chunks) => {
         console.log(`Documents loaded successfully. Created ${chunks} vector chunks.`);
@@ -283,9 +320,11 @@ export class BotAvatar {
     for (const [userId, userMemory] of this.userMemories.entries()) {
       if (currentTime - userMemory.lastInteraction > this.MEMORY_EXPIRATION_MIN) {
         this.userMemories.delete(userId); // Remove outdated memory
-        this.messagesLog.log(``, "MEM_CLEAN_UP")
-        this.messagesLog.log(`Memory for user ${userId} removed due to inactivity.`, "MEM_CLEAN_UP")
-        this.messagesLog.log(``, "MEM_CLEAN_UP")
+
+        // console.warn(`Memory for user ${userId} removed due to inactivity.`);
+        // this.messagesLog.log(``, "MEM_CLEAN_UP")
+        this.memoryLog.log(`Memory for user ${userId} removed due to inactivity.`, "MEM_CLEAN_UP")
+        // this.messagesLog.log(``, "MEM_CLEAN_UP")
       }
     }
   }
@@ -297,7 +336,7 @@ export class BotAvatar {
 
     // Check if the number of messages exceeds the limit
     if (storedMessages.history.length > this.MESSAGES_HISTORY_SIZE) {
-      console.warn("User " + userId + " Memory is " + storedMessages.history.length);
+      this.memoryLog.warn("User " + userId + " Memory is " + storedMessages.history.length, "MEM_CLEAN_UP");
       // this.logger.log("", "CONSOLE")
       // this.logger.log("User " + userId + " Memory is " + storedMessages.history.length, "CONSOLE");
       // this.logger.log("", "CONSOLE")
@@ -321,13 +360,13 @@ Summary:`;
 
       // Get the summary from the model
       const summaryResponse = await this.assistentLLM.invoke([{ role: 'system', content: prompt }]);
+      // this.assistentLLM.invoke([{ role: 'user', content: prompt }]);
 
-      // console.log(summaryResponse);
       let logid = `${userId}_Summary`;
-      this.messagesLog.log(``, logid)
-      this.messagesLog.log(`SummaryResponse for ${userId}`, logid)
-      this.messagesLog.log(summaryResponse.content, logid)
-      this.messagesLog.log(``, logid)
+      this.memoryLog.log(``, logid)
+      this.memoryLog.log(`SummaryResponse for ${userId}`, logid)
+      this.memoryLog.log(summaryResponse.content, logid)
+      this.memoryLog.log(``, logid)
 
       userMem.memory.clear().then(() => { userMem.memory.chatHistory.addUserMessage(summaryResponse.content as string) })
     }
@@ -351,28 +390,32 @@ Summary:`;
 
   }
 
-  // Experimental Combined Memory
-  // private async getCombinedMemory(userId: String, userQuery: string) {
-  //   // buffer memory
-  //   const bufferMemory = new BufferMemory({
-  //     memoryKey: "chat_history_lines",
-  //     inputKey: "userquery",
-  //   });
+  private async addtoBotMemory(userId: string, userQuery: string, aiResponse: string) {
+    this.stringPromptMemory.chatHistory.addMessage(new HumanMessage({ content: userQuery, id: "user", name: userId }));
+    this.stringPromptMemory.chatHistory.addAIChatMessage(aiResponse);
+  }
 
-  //   // summary memory
-  //   const summaryMemory = new ConversationSummaryMemory({
-  //     llm: new ChatOpenAI({ model: "gpt-3.5-turbo", temperature: 0, apiKey: botConfig.OPENAI_API_KEY }),
-  //     inputKey: "userquery",
-  //     memoryKey: "conversation_summary",
-  //   });
+  private async getCombinedMemory(userId: String, userQuery: string) {
+    // buffer memory
+    const bufferMemory = new BufferMemory({
+      memoryKey: "chat_history_lines",
+      inputKey: "userquery",
+    });
 
-  //   //
-  //   const memory = new CombinedMemory({
-  //     memories: [bufferMemory, summaryMemory],
-  //   });
+    // summary memory
+    const summaryMemory = new ConversationSummaryMemory({
+      llm: new ChatOpenAI({ model: "gpt-3.5-turbo", temperature: 0, apiKey: botConfig.OPENAI_API_KEY }),
+      inputKey: "userquery",
+      memoryKey: "conversation_summary",
+    });
 
-  //   return memory;
-  // }
+    //
+    const memory = new CombinedMemory({
+      memories: [bufferMemory, summaryMemory],
+    });
+
+    return memory;
+  }
 
   //
   // Return the relevant Yser Memory entries based on keywords
@@ -398,7 +441,9 @@ Summary:`;
     userMem.lastInteraction = Date.now();
 
     // Retrieve the stored messages from BufferMemory
-    const storedMessages = await userMem.memory.loadMemoryVariables({});
+    // if (memory.chatHistory.getMessages().)
+    const storedMessages = await userMem.memory.loadMemoryVariables({}); // This should give you the stored messages
+    // const storedMessages = memory.loadMemoryVariables({})['history'] || []; // Adjust based on your BufferMemory implementation
 
     // Split user input into keywords
     const keywords = userQuery.split(" ");
@@ -408,27 +453,14 @@ Summary:`;
       keywords.some(keyword => entry.content.toLowerCase().includes(keyword.toLowerCase()))
     );
 
-    // Get the last 5 messages from the history
-    const latestMessages = storedMessages.history.slice(-5);
-
-    // Merge the relevant memories and latest messages
-    const lastMemories = [...relevantMemories, ...latestMessages];
-
     // Create a new BufferMemory instance to hold the relevant messages
     // Create a memory key for the prompt history 
     const userMemoryKey = `history`;
     const relevantMemory = new BufferMemory({ returnMessages: true, memoryKey: userMemoryKey, inputKey: "userquery" });
 
     // Add relevant messages to the new BufferMemory
-    await relevantMemory.chatHistory.addMessages(lastMemories)
+    await relevantMemory.chatHistory.addMessages(relevantMemories)
     // Return the new BufferMemory with relevant history
-
-    // console.log("-----------relevant Memory-----------")
-    // Retrieve messages from the chat history
-    // const debugMessages = await relevantMemory.chatHistory.getMessages();
-    // console.dir(debugMessages, { depth: null, colors: true });
-    // console.log("-------------------------------------")
-
     return relevantMemory;
   }
 
@@ -506,7 +538,8 @@ Summary:`;
       // Output the summary as text
       return summaryResponse.content; // Return the summary if needed
     } catch (error) {
-      console.error("Error summarizing conversation:", error);
+      this.memoryLog.error("Error summarizing conversation:", "ERROR");
+      this.memoryLog.error(error, "ERROR");
     }
   }
 
@@ -530,7 +563,8 @@ Summary:`;
       // Output the summary as text
       return summaryResponse.content; // Return the summary if needed
     } catch (error) {
-      console.error("Error summarizing conversation:", error);
+      this.memoryLog.error("Error summarizing conversation:", "ERROR");
+      this.memoryLog.error(error, "ERROR");
     }
   }
 
@@ -553,7 +587,8 @@ Summary:`;
       // Output the summary as text
       return summaryResponse.content; // Return the summary if needed
     } catch (error) {
-      console.error("Error summarizing conversation:", error);
+      this.memoryLog.error("Error summarizing conversation:", "ERROR");
+      this.memoryLog.error(error, "ERROR");
     }
   }
 
@@ -588,7 +623,8 @@ Summary:`;
       // console.warn("Conversation Summary:", summaryResponse.content);
       return summaryResponse.content; // Return the summary if needed
     } catch (error) {
-      console.error("Error summarizing conversation:", error);
+      this.memoryLog.error("Error summarizing conversation:", "ERROR");
+      this.memoryLog.error(error, "ERROR");
     }
   }
 
@@ -643,6 +679,26 @@ Summary:`;
   }
 
 
+  private async generateShouldRespond(history: string, query: string){
+    // Create an array of messages
+    const promptTemplate = PromptTemplate.fromTemplate(
+      botPrompts.shouldRespondTemplate
+    );
+
+    const filledPrompt = await promptTemplate.format({
+      history,
+      query,
+    });
+
+    const messages = [
+      { role: "system", content: botPrompts.SHOULDRESPOND_SYSTEM },
+      { role: "user", content: filledPrompt },
+    ];
+
+    // Invoke the model with the messages array
+    const result = await this.assistentLLM.invoke(messages)
+    return result.content;
+  }
 
   private shouldReply(fid: number, text: string): boolean {
     // is Own message? Should Reply?
@@ -659,26 +715,188 @@ Summary:`;
     const containsKeyword = keywords.some(keyword => normalizedText.includes(keyword.toLowerCase()));
 
     if (!isQuestion && wordCount < botConfig.MIN_REPLY_WORD_COUNT && !containsKeyword) {
-      console.log(
-        `Reply too small (${wordCount} < ${botConfig.MIN_REPLY_WORD_COUNT}), and no keywords."`
-      );
+      this.messagesLog.log(
+        `Reply too small (${wordCount} < ${botConfig.MIN_REPLY_WORD_COUNT}), and no keywords."`, "MESSAGE");
       return false;
     }
     return true; // Reply if it's a question, long enough, or contains a keyword
   }
 
 
-  private async replyMessage(user: string, userQuery: string, vision: string = "", conversation: string = "") {
-    const config = { configurable: { thread_id: user + "_thread" } };
+  private async getRAGContext(userQuery: string, user, history): Promise<string> {
+    const RAG_SYSTEM = true;
+    var ragContext = "";
 
-    // if (user == "System-uuid-bot") {
-    //   // this.getTrendingFeed();
-    //   return {
-    //     name: botConfig.BotName,
-    //     // message: `Hi ${user}, let me check what is trending today on Farcaster...`,
-    //     message: `Hi, how can I assist you today?`,
-    //   };
-    // }
+    if (RAG_SYSTEM) {
+      // experimental send more context from user to RAG
+      const ragResponse = await ragSystem.invokeRAG(
+        user,
+        `@${user}: ${userQuery}`,
+        history)
+        // const ragResponse = await ragSystem.invokeRAG(user, `${userQuery}`)
+        .catch(err => {
+          this.messagesLog.error("Failed to generate RAG response", "RAG-ERROR");
+          this.messagesLog.error(err.error.error.code, "RAG-ERROR");
+        }) as GraphInterface;
+
+      if (ragResponse && ragResponse.generatedAnswer) {
+        ragContext = ragResponse.generatedAnswer;
+      }
+    }
+
+    return ragContext;
+  }
+
+//   private async replyMention(user: string, userQuery: string, vision: string = "",
+//     conversation: BotChatMessage[] = [], userDataInfo: UserResponse = null) {
+//     const config = { configurable: { thread_id: user + "_thread" } };
+//     var joinedConversation: string = '';
+//     var userInfoAbout: string = '';
+//     var userPrompt: string = '';
+//     const LOG_ID = "MENTION" + user
+
+//     // set userInfo
+//     if (userDataInfo) {
+//       userInfoAbout = this.userDataInfo2Text(userDataInfo)
+//     }
+
+//     // Swap Memories retrieving the relevant messages based on keywords
+//     // experimental
+//     // this.chatChain.memory = await this.getCombinedMemory(user, userQuery);
+//     const relevantMemory = await this.getRelevantUserMemory(user, userQuery);
+//     this.chatChain.memory = relevantMemory;
+
+//     // set conversationContent
+//     // filter and create a conversation content history for RAG System
+//     const chatHistoryMessages = await relevantMemory.chatHistory.getMessages();
+//     const filteredMessages = chatHistoryMessages.slice(botConfig.LAST_CONVERSATION_LIMIT); // Adjust the number as needed
+//     const memoryConversationContent = filteredMessages.map((message) => {
+//       // Check the type of the message and assign the name accordingly
+//       const name = message instanceof AIMessage ? botConfig.BotName :
+//         message instanceof HumanMessage ? user : 'User'; // Fallback in case of an unexpected type
+//       return `@${name}: ${message.content}`;
+//     }).join('\n'); // Join all messages with a newline
+
+
+//     if (conversation.length > 0) {
+//       conversation.forEach((message) => {
+//         joinedConversation += `User @${message.name} said: "${message.message}"\n\n`;
+//       });
+//       // joinedConversation += `\n`;
+//     }
+
+
+//     // if using RAG system... include conversationContent + userQuery
+//     // const ragContext = await this.getRAGContext(userQuery, user, memoryConversationContent);
+//     const ragHisstory = conversation.length > 0 ? joinedConversation : memoryConversationContent;
+//     const ragContext = await this.getRAGContext(userQuery, user, ragHisstory);
+
+//     // build user Prompt form user Query
+//     // userPrompt = userQuery;
+
+//     if (joinedConversation.length > 0) userPrompt = `Continue this conversation:
+// <conversation_history>
+// ${joinedConversation}
+// </conversation_history>
+
+// ${userPrompt}`;
+
+//     // experimental vision
+//     if (vision && vision !== "") userPrompt = `${vision}\n${userPrompt}`;
+//     // if (userInfoAbout && userInfoAbout !== "") userPrompt = `${userInfoAbout}\n${userQuery}`;
+
+//     // console.log("Prompt")
+//     // console.log(userQuery)
+
+//     // Swap Memories retrieving the relevant messages based on keywords
+//     // experimental
+//     // this.chatChain.memory = await this.getCombinedMemory(user, userQuery);
+
+//     userPrompt += `@${user}: ${userQuery}`;
+
+//     // Debug
+//     this.messagesLog.log(`-------Debug ${user} PROMPT:`, "PROMPT")
+//     // this.messagesLog.log(`<user_input>\n${userQuery}\n</user_input>\n\n`, "PROMPT")
+//     // this.messagesLog.log(`Prompt:`, "PROMPT")
+//     this.messagesLog.log(userPrompt, "PROMPT")
+//     this.messagesLog.log(`-------`, "PROMPT")
+//     this.messagesLog.log(``, "PROMPT")
+
+//     try {
+//       // throw new Error('This is a TEST backup system error!');
+//       var reply = await this.chatChain.invoke({
+//         context: ragContext,
+//         userquery: userPrompt,
+//       }, config);
+//     } catch (error) {
+//       this.messagesLog.error("FALLBACK BACKUP LLM SYSTEM", "ERROR");
+//       this.messagesLog.error(error, "ERROR");
+//       this.chatChain.llm = this.chatBotBackuptLLM;
+//       var reply = await this.chatChain.invoke({
+//         context: ragContext,
+//         userquery: userPrompt,
+//       }, config);
+
+//       this.chatChain.llm = this.chatBotLLM;
+//       this.messagesLog.error("backup response:", "ERROR");
+//       this.messagesLog.error(reply.response, "ERROR");
+//       this.messagesLog.error("chatBotLLM restored", "ERROR");
+//     }
+
+//     // console.log("this.chatChain.prompt");
+//     // console.log(this.chatChain.prompt);
+
+//     //
+//     // check reply size
+//     var textSize = new TextEncoder().encode(encodeURI(reply.response)).byteLength;
+//     var retryCounter = 0;
+//     while ((textSize > 1024) || retryCounter > 3) {
+//       let retryPrompt =
+//         `Rewrite this text to make it concise and under 1024 bytes. Output only the rewritten text: ${reply.response}`;
+//       this.messagesLog.log(`------- RETRYPROMPT  #${retryCounter} (${textSize} bytes) --------`, LOG_ID);
+//       // console.log(retryPrompt);
+//       // console.log("----------------------------");
+
+//       reply = await this.chatBotLLM.invoke(retryPrompt)
+
+//       reply.response = reply.content
+//       textSize = new TextEncoder().encode(encodeURI(reply.response)).byteLength;
+//       retryCounter++;
+//       this.messagesLog.log(`------- RETRY #${retryCounter} (${textSize} bytes) --------`, LOG_ID);
+//       // console.log(reply.response);
+//       // console.log("----------------------------");
+//       const delay = 30000; // 30 seconds
+//       await new Promise(resolve => setTimeout(resolve, delay));
+//     }
+
+//     // ^ matches start, $ matches end, | matches either " or '
+//     const finalMessage = reply.response.replace(/^"|"$/g, '');
+
+//     this.addtoBotMemory(user, userQuery, finalMessage)
+//     await this.addtoUserMemory(user, userQuery, finalMessage)
+
+//     await this.sumarizeUserHistoryMemory(user);
+
+//     // return response to be published
+//     return {
+//       name: botConfig.BotName,
+//       message: finalMessage,
+//     };
+//   }
+
+
+  private async replyMessage(user: string, userQuery: string, vision: string = "",
+    conversation: BotChatMessage[] = [], userDataInfo: UserResponse = null) {
+    const config = { configurable: { thread_id: user + "_thread" } };
+    var joinedConversation: string = '';
+    var userInfoAbout: string = '';
+    var userPrompt: string = '';
+    const LOG_ID = "REPLY" + user
+
+    // set userInfo
+    if (userDataInfo) {
+      userInfoAbout = this.userDataInfo2Text(userDataInfo)
+    }
 
     // Swap Memories retrieving the relevant messages based on keywords
     // experimental
@@ -686,56 +904,130 @@ Summary:`;
     const relevantMemory = await this.getRelevantUserMemory(user, userQuery);
     this.chatChain.memory = relevantMemory;
 
+    // set conversationContent
     // filter and create a conversation content history for RAG System
     const chatHistoryMessages = await relevantMemory.chatHistory.getMessages();
-    const filteredMessages = chatHistoryMessages.slice(-5); // Adjust the number as needed
-    const conversationContent = filteredMessages.map((message) => {
+    const filteredMessages = chatHistoryMessages.slice(botConfig.LAST_CONVERSATION_LIMIT); // Adjust the number as needed
+    const memoryConversationContent = filteredMessages.map((message) => {
       // Check the type of the message and assign the name accordingly
       const name = message instanceof AIMessage ? botConfig.BotName :
-                   message instanceof HumanMessage ? user : 'User'; // Fallback in case of an unexpected type
-      return `${name}: ${message.content}`;
+        message instanceof HumanMessage ? user : 'User'; // Fallback in case of an unexpected type
+      return `@${name}: ${message.content}`;
     }).join('\n'); // Join all messages with a newline
 
 
-    // if using RAG system... include conversationContent + userQuery
-    const rag_system = true;
-    let ragContext = "";
-    if (rag_system) {
-      const ragResponse = await ragSystem.invokeRAG(user, `User Name: ${user} \n ${conversationContent} \n ${userQuery}`)
-        .catch(err => { console.error("Failed to generate RAG response", err); }) as GraphInterface;
-
-      if (ragResponse && ragResponse.generatedAnswer) {
-        ragContext = ragResponse.generatedAnswer;
-      }
+    if (conversation.length > 0) {
+      conversation.forEach((message) => {
+        joinedConversation += `User @${message.name} said: "${message.message.replace(/\n+/g, '\n')}"\n`;
+      });
+      // joinedConversation += `\n`;
     }
 
-    // send the response from RAG to Bot Chat Chain that has relevant user memory and last messages
-    const response = await this.chatChain.invoke({
-      context: ragContext,
-      userquery: userQuery,
-    }, config);
 
-    // debug output
-    let logid = "MESSAGES";
-    this.messagesLog.log("", logid)
-    this.messagesLog.log(`@${user}: ${userQuery}`, logid)
-    this.messagesLog.log(`@${botConfig.BotName}: ${response.response}`, logid)
-    this.messagesLog.log("", logid)
-    this.messagesLog.log("", logid)
+    // if using RAG system... include conversationContent + userQuery
+    // const ragContext = await this.getRAGContext(userQuery, user, memoryConversationContent);
+    const ragHisstory = conversation.length > 0 ? joinedConversation : memoryConversationContent;
+    const ragContext = await this.getRAGContext(userQuery, user, ragHisstory);
 
-    // add new response to user memory and sumarize it if needed
-    await this.addtoUserMemory(user, userQuery, response.response)
+    // build user Prompt form user Query
+    // userPrompt = userQuery;
+
+    if (joinedConversation.length > 0) userPrompt = `Continue this conversation:
+<conversation_history>
+${joinedConversation}
+</conversation_history>
+
+${userPrompt}`;
+
+    // experimental vision
+    if (vision && vision !== "") userPrompt = `${vision}\n${userPrompt}`;
+    // if (userInfoAbout && userInfoAbout !== "") userPrompt = `${userInfoAbout}\n${userQuery}`;
+
+    // console.log("Prompt")
+    // console.log(userQuery)
+
+    // Swap Memories retrieving the relevant messages based on keywords
+    // experimental
+    // this.chatChain.memory = await this.getCombinedMemory(user, userQuery);
+
+    userPrompt += `@${user}: ${userQuery}`;
+
+    // Debug
+    this.messagesLog.log(`-------Debug ${user} PROMPT:`, "PROMPT")
+    // this.messagesLog.log(`<user_input>\n${userQuery}\n</user_input>\n\n`, "PROMPT")
+    // this.messagesLog.log(`Prompt:`, "PROMPT")
+    this.messagesLog.log(userPrompt, "PROMPT")
+    this.messagesLog.log(`-------`, "PROMPT")
+    this.messagesLog.log(``, "PROMPT")
+
+    try {
+      // throw new Error('This is a TEST backup system error!');
+      var reply = await this.chatChain.invoke({
+        context: ragContext,
+        userquery: userPrompt,
+      }, config);
+    } catch (error) {
+      this.messagesLog.error("FALLBACK BACKUP LLM SYSTEM", "ERROR");
+      this.messagesLog.error(error, "ERROR");
+      this.chatChain.llm = this.chatBotBackuptLLM;
+      var reply = await this.chatChain.invoke({
+        context: ragContext,
+        userquery: userPrompt,
+      }, config);
+
+      this.chatChain.llm = this.chatBotLLM;
+      this.messagesLog.error("backup response:", "ERROR");
+      this.messagesLog.error(reply.response, "ERROR");
+      this.messagesLog.error("chatBotLLM restored", "ERROR");
+    }
+
+    // console.log("this.chatChain.prompt");
+    // console.log(this.chatChain.prompt);
+
+    //
+    // check reply size
+    var textSize = new TextEncoder().encode(encodeURI(reply.response)).byteLength;
+    var retryCounter = 0;
+    while ((textSize > 1024) || retryCounter > 3) {
+      let retryPrompt =
+        `Rewrite this text to make it concise and under 1024 bytes. Output only the rewritten text: ${reply.response}`;
+      this.messagesLog.log(`------- RETRYPROMPT  #${retryCounter} (${textSize} bytes) --------`, LOG_ID);
+      // console.log(retryPrompt);
+      // console.log("----------------------------");
+
+      reply = await this.chatBotLLM.invoke(retryPrompt)
+
+      reply.response = reply.content
+      textSize = new TextEncoder().encode(encodeURI(reply.response)).byteLength;
+      retryCounter++;
+      this.messagesLog.log(`------- RETRY #${retryCounter} (${textSize} bytes) --------`, LOG_ID);
+      // console.log(reply.response);
+      // console.log("----------------------------");
+      const delay = 30000; // 30 seconds
+      await new Promise(resolve => setTimeout(resolve, delay));
+    }
+
+    // ^ matches start, $ matches end, | matches either " or '
+    const finalMessage = reply.response.replace(/^"|"$/g, '');
+
+    this.addtoBotMemory(user, userQuery, finalMessage)
+    await this.addtoUserMemory(user, userQuery, finalMessage)
+
     await this.sumarizeUserHistoryMemory(user);
 
     // return response to be published
     return {
       name: botConfig.BotName,
-      message: response.response,
+      message: finalMessage,
     };
   }
 
-  // a message from target was sent, add it to bot context
+
+  // a message from target was sent, adding it to bot context
   private async handleCastAddMessage(castObj: BotCastObj): Promise<void> {
+    // const message = `${msgs.name} said: ${msgs.message}`;
+    if (!botConfig.TARGETS.includes(castObj.fid)) return
+
     const message = castObj.body.textWithMentions;
 
     this.stringPromptMemory.chatHistory.addMessage(new AIMessage({
@@ -758,27 +1050,118 @@ Summary:`;
 
   private async handleReply(castObj: BotCastObj): Promise<void> {
     // handle bot reply
+    const LOG_ID = "MSG_" + castObj.fName;
     const userChatMessage = { name: castObj.fName, message: castObj.body.textWithMentions }
-    if (!this.shouldReply(castObj.fid, castObj.body.textWithMentions)) {
-      console.dir(userChatMessage);
-      return;
+    const userDataInfo = await this.farcaster.handleUserInfo(castObj.fName);
+    const lastConversation = await this.farcaster.getConversationHistory(castObj.hash);
+
+    //debug
+    // console.log("#######################################")
+    // if (userDataInfo) {
+    //   console.log("userDataInfo:")
+    //   console.dir(userDataInfo);
+    // } else console.log("no userDataInfo yet...")
+    // console.log("lastConversation:")
+    // console.dir(lastConversation);
+    // console.log("#######################################")
+    //debug
+
+    const tomVision = await this.visionTool(castObj.body.embeds, castObj.body.textWithMentions);
+    if(tomVision) {
+      console.log("TOMVISION")
+      console.log(tomVision)
+    }
+    // if (!tomVision) return;    // DEBUG ONLY.    //COMMENT ME
+
+    // experimental Decide Should Reply or Not
+    this.messagesLog.warn("\n---- Decide Should Reply or Not", LOG_ID)
+    let joinedConversation = "";
+    lastConversation.forEach((message) => {
+      joinedConversation += `User @${message.name} said: "${message.message}"\n\n`;
+    });
+    const shouldReply = await this.generateShouldRespond(joinedConversation,tomVision + castObj.body.textWithMentions)
+    if ((shouldReply as string).includes("IGNORE")) {
+      this.messagesLog.warn("Its Better " + shouldReply, LOG_ID);
+      this.messagesLog.log("@"+castObj.fName + ": "+castObj.body.textWithMentions, LOG_ID);
+      // return
+    } else {
+      this.messagesLog.warn("Lets Reply  @" + castObj.fName + " " + shouldReply , LOG_ID);
+    }
+    this.messagesLog.warn("", LOG_ID)
+
+    const tomChatMessage = await this.replyMessage(
+      castObj.fName,
+      castObj.body.textWithMentions,
+      tomVision,
+      lastConversation,
+      userDataInfo);
+
+    this.messagesLog.log("", LOG_ID)
+    this.messagesLog.log("------ HANDLE REPLY -------", LOG_ID)
+    if (tomVision) {
+      this.messagesLog.log(`Vision: `, LOG_ID)
+      this.messagesLog.log(tomVision, LOG_ID)
+      this.messagesLog.log("------")
     }
 
-    const tomChatMessage = await this.replyMessage(castObj.fName, castObj.body.textWithMentions);
+    // if (lastConversation && lastConversation.length > 0) {
+      // let joinedConversation = '';
+      // lastConversation.forEach((message) => {
+      //   joinedConversation += `@${message.name}: ${message.message}\n`;
+      // });
+      this.messagesLog.log(`Last Conversation: `, LOG_ID)
+      this.messagesLog.log(joinedConversation, LOG_ID)
+      this.messagesLog.log("------")
+    // }
 
-    //this.eventBus.publish("PRINT_MSG", userChatMessage);
-    //this.eventBus.publish("PRINT_MSG", tomChatMessage);
+    this.messagesLog.log("", LOG_ID)
+    this.messagesLog.log("INPUT", LOG_ID)
+    this.messagesLog.info(`@${userChatMessage.name}: ${userChatMessage.message}`, LOG_ID)
+    this.messagesLog.log("REPLY")
+    this.messagesLog.warn(`@${tomChatMessage.name}: ${tomChatMessage.message}`, LOG_ID)
+    this.messagesLog.log("", LOG_ID)
+    this.messagesLog.log("---------------------------", LOG_ID)
 
     this.farcaster.publishUserReply(tomChatMessage.message, castObj.hash, castObj.fid);
   }
 
   private async handleMention(castObj: BotCastObj): Promise<void> {
     // handle bot was mentioned
-    const userChatMessage = { name: castObj.fName, message: castObj.body.textWithMentions }
-    const tomChatMessage = await this.replyMessage(castObj.fName, castObj.body.textWithMentions);
+    const tomVision = await this.visionTool(castObj.body.embeds, castObj.body.textWithMentions);
 
-    this.eventBus.publish("PRINT_MSG", userChatMessage);
-    this.eventBus.publish("PRINT_MSG", tomChatMessage);
+    const userDataInfo = await this.farcaster.handleUserInfo(castObj.fName);
+    const userChatMessage = { name: castObj.fName, message: castObj.body.textWithMentions }
+    const lastConversation = await this.farcaster.getConversationHistory(castObj.hash);
+
+    const tomChatMessage = await this.replyMessage(
+      castObj.fName,
+      castObj.body.textWithMentions,
+      tomVision,
+      lastConversation,
+      userDataInfo);
+
+    // this.eventBus.publish("PRINT_MSG", userChatMessage);
+    // this.eventBus.publish("PRINT_MSG", tomChatMessage);
+    let LOG_ID = "MENTIONS" + castObj.fName;
+    this.messagesLog.log("", LOG_ID)
+    this.messagesLog.log("------ HANDLE MENTION -------", LOG_ID)
+    if (tomVision) {
+      // this.messagesLog.log(`Vision: `, LOG_ID)
+      this.messagesLog.log(tomVision, LOG_ID)
+    }
+
+    if (lastConversation && lastConversation.length > 0) {
+      let joinedConversation = '';
+      lastConversation.forEach((message) => {
+        joinedConversation += `${message.name}: ${message.message}\n`;
+      });
+      // this.messagesLog.log(`Last Conversation: `, LOG_ID)
+      this.messagesLog.log(joinedConversation, LOG_ID)
+    }
+    this.messagesLog.log(`@${userChatMessage.name}: ${userChatMessage.message}`, LOG_ID)
+    this.messagesLog.log(`@${tomChatMessage.name}: ${tomChatMessage.message}`, LOG_ID)
+    this.messagesLog.log("", LOG_ID)
+    this.messagesLog.log("-----------------------------", LOG_ID)
 
     this.farcaster.publishUserReply(tomChatMessage.message, castObj.hash, castObj.fid);
   }
@@ -787,16 +1170,37 @@ Summary:`;
     // handle channel new message
     if (!this.shouldReply(castObj.fid, castObj.body.textWithMentions)) return
 
+    // seek for the first embbed image
+    const tomVision = await this.visionTool(castObj.body.embeds, castObj.body.textWithMentions);
+
+    const userDataInfo = await this.farcaster.handleUserInfo(castObj.fName);
+
+    // save new message
     const userChatMessage = { name: castObj.fName, message: castObj.body.textWithMentions }
-    const tomChatMessage = await this.replyMessage(castObj.fName, castObj.body.textWithMentions);
 
-    //this.eventBus.publish("PRINT_MSG", userChatMessage);
-    //this.eventBus.publish("PRINT_MSG", tomChatMessage);
+    // save bot reply
+    const tomChatMessage = await this.replyMessage(
+      castObj.fName,
+      castObj.body.textWithMentions,
+      tomVision,
+      [],
+      userDataInfo);
 
+    // log conversation messages
+    let logid = "MESSAGES";
+    this.messagesLog.log("\n------ CHANNEL NEW MESSAGE -------", logid)
+    this.messagesLog.log(`@${userChatMessage.name}: ${userChatMessage.message}`, logid)
+    this.messagesLog.log(`@${tomChatMessage.name}: ${tomChatMessage.message}\n`, logid)
+
+    // publish new event print message
+    // this.eventBus.publish("PRINT_MSG", userChatMessage);
+    // this.eventBus.publish("PRINT_MSG", tomChatMessage);
+
+    // send event to publish to farcaster
     this.farcaster.publishUserReply(tomChatMessage.message, castObj.hash, castObj.fid);
   }
 
-  public async handleCommand(command: string, message: ChatMessage) {
+  public async handleCommand(command: string, message: BotChatMessage) {
     let tomReply = { name: botConfig.BotName, message: "" }
 
     switch (command) {
@@ -831,13 +1235,18 @@ Summary:`;
             break
         }
         break;
+      case "vision":
+        let cmdvision = await this.visionTool([message.imageUrl], message.message);
+        // tomReply.message = cmdvision;
+        tomReply = await this.replyMessage(message.name, message.message, cmdvision, [], null);
+        break;
       default:
         // messages from discord dont have fid -1 set
         if (!this.shouldReply(-1, message.message)) {
           tomReply = { name: botConfig.BotName, message: "Message Too Short!" };
           break;
         }
-        tomReply = await this.replyMessage(message.name, message.message);
+        tomReply = await this.replyMessage(message.name, message.message, "", [], null);
         break;
     }
 
@@ -877,7 +1286,7 @@ Summary:`;
     ];
 
     // Invoke the model with the messages array
-    return this.botLLM.invoke(messages);
+    return this.chatBotLLM.invoke(messages);
   }
 
 
@@ -991,7 +1400,7 @@ Summary:`;
     }
   }
 
-  async castNewMessagetoChannel(): Promise<ChatMessage> {
+  async castNewMessagetoChannel(): Promise<BotChatMessage> {
     if (this.isStopped) return { name: botConfig.BotName, message: "Zzzzzzzzzz" };
 
     // update Space Time Awereness
@@ -1036,6 +1445,15 @@ Summary:`;
     // get llm reply
     const chatCompletion = await this.getTomNewMessage(filledPrompt);
     const reply = chatCompletion.content;
+    // const chatCompletion = await this.getTomNewMessage(filledPrompt);
+    // const reply = chatCompletion.choices[0]?.message?.content || "";
+
+    // attach image
+    var designerImage: any;
+    // if(this.weekday=="Sunday"){
+    designerImage = await this.drawingTool(reply); // message the url and name the prompt
+    // imageUrl.message = imageUrl.message;
+    // }
 
     if (reply !== "") {
       // add this cast to memory
@@ -1048,12 +1466,15 @@ Summary:`;
       // this.CheckWarning();
       // const reply = "";
 
-      const tomReply = {
+      const tomReply: BotChatMessage = {
         name: botConfig.BotName,
-        message: reply,
+        message: reply + " --- " + designerImage.name,
+        imageUrl: designerImage.message,
       }
 
       if (botConfig.LOG_MESSAGES) {
+        // let logid = "CAST_NEW_MESSAGE";
+
         let logid = this.weekday;
         this.newCasts.log("", logid);
         this.newCasts.log("", logid);
@@ -1074,33 +1495,33 @@ Summary:`;
   }
 
   public getMemUsed() {
-    // const memFarcaster = this.farcaster.MEM_USED.rss;
-    // const memRag = ragSystem.MEM_USED.rss;
-    // const memTLimiter = ragSystem.tokenRateLimiter.MEM_USED.rss;
+    const memFarcaster = this.farcaster.MEM_USED.rss;
+    const memRag = ragSystem.MEM_USED.rss;
+    const memTLimiter = ragSystem.tokenRateLimiter.MEM_USED.rss;
 
-    // return {
-    //   memFarcaster,
-    //   memRag,
-    //   memTLimiter
-    // }
+    return {
+      memFarcaster,
+      memRag,
+      memTLimiter
+    }
   }
 
-  private async getBotStatus(): Promise<ChatMessage> {
+  private async getBotStatus(): Promise<BotChatMessage> {
     const lastEventId = await getLatestEvent();
     const connStatus = this.farcaster.getConnectionStatus() === true
       ? "Im connected to Farcaster" : `Im disconnected from Farcaster cause ${this.userAskToStop} told so.`;
     const message = `
 
-        I have ${this.userMemories.size} users on my memory;
-        ${connStatus};
-        The last Farcaster Event ID processed was ${lastEventId};
-        `
-    //        Mem. Usage: ${Math.round(this.MEM_USED.rss / 1024 / 1024 * 100) / 100} MB
+I have ${this.userMemories.size} users on my memory;
+${connStatus};
+The last Farcaster Event ID processed was ${lastEventId};
 
+Mem. Usage: ${Math.round(this.MEM_USED.rss / 1024 / 1024 * 100) / 100} MB
+`
     return { name: botConfig.BotName, message: message }
   }
 
-  private setBotStop(): ChatMessage {
+  private setBotStop(): BotChatMessage {
     let message = "Fail";
     if (this.farcaster.stop()) {
       this.isStopped = true;
@@ -1109,7 +1530,7 @@ Summary:`;
     }
   }
 
-  private setBotStart(from: string): ChatMessage {
+  private setBotStart(from: string): BotChatMessage {
     let message = "Fail";
     if (this.farcaster.start(from)) {
       this.isStopped = false;
@@ -1123,41 +1544,103 @@ Summary:`;
   }
 
 
-  async getFirstImage(embeds): Promise<string> {
+
+  // async getFirstImage(embeds): Promise<string> {
+  //   const mimeTypes = [
+  //     'image/jpeg',
+  //     'image/png',
+  //     // 'image/gif',
+  //     // Add more image mime types as needed
+  //   ];
+
+
+  //   if (Object.keys(embeds).length > 0) {
+  //     const promises = Object.values(embeds).map((value) => {
+  //       if (typeof value === 'object' && ('url' in value)) { // Check if value is an object and has a url property
+  //         if (value.url) { // Check if value has a url property
+  //           return fetch(value.url as string, { method: 'HEAD' })
+  //             .then((response) => 
+  //               response.headers.get('Content-Type'))
+  //             .then((mimeType) => {
+  //               if (mimeTypes.includes(mimeType)) {
+  //                 // if(mimeType == "image/gif"){
+  //                 //   const response = await fetch(value.url);
+  //                 //   const gifBuffer = await response.arrayBuffer();
+  //                 //   const sharp = Sharp(gifBuffer);
+  //                 //   const { data } = await sharp.frame(1);
+  //                 //   return data;
+  //                 // }
+  //                 return value.url; // Return the first image URL found
+  //               }
+  //             });
+  //         }
+  //       }
+  //     });
+
+  //     const imageUrls = await Promise.all(promises)
+  //       .then((results) => results.filter((result) => result !== null));
+
+  //     // Wait for all promises to resolve
+  //     const results = await Promise.all(promises);
+
+  //     if (imageUrls[0])
+  //       return imageUrls[0].toString();
+  //     else return null; // Return the first image URL found, or null if none
+  //   }
+
+  //   return null;
+  // }
+
+  async getEmbedsFirstImage(embedsLinks: string[]): Promise<string | null> {
     const mimeTypes = [
       'image/jpeg',
       'image/png',
-      // 'image/gif',
       // Add more image mime types as needed
     ];
-    if (Object.keys(embeds).length > 0) {
-      const promises = Object.values(embeds).map((value) => {
-        if (typeof value === 'object' && ('url' in value)) { // Check if value is an object and has a url property
-          if (value.url) { // Check if value has a url property
-            return fetch(value.url as string, { method: 'HEAD' })
-              .then((response) => response.headers.get('Content-Type'))
-              .then((mimeType) => {
-                if (mimeTypes.includes(mimeType)) {
-                  return value.url; // Return the first image URL found
-                }
-              });
-          }
-        }
+
+    try {
+      const promises = embedsLinks.map(async (link) => {
+        const response = await fetch(link, { method: 'HEAD' });
+        const mimeType = response.headers.get('Content-Type');
+        return mimeType && mimeTypes.includes(mimeType) ? link : null;
       });
+
       const imageUrls = await Promise.all(promises)
-        .then((results) => results.filter((result) => result !== null));
-
-      if (imageUrls[0])
-        return imageUrls[0].toString();
-      else return ""; // Return the first image URL found, or null if none
+        .then((results) =>
+          results.filter((result) => result !== null));
+      return imageUrls[0] ?? null;
+    } catch (err) {
     }
-
     return null;
   }
 
-  async drawingTool(subject: string): Promise<ChatMessage> {
+  async getEmbedsImages(embedsLinks: string[]): Promise<string[] | null> {
+    const mimeTypes = [
+      'image/jpeg',
+      'image/png',
+      // Add more image mime types as needed
+    ];
 
-    const tomversion = await this.botLLM.invoke(
+    try {
+      const promises = embedsLinks.map(async (link) => {
+        const response = await fetch(link, { method: 'HEAD' });
+        const mimeType = response.headers.get('Content-Type');
+        return mimeType && mimeTypes.includes(mimeType) ? link : null;
+      });
+
+      const imageUrls = await Promise.all(promises)
+        .then((results) =>
+          results.filter((result) => result !== null));
+      return imageUrls ?? null;
+    } catch (err) {
+      return null;
+    }
+  }
+
+
+  async drawingTool(subject: string): Promise<BotChatMessage> {
+
+    const tomversion = await this.chatBotLLM.invoke(
       `Describe in one sentences an image to match the following text:
 ${subject}
 OUTPUT:`);
@@ -1167,7 +1650,7 @@ OUTPUT:`);
 
     const openai = new OpenAI();
     try {
-      console.log(tomversion.content);
+      // console.log(tomversion.content);
       const response = await openai.images.generate({
         prompt: DESIGNER_PROMPT,
         n: 1, // Number of images to generate
@@ -1177,47 +1660,188 @@ OUTPUT:`);
       // console.log(response.data); // URL of the generated image
       return { name: (tomversion.content as string) + " (" + dayArtStyle + ")", message: response.data[0].url }
     } catch (error) {
-      console.error("Error generating image:", error);
+      this.messagesLog.error("Error generating image:", "ERROR");
+      this.messagesLog.error(error, "ERROR");
+
       return { name: "Error generating image:", message: "" }
     }
   }
 
-  async visionTool(embeddes: any) {
-    // if (!embeddes) return;
+  async visionTool(embeddes: any, context: string): Promise<string | undefined> {
+    var imageDescription = "";
+    var result = "";
+    // debug
+    // castObj Mode
+    // [
+    //   "https://imagedelivery.net/BXluQx4ige9GuW0Ia56BHw/bc04781b-3f0b-4144-c6b2-4144f5dff600/original",
+    // ]
+    // Farcaster Mode
+    // embeddes = [{
+    //   "url": "https://imagedelivery.net/BXluQx4ige9GuW0Ia56BHw/0c9c9666-18fc-4cb8-ba2a-add67a7d2d00/original"
+    // }]
+    if (!embeddes) return undefined;
 
-    // this.botEyes = new Groq();
+    this.botVision = new Groq();
     // const firstImage = await this.getFirstImage(embeddes);
+    const embedsImages = await this.getEmbedsImages(embeddes);
+    if (!embedsImages) return undefined
 
-    // try {
-    //   const chatCompletion = await this.botEyes.chat.completions.create({
-    //     "messages": [
-    //       {
-    //         "role": "user", "content": [
-    //           {
-    //             "type": "text",
-    //             "text": "What's in this image?"
-    //           },
-    //           {
-    //             "type": "image_url",
-    //             "image_url": {
-    //               "url": firstImage
-    //             }
-    //           }
-    //         ]
-    //       }
-    //     ],
-    //     "model": "llama-3.2-11b-vision-preview",
-    //     "temperature": 1,
-    //     "max_tokens": 1024,
-    //     "top_p": 1,
-    //     "stream": false,
-    //     "stop": null
-    //   });
-    //   return chatCompletion.choices[0].message.content;
-    // } catch (error) {
-    return "";
-    // }
+    for await (const image of embedsImages) {
+      const BOT_VISION_PROMPT = `What is in this image described in a maximum of 300 characters?`
+      try {
+        const chatCompletion = await this.botVision.chat.completions.create({
+          "messages": [
+            {
+              "role": "user", "content": [
+                {
+                  "type": "text",
+                  "text": BOT_VISION_PROMPT,
+                },
+                {
+                  "type": "image_url",
+                  "image_url": {
+                    "url": image
+                  }
+                }
+              ]
+            }
+          ],
+          "model": botConfig.VisionModel,
+          "temperature": 1,
+          "max_tokens": 1024,
+          "top_p": 1,
+          "stream": false,
+          "stop": null
+        });
+
+        imageDescription = chatCompletion.choices[0].message.content;
+      } catch (error) {
+        // console.log(error);
+        // return undefined
+      }
+
+      if (imageDescription === "Unfortunately, I cannot identify people based on their photographs.")
+        imageDescription = "A picture of a beautiful person";
+
+      // const guess = recognitionResponse.content;
+      result += `<image_description>\n${imageDescription}\n</image_description>\n`
+    };
+    return result
+
+    // const BOT_VISION_PROMPT = `What's in this image in one short sentence?`
+// const BOT_VISION_PROMPT = `What is in this image described in a maximum of 300 characters?`
+    //     const BOT_VISION_RECOGNITION =
+    //       `You will receive an Image Description and your job its to
+    // guess what is about and here are some informations that you may find interesting to guess it.
+
+    // -${context}
+
+    // Remember: Output directly your guess without introduction comments
+    // OUTPUT: `
+
+    /*
+    `You will receive an Image Description and your job its to
+    guess what is about and here are some informations that you may find interesting to guess it.
+    
+    Clues:
+    -Draw of a guy in a white shirt, jeans, wearing sunglasses, is probably TOM or a User from nounspace;
+    -Person wearing sunglasses, is probably a User from nounspace;
+    -Person Face with sunglasses, say it' a beauty using a nOGs sunglass;
+    -Using Sunglasses, probably it's a nOGs sunglass;
+    -Offer/Sale/Buy, it is probably an NFT promo;
+    -${context}
+    
+    Remember: Output directly your guess without introduction comments
+    OUTPUT: `
+    */
+
+// try {
+//   const chatCompletion = await this.botVision.chat.completions.create({
+//     "messages": [
+//       {
+//         "role": "user", "content": [
+//           {
+//             "type": "text",
+//             "text": BOT_VISION_PROMPT,
+//           },
+//           {
+//             "type": "image_url",
+//             "image_url": {
+//               "url": firstImage
+//             }
+//           }
+//         ]
+//       }
+//     ],
+//     "model": botConfig.VisionModel,
+//     "temperature": 1,
+//     "max_tokens": 1024,
+//     "top_p": 1,
+//     "stream": false,
+//     "stop": null
+//   });
+
+//   imageDescription = chatCompletion.choices[0].message.content;
+// } catch (error) {
+//   console.log(error);
+//   return undefined
+// }
+
+// if (imageDescription === "") return ""
+// if (imageDescription === "Unfortunately, I cannot identify people based on their photographs.")
+//   imageDescription = "A picture of a beautiful person";
+
+    // const recognitionResponse = await this.assistentLLM.invoke([
+    //   ["system", BOT_VISION_RECOGNITION,],
+    //   ["user", imageDescription],
+    // ]);
+
+    // const guess = recognitionResponse.content;
+// const result = `<image_description>\n${imageDescription}\n</image_description>\n`
+    // const result = `<image_description>\n${imageDescription}\n</image_description>\n<image_guess>\n${guess}\n</image_guess>\n`
+    // console.log(result);
+// return result
   }
 
+
+  // for gifs
+  // import { Sharp } from 'sharp';
+
+  // if (Object.keys(embeds).length > 0) {
+  //   const promises = Object.values(embeds).map(async (value) => {
+  //     if (typeof value === 'object' && ('url' in value)) {
+  //       if (value.url) {
+  //         const response = await fetch(value.url);
+
+  //         const response_1 = await fetch(value.url as string, { method: 'HEAD' });
+  //         const mimeType = response_1.headers.get('Content-Type');
+  //         if (mimeTypes.includes(mimeType)) {
+  //           if (mimeType == "image/gif") {
+  //             const gifBuffer = await (getGifFrame(value.url));
+  //             return gifBuffer;
+  //           }
+  //           return value.url;
+  //         }
+  //       }
+  //     }
+  //   });
+
+  //   function getGifFrame(url: string): Promise<Buffer> {
+  //     return fetch(url)
+  //       .then(response => response.arrayBuffer())
+  //       .then(buffer => Sharp(buffer).frame(1));
+  //   }
+
+  private userDataInfo2Text(userDataInfo: UserResponse) {
+    // console.dir(userDataInfo)
+    if (userDataInfo.user.experimental.neynar_user_score) {
+      console.log("--- Neynar Score @" + userDataInfo.user.username + ": " + userDataInfo.user.experimental.neynar_user_score)
+      console.log("--- BIO @" + userDataInfo.user.username + ": " + userDataInfo.user.profile.bio.text)
+    }
+
+    if (userDataInfo.user.profile.bio.text)
+      return `(About ${userDataInfo.user.username}: ${userDataInfo.user.profile.bio.text})`
+    else return "";
+  }
 
 }

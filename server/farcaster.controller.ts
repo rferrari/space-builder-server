@@ -1,3 +1,44 @@
+var DEGUG_MESSAGES_COUNTER = 0
+var DEGUG_MESSAGES_COUNTER_LIMIT = 0
+
+// fetch conversation history last messages
+interface ConversationMessage {
+    object: string;
+    hash: string;
+    author: Author;
+    text: string;
+    timestamp: string;
+}
+interface Author {
+    object: string;
+    fid: number;
+    username: string;
+    display_name: string;
+    pfp_url: string;
+}
+// fetch conversation history last messages
+
+
+// User data 
+// interface BOTUserData {
+//     fid: number;
+//     fName: string;
+//     display_name?: string;
+//     bio?: string;
+//     city?: string;
+//     state?: string;
+//     country_code?: string;
+//     follower_count?: number;
+//     following_count?: number;
+//     verifications?: number;
+//     power_badge?: boolean;
+//     viewer_context?: {
+//         following: boolean;
+//         followed_by: boolean;
+//     };
+// }
+//
+
 const Reset = "\x1b[0m",
     Blue = "\x1b[34m",
     Green = "\x1b[32m",
@@ -10,7 +51,6 @@ const Reset = "\x1b[0m",
     Gray = "\x1b[90m";
 
 import { randomInt } from 'crypto';
-
 
 import {
     HubEvent, HubEventType,
@@ -27,8 +67,9 @@ import {
     Protocol,
 } from '@farcaster/hub-nodejs'
 
-import { FeedType, FilterType, isApiErrorResponse } from "@neynar/nodejs-sdk";
+import { CastParamType, FeedType, FilterType, isApiErrorResponse } from "@neynar/nodejs-sdk";
 import neynarClient from "./lib/neynarClient";
+import neynarHubClient from "./lib/neynarClient";
 
 import { err, ok, Result } from "neverthrow";
 import { hubClient } from './lib/hub-client'
@@ -42,14 +83,20 @@ import GraphemeSplitter from 'grapheme-splitter';
 
 import FileLogger from './lib/FileLogger'
 
-import { VerificationProtocol, MessageBodyJson, BotCastObj, CastAddBodyJson } from './bot.types';
+import { VerificationProtocol, MessageBodyJson, BotCastObj, CastAddBodyJson, BotChatMessage } from './bot.types';
 import { inspect } from 'node:util';
+import { BulkUsersResponse, CastWithInteractions, Conversation, UserResponse } from '@neynar/nodejs-sdk/build/neynar-api/v2';
+import { ragSystem } from './ragSystem';
 
 const urlMatchesTargetChannel = (url: string): boolean => botConfig.TARGET_CHANNELS.some(target => url.endsWith(target));
 
 export class Farcaster {
+    public MEM_USED: NodeJS.MemoryUsage;
+
     private eventBus: EventBus;
-    private USERS_FNAME_MAP: Map<number, any>;
+
+    private USERS_DATA_INFO: Map<string, UserResponse>;
+    private USERS_FNAME_MAP: Map<number, any>;  // TODO: need to replace to user new USERS_DATA_INFO
     private TARGET_FNAME_MAP: Map<number, any>;
 
     private isConnected: boolean;
@@ -59,8 +106,10 @@ export class Farcaster {
     private farcasterLog: FileLogger;
 
     constructor(eventBus: EventBus) {
-        this.eventBus = eventBus;
+        this.MEM_USED = process.memoryUsage();
 
+        this.eventBus = eventBus;
+        this.USERS_DATA_INFO = new Map();
         this.USERS_FNAME_MAP = new Map();
         this.TARGET_FNAME_MAP = new Map();
 
@@ -168,7 +217,10 @@ export class Farcaster {
                     mentionsPositions,
                     text,
                     type,
-                    parent: parentCastId ? { fid: parentCastId.fid, hash: this.bytesToHex(parentCastId.hash) } : parentUrl,
+                    parent: parentCastId ? {
+                        fid: parentCastId.fid,
+                        hash: this.bytesToHex(parentCastId.hash)
+                    } : { fid: 0, hash: "0x0" },
                 };
                 break;
             }
@@ -278,7 +330,7 @@ export class Farcaster {
         if (result.isErr()) {
             console.error(result.error + '\nError starting stream');
             if (!this.isStopped)
-            this.reconnect();
+                this.reconnect();
             return
         }
 
@@ -287,7 +339,7 @@ export class Farcaster {
 
         result.match(
             (stream) => {
-                console.log(`Subscribed to ${botConfig.HUB_RPC} Stream from: ${fromEventId ? `event ${fromEventId}` : 'HEAD'}`);
+                console.log(`Subscribed to Farcaster Stream from: ${fromEventId ? `event ${fromEventId}` : 'HEAD'}`);
                 // console.info(`Subscribed to Farcaster Stream: HEAD`)         //current event
 
                 // Manually trigger the 'close' event for testing // Simulate close after 3 seconds
@@ -298,7 +350,7 @@ export class Farcaster {
                 stream.on('data', async (e: HubEvent) => {
                     this.handleEvent(e)
                     saveLatestEventId(e.id)
-                    // console.log(e.id)
+                    //console.log(e.id)
 
                     // Manually trigger the 'close' event from command
                     if (this.isStopped) {
@@ -322,8 +374,8 @@ export class Farcaster {
                     // this.logRelevantStreamDetails(stream);
                     if (!this.isStopped) {
                         //if we did not received external command to stop, try to reconect
-                    this.isConnected = false;
-                    this.reconnect();
+                        this.isConnected = false;
+                        this.reconnect();
                     }
                 })
             }, (e) => { console.error(e, 'Error streaming data.') })
@@ -331,7 +383,7 @@ export class Farcaster {
 
 
     private reconnect() {
-        console.log(`Reconnect: `+ botConfig.HUB_RPC);
+        console.log(`Reconnect: ` + botConfig.HUB_RPC + " " + + getLatestEvent());
         if (!this.isConnected && !this.isReconnecting) {
             this.farcasterLog.log(`Reconnecting in 1 second...`, "EVENTS")
             this.isReconnecting = true;
@@ -434,8 +486,6 @@ export class Farcaster {
                         break
                     }
                     default: {
-                        // log.debug(msg.data, 'UNHANDLED PRUNE_MESSAGE EVENT')
-                        // console.log(msg.data, 'UNHANDLED PRUNE_MESSAGE EVENT')
                         // this.eventBus.publish("LOG", 'UNHANDLED PRUNE_MESSAGE EVENT ' + msg.data);
                     }
                 }
@@ -468,10 +518,7 @@ export class Farcaster {
                 break
             }
             default: {
-                // log.debug('UNHANDLED HUB EVENT', event.id)
-                this.farcasterLog.log(`'UNHANDLED HUB EVENT ${event.id}`, "EVENTS")
-                // console.log('UNHANDLED HUB EVENT', event.id)
-                // this.eventBus.publish("LOG", 'UNHANDLED HUB EVENT ' + event.id);
+                console.log('UNHANDLED HUB EVENT', event.id)
                 break
             }
         }
@@ -493,7 +540,7 @@ export class Farcaster {
         return trendingFeed;
     }
 
- 
+
 
     /**
      * Function to publish a message (cast) using neynarClient.
@@ -540,7 +587,7 @@ export class Farcaster {
         neynarClient
             .publishCast(botConfig.SIGNER_UUID, msg, options)
             .then(response_data => {
-                this.farcasterLog.log("Cast published successfully: "+response_data.hash, "INFO")
+                this.farcasterLog.log("Cast published successfully: " + response_data.hash, "INFO")
             })
             .catch(error => {
                 if (isApiErrorResponse(error)) {
@@ -551,7 +598,7 @@ export class Farcaster {
                     }
                     // this.eventBus.publish("ERROR_FC_PUBLISH", errorCastObj);
 
-                    this.farcasterLog.log("Failed to publish cast: "+error.response.data, "ERROR")
+                    this.farcasterLog.log("Failed to publish cast: " + error.response.data, "ERROR")
                     this.farcasterLog.log(msg, "ERROR")
                     this.farcasterLog.log(options, "ERROR")
                 } else {
@@ -562,7 +609,7 @@ export class Farcaster {
                     }
                     // this.eventBus.publish("ERROR_FC_PUBLISH", errorCastObj);
 
-                    this.farcasterLog.log("Failed to publish cast: "+JSON.stringify(error), "ERROR")
+                    this.farcasterLog.log("Failed to publish cast: " + JSON.stringify(error), "ERROR")
                     this.farcasterLog.log(msg, "ERROR")
                     this.farcasterLog.log(options, "ERROR")
                 }
@@ -570,40 +617,28 @@ export class Farcaster {
 
 
 
-            if ((options.replyTo) && (options.parent_author_fid)) {
-                neynarClient.publishReactionToCast(
-                    botConfig.SIGNER_UUID,
-                    'like',
-                    options.replyTo,
-                    options.parent_author_fid
-                ).then(response => {
-                    this.farcasterLog.log("Reaction published successfully ", "INFO")
-                    // console.log('Publish Reaction Operation Status:', response); // Outputs the status of the reaction post
-                }).catch(error => {
-                    if (isApiErrorResponse(error)) {
-                        // console.error(Red + error.response.data + Reset);
-                        this.farcasterLog.log("Failed to publish reaction: "+error.response.data, "ERROR")
-                    } else {
-                        this.farcasterLog.log("Failed to publish reaction: "+JSON.stringify(error), "ERROR")
-                        // console.error(Red + "Failed to publish Reaction: " + error + + Reset);
-                    }
-                });
-            }
+        if ((options.replyTo) && (options.parent_author_fid)) {
+            neynarClient.publishReactionToCast(
+                botConfig.SIGNER_UUID,
+                'like',
+                options.replyTo,
+                options.parent_author_fid
+            ).then(response => {
+                this.farcasterLog.log("Reaction published successfully ", "INFO")
+                // console.log('Publish Reaction Operation Status:', response); // Outputs the status of the reaction post
+            }).catch(error => {
+                if (isApiErrorResponse(error)) {
+                    // console.error(Red + error.response.data + Reset);
+                    this.farcasterLog.log("Failed to publish reaction: " + error.response.data, "ERROR")
+                } else {
+                    this.farcasterLog.log("Failed to publish reaction: " + JSON.stringify(error), "ERROR")
+                    // console.error(Red + "Failed to publish Reaction: " + error + + Reset);
+                }
+            });
+        }
     }
 
-    // public async publishUserReply(msg: string, parentHash: string, parentAuthorFid: number) {
-    //     // Using the neynarClient to publish the cast.
-    //     const options = {
-    //         replyTo: parentHash,
-    //         parent_author_fid: parentAuthorFid,
-    //     }
-    //     this.publishToFarcaster(msg, options);
-    // }
     public async publishUserReply(msg: string, parentHash: string, parentAuthorFid: number) {
-        //experimental
-        // const userdata = await this.fetchUserData(parentAuthorFid);
-        // console.dir(userdata);
-
         // Using the neynarClient to publish the cast.
         const options = {
             replyTo: parentHash,
@@ -617,8 +652,8 @@ export class Farcaster {
         }, delayInMinutes * 60 * 1000); // convert minutes to milliseconds
 
         const fName = (await this.handleUserFid(parentAuthorFid)).toUpperCase();
-        if(botConfig.PUBLISH_TO_FARCASTER)
-            console.log(`Scheduling msg to fid '${fName}' in ${delayInMinutes} minutes`);
+        if (botConfig.PUBLISH_TO_FARCASTER)
+            console.log(`Scheduling msg to fid ${parentAuthorFid} '${fName}' in ${delayInMinutes} minutes`);
     }
 
     public async publishNewChannelCast(msg: string) {
@@ -630,37 +665,6 @@ export class Farcaster {
         this.publishToFarcaster(msg, options);
     };
 
-    private async handleData_new(msgs: Message[]): Promise<void> {
-        for (let m = 0; m < msgs.length; m++) {
-            const message = msgs[m];
-            const body = this.convertProtobufMessageBodyToJson(message);
-            // console.dir(body);
-
-            if ('text' in body && 'mentions' in body && 'mentionsPositions' in body) {
-                if (body.mentions instanceof Array && body.mentionsPositions instanceof Array) {
-                    let textContent = body.text;
-                    if (body.mentions.length > 0)
-                        textContent = await this.insertMentions(body.text, body.mentions, body.mentionsPositions);
-                    body.textWithMentions = textContent;
-                    const fName = await this.handleUserFid(message.data.fid);
-                    const castObj = {
-                        fid: message.data.fid,
-                        fName,
-                        type: message.data.type,
-                        timestamp: this.farcasterTimeToDate(message.data.timestamp),
-                        // hashScheme: message.hashScheme,
-                        // signatureScheme: message.signatureScheme,
-                        // hash: message.hash,
-                        // signer: message.signer,
-                        // raw: Message.encode(message).finish(),
-                        body
-                    }
-                }
-            }
-        }
-    }
-
-
     private async handleAddCasts(msgs: Message[]): Promise<void> {
         for (let m = 0; m < msgs.length; m++) {
             const data = msgs[m].data;
@@ -671,7 +675,7 @@ export class Farcaster {
 
                     //TODO: retro alimentar issue
 
-                    // this.handleTargetAddCast(msgs[m])
+                    this.handleTargetAddCast(msgs[m])
                     return;
                 }
 
@@ -705,6 +709,26 @@ export class Farcaster {
     }
 
 
+    // working async with createCastObj to create cache for latter...
+    // ... fetch and save into cache. return fetched data
+    public async handleUserInfo(fname: string): Promise<UserResponse> {
+        // check if fid is on the users fname cache
+        if (!this.USERS_DATA_INFO.has(fname)) {
+            this.getUserDataFromFname(fname).then((result) => {
+                if (result) {
+                    this.USERS_DATA_INFO.set(fname, result);
+                }
+            })
+        }
+
+        // trim max user fname cache
+        if (this.USERS_DATA_INFO.size >= botConfig.MAX_USER_CACHE) {
+            this.USERS_DATA_INFO.delete(this.USERS_DATA_INFO.keys().next().value as string);
+        }
+
+        return this.USERS_DATA_INFO.get(fname)//!;
+    }
+
     private async handleUserFid(fid: number): Promise<string> {
         // check if fid is on the users fname cache
         if (!this.USERS_FNAME_MAP.has(fid)) {
@@ -722,8 +746,10 @@ export class Farcaster {
         return this.USERS_FNAME_MAP.get(fid)!;
     }
 
+    // get fname from fid using FC hub results.... we can replace this for new USER DATA INFO map
     private async getFnameFromFid(fid: number): HubAsyncResult<string> {
         const result = await hubClient.getUserData({ fid: fid, userDataType: UserDataType.USERNAME });
+        // console.log(result, "UserData");
         return ok(
             result.match(
                 (message) => {
@@ -738,6 +764,40 @@ export class Farcaster {
         );
     };
 
+    // get some information from user using neynar
+    private async getUserDataFromFname(fname: string): Promise<UserResponse> {
+        try {
+            const userData = await neynarClient
+                .lookupUserByUsernameV2(fname, { viewerFid: botConfig.BotFID })
+            // .fetchBulkUsers([fid], { viewerFid: botConfig.BotFID });
+            // const userData = result; //select first result
+            // this.farcasterLog.log(userData, "UserData");
+            return userData;
+            // return userData;
+            // return {
+            //     fid,
+            //     fName: userData?.username,
+            //     display_name: userData?.display_name,
+            //     bio: userData?.profile?.bio?.text,
+            //     city: userData?.profile?.location?.address?.city ?? 'Unknown',
+            //     state: userData?.profile?.location?.address?.state ?? null,
+            //     country_code: userData?.profile?.location?.address?.country_code ?? '',
+            //     follower_count: userData?.follower_count ?? 0,
+            //     following_count: userData?.following_count ?? 0,
+            //     verifications: (userData?.verifications ?? []).length,
+            //     power_badge: userData?.power_badge ?? false,
+            //     viewer_context: {
+            //       following: userData?.viewer_context?.following ?? false,
+            //       followed_by: userData?.viewer_context?.followed_by ?? false,
+            //     },
+            // };
+        }
+        catch (err) {
+            // console.error(err)
+        };
+    }
+
+    // return bot targets from fid and store it on cache
     private async handleTargetFid(fid: number): Promise<string> {
         if (!this.TARGET_FNAME_MAP.has(fid)) {
             const result = await this.getFnameFromFid(fid);
@@ -752,26 +812,28 @@ export class Farcaster {
 
     // handle when bot targest posst new message
     private async handleTargetAddCast(message: Message) {
-        const body = this.convertProtobufMessageBodyToJson(message);
+        // const body = this.convertProtobufMessageBodyToJson(message);
         const tName = await this.handleTargetFid(message.data.fid);  // target Name
+        const castObj = await this.createCastObj(message);
+        this.eventBus.publish("CAST_ADD", castObj);
 
-        // if has parentCastId, its a new reply message
-        if (message.data.castAddBody.parentCastId) {
-            const fName = await this.handleUserFid(message.data.castAddBody.parentCastId.fid); // farcaster (User)Name 
-            // console.log(tName + " Replying to " + fName);
-            const chatmessage = {
-                name: tName,
-                message: " Reply to " + fName + ": " + message.data.castAddBody.text
-            }
-            // this.eventBus.publish("CAST_ADD", chatmessage);
-        } else {
-            // console.log(tName + " Add New Cast ");
-            const chatmessage = {
-                name: tName,
-                message: message.data.castAddBody.text
-            }
-            // this.eventBus.publish("CAST_ADD", chatmessage);
-        }
+        // // if has parentCastId, its a new reply message
+        // if (message.data.castAddBody.parentCastId) {
+        //     const fName = await this.handleUserFid(message.data.castAddBody.parentCastId.fid); // farcaster (User)Name 
+        //     // console.log(tName + " Replying to " + fName);
+        //     const chatmessage = {
+        //         name: tName,
+        //         message: " Reply to " + fName + ": " + message.data.castAddBody.text
+        //     }
+        //     // this.eventBus.publish("CAST_ADD", chatmessage);
+        // } else {
+        //     // console.log(tName + " Add New Cast ");
+        //     const chatmessage = {
+        //         name: tName,
+        //         message: message.data.castAddBody.text
+        //     }
+        //     // this.eventBus.publish("CAST_ADD", chatmessage);
+        // }
     }
 
     private async handleReceivedReply(message: Message): Promise<void> {
@@ -804,6 +866,11 @@ export class Farcaster {
     private async createCastObj(message: Message): Promise<BotCastObj> {
         const body = this.convertProtobufMessageBodyToJson(message) as CastAddBodyJson;
         const fName = await this.handleUserFid(message.data.fid);        // farcast (User)Name 
+
+        // get async user info so we can use latter if needed. maybe need to wait here if 
+        // is a must has the user info for replies... 
+        await this.handleUserInfo(fName);        // go fetch user info async
+
         const hash = this.bytesToHex(message.hash);
 
         if ('text' in body && 'mentions' in body && 'mentionsPositions' in body) {
@@ -854,38 +921,42 @@ export class Farcaster {
         return this.isConnected;
     }
 
-    // public async getConversationHistory(castHashOrUrl: string, castParamType: CastParamType = CastParamType.Hash): Promise<string> {
-    //     var lastMessages = "";
-    //     try {
-    //         const response = await neynarClient.lookupCastConversation(
-    //             castHashOrUrl, castParamType,
-    //             {
-    //                 replyDepth: 2,
-    //                 includeChronologicalParentCasts: true,
-    //                 viewerFid: botConfig.TARGETS[0],
+    public async getConversationHistory(castHashOrUrl: string, castParamType: CastParamType = CastParamType.Hash): Promise<BotChatMessage[]> {
+        var lastMessages: BotChatMessage[] = [];
+        try {
+            const response = await neynarClient.lookupCastConversation(
+                castHashOrUrl, castParamType,
+                {
+                    replyDepth: 2,
+                    includeChronologicalParentCasts: true,
+                    viewerFid: botConfig.TARGETS[0],
+                    limit: botConfig.LAST_CONVERSATION_LIMIT
     //                 limit: 10,
-    //                 // cursor: "nextPageCursor" // Omit this parameter for the initial request
-    //             }
-    //         )
+                    // cursor: "nextPageCursor" // Omit this parameter for the initial request
+                }
+            )
 
-    //         const messages: CastWithInteractions[] = response.conversation.chronological_parent_casts.slice().reverse();
-    //         const lastThreeMessages: string[] = messages
-    //             .slice(0, 3)
-    //             .reverse()
-    //             .map((message: CastWithInteractions) => {
+            const messages: CastWithInteractions[] = response.conversation.chronological_parent_casts.slice().reverse();
+            const lastThreeMessages: BotChatMessage[] = messages
+                .slice(0, botConfig.LAST_CONVERSATION_LIMIT)
+                .reverse()
+                .map((message: CastWithInteractions) => {
+                    let imageUrl = "";
+                    const embed = message.embeds[0];
+                    if (typeof embed === 'object' && 'url' in embed) {
+                        imageUrl = embed.url;
+                    }
+                    return { name: message.author.username, message: message.text, imageUrl };
     //                 return `@${message.author.username}: ${message.text}\n`;
-    //             });
 
-    //         lastMessages = lastThreeMessages.join('\n');
+                });
 
-    //         // this.farcasterLog.log("Cast Conversation Information:", "Conversation");
-    //         // this.farcasterLog.log(response, "Conversation"); // Displays the detailed structure of the specified cast conversation
-    //         // return response;
-    //     }
-    //     catch (error) {
-    //         console.log('Get Cast Conversation Fail:');
-    //     };
+            lastMessages = lastThreeMessages;
+        }
+        catch (error) {
+            console.log('Get Cast Conversation Fail:');
+        };
 
-    //     return lastMessages;
-    // }
+        return lastMessages;
+    }
 }

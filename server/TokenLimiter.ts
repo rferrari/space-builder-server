@@ -5,10 +5,14 @@ type TokensUsedPerMinute = { [key: string]: number };
 //
 
 export class TokenRateLimiter {
+    public MEM_USED: NodeJS.MemoryUsage;
+
     private readonly limits: Record<string, { lastInteractionTime: number, totalTokens: number }>;
     private readonly tokensUsedPerMinute: { [key: string]: TokensUsedPerMinute };
 
     constructor(private readonly rateLimits: { [key: string]: number }) {
+        this.MEM_USED = process.memoryUsage();
+        
         this.limits = {};
         this.tokensUsedPerMinute = {};
         Object.entries(rateLimits).forEach(([key, value]) => {

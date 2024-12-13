@@ -9,8 +9,6 @@ const neynarConfig = {
     },
   };
   
-//   const client = new NeynarAPIClient(config);
-
 const neynarClient = new NeynarAPIClient(NEYNAR_API_KEY, neynarConfig);
 
 export default neynarClient;

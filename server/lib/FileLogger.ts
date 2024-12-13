@@ -15,20 +15,21 @@ const Reset = "\x1b[0m",
 interface LogOptions {
     folder: string;
     printconsole?: boolean;
-    // logType: string;
+    logtofile?: boolean;
+    level?: string;
 }
 
 class FileLogger {
     private folder: string;
     private printconsole: boolean;
-    // private logType: string;
+    private level: string;
 
     constructor(options: LogOptions) {
         this.folder = path.join(__dirname, '../../', options.folder);
-        // this.logType = options.logType;
-        this.createDirectoryIfNotExists(this.folder);
-        
+        this.level = options.level || "warn";
         this.printconsole = (options.printconsole === true)
+
+        this.createDirectoryIfNotExists(this.folder);
     }
 
     private createDirectoryIfNotExists(dir: string): void {
@@ -57,13 +58,41 @@ class FileLogger {
         }
       }
 
-    public log(message: any, logKey: string): void {
+    private logtofile(message: any, logKey: string = ""): void {
         const logFile = this.getLogFile(logKey);
-        const logmessage = this.getLogText(message);
-        fs.appendFileSync(logFile, logmessage + '\n');
-        if(this.printconsole)
-            console.log(Green + logmessage + Reset)
+        if (this.logtofile)
+            fs.appendFileSync(logFile, message + '\n');
     }
+
+    private logtoconsole(message: any, color: any): void {
+        if (this.printconsole) console.log(color + message + Reset)
+    }
+
+    public info(message: any, logKey: string = ""): void {
+        const logmessage = this.getLogText(message);
+        this.logtofile(logmessage);
+        this.logtoconsole(logmessage, Green);
+    }
+
+    public error(message: any, logKey: string = ""): void {
+        const logmessage = this.getLogText(message);
+        this.logtofile(logmessage);
+        this.logtoconsole(logmessage, Red);
+    }
+
+    public warn(message: any, logKey: string = ""): void {
+        const logmessage = this.getLogText(message);
+        this.logtofile(logmessage);
+        this.logtoconsole(logmessage, Yellow);
+    }
+
+    public log(message: any, logKey: string = ""): void {
+        const logmessage = this.getLogText(message);
+        this.logtofile(logmessage, logKey);
+        this.logtoconsole(logmessage, "");
+    }
+
+
 }
 
 export default FileLogger;
