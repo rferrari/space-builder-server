@@ -118,8 +118,6 @@ import * as botPrompts from "./botPrompts";
 import { getLatestEvent } from './api/event'
 
 import FileLogger from './lib/FileLogger'
-import { cat } from '@xenova/transformers';
-import { Result } from 'neverthrow';
 import { UserResponse } from '@neynar/nodejs-sdk/build/neynar-api/v2';
 // import { cat } from "@xenova/transformers";
 // import { config, configDotenv } from "dotenv";
@@ -158,7 +156,7 @@ export class BotAvatar {
   private chatPrompt: ChatPromptTemplate;
 
   private chatBotBackuptLLM: ChatGroq;
-  private chatBotLLM: ChatGroq;
+  private chatBotLLM: ChatOpenAI;
 
   private assistentLLM: ChatGroq;
 
@@ -237,10 +235,14 @@ export class BotAvatar {
       stop: null,
     });
 
-    this.chatBotLLM = new ChatGroq({
+    this.chatBotLLM = new ChatOpenAI({
+      openAIApiKey: botConfig.OPENAI_API_KEY,
       temperature: botConfig.BotLLMModel_TEMP,
-      model: botConfig.BotLLMModel,
-      stop: null,
+      modelName: botConfig.BotLLMModel,
+      // apiKey: botConfig.OPENAI_API_KEY,
+      // model: botConfig.BotLLMModel,
+      // modelName: "gpt-4-turbo",
+      // stop: null,
     });
 
     this.assistentLLM = new ChatGroq({
@@ -1098,8 +1100,8 @@ Rewritten TEXT:`;
     });
     const shouldReply = await this.generateShouldRespond(joinedConversation,tomVision + castObj.body.textWithMentions)
     if ((shouldReply as string).includes("IGNORE")) {
-      this.messagesLog.warn("Its Better " + shouldReply, LOG_ID);
-      this.messagesLog.log("@"+castObj.fName + ": "+castObj.body.textWithMentions, LOG_ID);
+      this.messagesLog.info("Its Better " + shouldReply, LOG_ID);
+      this.messagesLog.info("@"+castObj.fName + ": "+castObj.body.textWithMentions, LOG_ID);
       // return
     } else {
       this.messagesLog.warn("Lets Reply  @" + castObj.fName + " " + shouldReply , LOG_ID);

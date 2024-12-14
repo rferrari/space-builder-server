@@ -1,7 +1,7 @@
 import * as WebSocket from 'ws';
 import { BotAvatar } from './bot.controller';
 import { Farcaster } from './farcaster.controller';
-import DiscordBot from './discord/DiscordBot';
+import DiscordBot from './discord/DiscordApp';
 import { EventBus, EventBusImpl } from './eventBus.interface';
 import * as botConfig from "./config";
 // import botConfig from './config.js';

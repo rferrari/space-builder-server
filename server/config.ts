@@ -73,9 +73,12 @@ const llama32_3b_preview = "llama-3.2-3b-preview";
 const llama3_70b_8192 = "llama3-70b-8192";
 const llama32_90b_vision = "llama-3.2-90b-vision-preview";
 const llama_32_11b_vision = "llama-3.2-11b-vision-preview";
+const gpt_4o = "gpt-4o";
+const gpt_4_turbo = "gpt-4-turbo";
+
 
 // export const BotLLMModel = llama3_70b_8192;
-export const BotLLMModel = process.env.BOT_LLM_MODEL || llama3_8b_8192;
+export const BotLLMModel = process.env.BOT_LLM_MODEL || gpt_4_turbo;//gpt_4o;//llama3_8b_8192;
 export const BotLLMModel_TEMP = parseFloat(process.env.BOT_LLM_MODEL_TEMP) || 0.7;
 export const ChatBackupLLMModel = llama3_8b_8192;
 
@@ -87,22 +90,24 @@ export const VisionModel = llama32_90b_vision;
 export const GROQ_API_KEY = process.env.GROQ_API_KEY!;
 export const OPENAI_API_KEY = process.env.OPENAI_API_KEY!;
 
+export const OPENAI_BASE_URL = process.env.OPENAI_BASE_URL || "";
+
 export const NOTION_PAGE_ID = process.env.NOTION_PAGE_ID!;
 export const NOTION_INTEGRATION_TOKEN = process.env.NOTION_INTEGRATION_TOKEN!;
 //export const NOTION_PAGE_IDS = (process.env.NOTION_PAGE_IDS as string).split(",");
 
 export const NEYNAR_API_KEY = process.env.NEYNAR_API_KEY!;
-export const HUB_RPC = process.env.HUB_RPC!;
-export const HUB_SSL = process.env.HUB_SSL!;
+export const HUB_RPC = process.env.HUB_RPC! || "nemes.farcaster.xyz:2283";
+export const HUB_SSL = process.env.HUB_SSL! || "true";
 export const SIGNER_UUID = process.env.SIGNER_UUID!;
 
 
 export const DISCORD_ENABLED = process.env.DISCORD_ENABLED === 'true';
-export const DISCORD_TOKEN = process.env.DISCORD_TOKEN;
-export const DISCORD_OWNER_ID = process.env.DISCORD_OWNER_ID;
-export const DISCORD_CLIENT_ID = process.env.DISCORD_CLIENT_ID;
-export const DISCORD_GUILD_ID = process.env.DISCORD_GUILD_ID;
-export const DISCORD_CHANNEL_ID = process.env.DISCORD_CHANNEL_ID;
+export const DISCORD_TOKEN = process.env.DISCORD_TOKEN || "";
+export const DISCORD_OWNER_ID = process.env.DISCORD_OWNER_ID || "";
+export const DISCORD_CLIENT_ID = process.env.DISCORD_CLIENT_ID || "";
+export const DISCORD_GUILD_ID = process.env.DISCORD_GUILD_ID || "";
+export const DISCORD_CHANNEL_ID = process.env.DISCORD_CHANNEL_ID || "";
 
 export const PUBLISH_TO_DISCORD = process.env.PUBLISH_TO_DISCORD === 'true';
 

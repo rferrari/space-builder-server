@@ -255,6 +255,9 @@ class RAGSystem {
         // });
         const splittedDocs = await textSplitter.splitDocuments(docs.flat());
 
+        // console.warn("before"); this.printMemUsage();
+        // console.log("MemoryVectorStore.fromDocuments");
+
         try {
             this.vectorStore = await MemoryVectorStore.fromDocuments(
                 splittedDocs,
@@ -269,6 +272,7 @@ class RAGSystem {
             this.docsLoaded = false;
         }
 
+        // console.warn("after"); this.printMemUsage();
         this.docsLoading = false;
         return this.vectorStore;
     }
@@ -424,7 +428,7 @@ class RAGSystem {
         // console.log("----------------------------")
         // console.log("")
 
-        const graphResponse: GraphInterface = await this.ragApp.invoke(
+        const graphResponse = await this.ragApp.invoke(
             { question, conversationHistory },
             { configurable: { thread_id: crypto.randomUUID() } }
             

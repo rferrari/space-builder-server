@@ -377,9 +377,10 @@ class DiscordBot {
     // const channel = this.client.channels.cache.get("1312959664496836688");
     const guildChannel = this.client.guilds.cache.get(settings.GUILD_ID)
       .channels.cache.get(settings.CHANNEL_ID)
-    //("1312959316902281348")
-    // .channels.cache.get("1312959664496836688")
-
+      //("1312959316902281348")
+      // .channels.cache.get("1312959664496836688")
+      // .channels.cache.get("1312959316902281348")
+      
 
     try {
       if (imageUrl)
