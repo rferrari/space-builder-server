@@ -125,6 +125,12 @@ class BotCustomServer {
     botConfig.PUBLISH_TO_FARCASTER ? this.logger.warn(Yellow + `PUBLISH TO FARCASTER is ON  ✅` + Reset) : this.logger.warn(Yellow + "PUBLISH TO FARCASTER is OFF 🚨" + Reset);
     this.logger.log(botConfig.NEW_CASTS_INTERVAL_MIN > 0 ? Yellow + `Cast New Messages ${botConfig.NEW_CASTS_INTERVAL_MIN} minutes interval...  ✅` + Reset : Yellow + "Cast New Messages OFF 🚨" + Reset);
 
+    this.logger.log("🙃 TEMPERAMENT: " + botConfig.BotLLMModel_TEMP);
+    this.logger.log("🤖 Tom Model: " + botConfig.BotLLMModel);
+    this.logger.log("📄 RAG Model: " + botConfig.RAGLLMModel);
+    this.logger.log("👀 Vision: " + botConfig.VisionModel);
+    this.logger.log("💻 Assistent: " + botConfig.AssistentModel);
+
     if (botConfig.NEW_CASTS_INTERVAL_MIN > 0) {
       setInterval(async () => {
         this.handleCastNewMessagetoChannel().then((data) => {

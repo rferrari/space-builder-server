@@ -1,7 +1,7 @@
-const DEGUG_MESSAGES_COUNTER_LIMIT = 10
-var DEBUG_START="wait_docs"
-var DEGUG_MESSAGES_COUNTER = 0
-var DEBUG_COUNTER = 0
+// const DEGUG_MESSAGES_COUNTER_LIMIT = 10
+// var DEBUG_START="off"
+// var DEGUG_MESSAGES_COUNTER = 0
+// var DEBUG_COUNTER = 0
 
 // fetch conversation history last messages
 interface ConversationMessage {
@@ -701,29 +701,29 @@ export class Farcaster {
                 }
 
                 // DEBUG (optional logging block)
-                ragSystem.waitForDocumentsToLoad().then(() => {
-                    if(DEBUG_START=="wait_docs") {
-                        DEBUG_COUNTER = DEGUG_MESSAGES_COUNTER_LIMIT
-                        DEBUG_START="started"
-                    }
-                });
+                // ragSystem.waitForDocumentsToLoad().then(() => {
+                //     if(DEBUG_START=="wait_docs") {
+                //         DEBUG_COUNTER = DEGUG_MESSAGES_COUNTER_LIMIT
+                //         DEBUG_START="started"
+                //     }
+                // });
 
-                if (DEGUG_MESSAGES_COUNTER < DEBUG_COUNTER) {
-                    if (msgs[m].data.castAddBody.parentCastId) {
-                        if (msgs[m].data.castAddBody.parentCastId?.hash) {
-                            // if (msgs[m].data.castAddBody.embeds.length > 0) {
-                            // console.log(msgs[m].data.castAddBody.embeds[0].url);
-                            // if (msgs[m].data.castAddBody.embeds[0].url && msgs[m].data.castAddBody.embeds[0].url.includes("image")) {
-                            this.handleReceivedReply(msgs[m]);
-                //    console.log("New Cast to " + data.castAddBody.parentUrl);
-                //    console.log(formatCasts(msgs));
-                            DEGUG_MESSAGES_COUNTER++
-                            console.log("DEGUG_MESSAGES_COUNTER", DEGUG_MESSAGES_COUNTER)
-                        }
-                    }
-                //}
-                    // }
-                }
+                // if (DEGUG_MESSAGES_COUNTER < DEBUG_COUNTER) {
+                //     if (msgs[m].data.castAddBody.parentCastId) {
+                //         if (msgs[m].data.castAddBody.parentCastId?.hash) {
+                //             // if (msgs[m].data.castAddBody.embeds.length > 0) {
+                //             // console.log(msgs[m].data.castAddBody.embeds[0].url);
+                //             // if (msgs[m].data.castAddBody.embeds[0].url && msgs[m].data.castAddBody.embeds[0].url.includes("image")) {
+                //             this.handleReceivedReply(msgs[m]);
+                //             //    console.log("New Cast to " + data.castAddBody.parentUrl);
+                //             //    console.log(formatCasts(msgs));
+                //             DEGUG_MESSAGES_COUNTER++
+                //             console.log("DEGUG_MESSAGES_COUNTER", DEGUG_MESSAGES_COUNTER)
+                //         }
+                //     }
+                // //}
+                //     // }
+                // }
                 // })
                 // console.dir(msgs[m])
 
