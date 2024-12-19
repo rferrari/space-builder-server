@@ -36,7 +36,7 @@ export const MAX_USER_CACHE = 100;
 export const TARGETS = [
   527313,            //  nounspacetom
   // 862185,            //  aethernet
-  874542,             //  clanker
+  // 874542,             //  clanker
   // 382802,             //  askgina.eth
   // 364927,             //  paybot
   // 20596,              //  bountybot

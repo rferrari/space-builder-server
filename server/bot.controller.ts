@@ -1095,6 +1095,7 @@ Rewritten TEXT:`;
       clankerObj = await this.clanker.processCast(castObj);
       // console.dir(clankerObj);
     } catch (error) {
+      this.messagesLog.error(error, "CLANKER_ERROR")
       return { reply: undefined }
     }
 
@@ -1102,38 +1103,25 @@ Rewritten TEXT:`;
     const username = clankerObj.deployerInfo.username;
     const bio = clankerObj.deployerInfo.profile.bio.text;
 
-    const prompt = `
-Task: Generate a personalized and engaging 300-character message. The message should:
-
-1. Be fun, creative, and context-aware, referencing:
--The token’s name and symbol.
--The user's bio, username, and other provided details like about_token and image_description.
-2. Encourage action: Prompt the user to log in to Nounspace to customize their token's space, making it feel uniquely theirs.
-3. Reflect Nounspace’s vibe: Keep it casual, playful, slightly mischievous, yet welcoming and clear. Use puns, clever references, and wordplay to match the tone.
-
-Tips for Better Output:
--Include dynamic personalization to create a strong sense of connection.
--Maintain clarity despite the creative tone.
-
+    const prompt = botPrompts.CLANKER_REPLY_PROMPT + `
 username: ${username}
 user's bio: ${bio}
 <about_token>
 ${image_description}
-<nounspace_page>${clankerObj.nounspacePage}</nounspace_page>
 ${clankerObj.historyConversation}
 <about_token>
 `;
 
     try {
       reply = await this.chatBotLLM.invoke(prompt)
-      const theTokenReply = reply.content;//+ `\n @${username}, here your token nounspace page: ${clankerObj.nounspacePage}`;
+      const theTokenReply = reply.content + `\n @${username}, here your token nounspace page: ${clankerObj.nounspacePage}`;
 
-      this.messagesLog.log("", "TOKEN_CREATION");
-      this.messagesLog.log("------------ NEW TOKEN DEPLOYED by: " + username, "TOKEN_CREATION");
-      this.messagesLog.log(`<prompt>${prompt}</prompt>`, "TOKEN_CREATION");
-      this.messagesLog.log("", "TOKEN_CREATION");
-      this.messagesLog.log(theTokenReply, "TOKEN_CREATION");
-      this.messagesLog.log("", "TOKEN_CREATION");
+      this.messagesLog.log("", "CLANKER");
+      this.messagesLog.log("------------ NEW TOKEN DEPLOYED by: " + username, "CLANKER");
+      // this.messagesLog.log(`<prompt>${prompt}</prompt>`, "CLANKER");
+      // this.messagesLog.log("", "CLANKER");
+      this.messagesLog.log(theTokenReply, "CLANKER");
+      this.messagesLog.log("", "CLANKER");
 
       return {
         reply: theTokenReply,
@@ -1142,9 +1130,9 @@ ${clankerObj.historyConversation}
       };
 
     } catch (error) {
-      this.messagesLog.log("", "TOKEN_CREATION");
-      this.messagesLog.error(error, "TOKEN_CREATION_ERROR");
-      this.messagesLog.log("", "TOKEN_CREATION");
+      this.messagesLog.log("", "CLANKER_ERROR");
+      this.messagesLog.error(error, "CLANKER_ERROR");
+      this.messagesLog.log("", "CLANKER_ERROR");
 
       return { reply: undefined };
     }
@@ -1164,11 +1152,11 @@ ${clankerObj.historyConversation}
 
     // const shouldReply = await this.generateShouldRespond(joinedConversation, tomVision + castObj.body.textWithMentions)
     // if ((shouldReply as string).includes("IGNORE")) {
-      // this.messagesLog.info("Its Better " + shouldReply, LOG_ID);
-      // this.messagesLog.info("@" + castObj.fName + ": " + castObj.body.textWithMentions, LOG_ID);
-      // return
+    // this.messagesLog.info("Its Better " + shouldReply, LOG_ID);
+    // this.messagesLog.info("@" + castObj.fName + ": " + castObj.body.textWithMentions, LOG_ID);
+    // return
     // } else {
-      // this.messagesLog.warn("Lets Reply  @" + castObj.fName + " " + shouldReply, LOG_ID);
+    // this.messagesLog.warn("Lets Reply  @" + castObj.fName + " " + shouldReply, LOG_ID);
     // }
     // this.messagesLog.warn("", LOG_ID)
 
