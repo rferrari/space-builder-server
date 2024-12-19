@@ -100,3 +100,11 @@ export type BotCastObj = {
     timestamp: Date;
     body: CastAddBodyJson;
 };
+
+export type ClankerBotResponse = {
+    historyConversation: Conversation,
+    deployerInfo: any
+    imageUrls: any,
+    nounspacePage: string,
+    thread_hash,
+}

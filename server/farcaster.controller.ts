@@ -69,7 +69,7 @@ import {
     Protocol,
 } from '@farcaster/hub-nodejs'
 
-import { CastParamType, FeedType, FilterType, isApiErrorResponse } from "@neynar/nodejs-sdk";
+// import { CastParamType, FeedType, FilterType, isApiErrorResponse } from "@neynar/nodejs-sdk";
 import neynarClient from "./lib/neynarClient";
 import neynarHubClient from "./lib/neynarClient";
 
@@ -87,8 +87,11 @@ import FileLogger from './lib/FileLogger'
 
 import { VerificationProtocol, MessageBodyJson, BotCastObj, CastAddBodyJson, BotChatMessage } from './bot.types';
 import { inspect } from 'node:util';
-import { BulkUsersResponse, CastWithInteractions, Conversation, UserResponse } from '@neynar/nodejs-sdk/build/neynar-api/v2';
+// import { BulkUsersResponse, CastWithInteractions, Conversation, UserResponse } from '@neynar/nodejs-sdk/build/neynar-api/v2';
 import { ragSystem } from './ragSystem';
+import { UserResponse } from '@neynar/nodejs-sdk/build/api/models/user-response';
+import { CastParamType, CastWithInteractions, FeedType, FilterType } from '@neynar/nodejs-sdk/build/api/models';
+import { isApiErrorResponse } from '@neynar/nodejs-sdk/build';
 
 const urlMatchesTargetChannel = (url: string): boolean => botConfig.TARGET_CHANNELS.some(target => url.endsWith(target));
 
@@ -530,10 +533,10 @@ export class Farcaster {
     public async getTrendingFeed(filter = FilterType.GlobalTrending) {
         let trendingFeed = "";
         try {
-            const feed = await neynarClient.fetchFeed(
-                FeedType.Filter,
-                { filterType: filter, }
-            );
+            const feed = await neynarClient.fetchFeed({
+                feedType: FeedType.Filter,
+                filterType: filter,
+            });
             for (const cast of Object.values(feed.casts))
                 trendingFeed += `${cast.author.display_name}: ${cast.text}`;
         } catch (err) {
@@ -587,9 +590,16 @@ export class Farcaster {
         }
 
         neynarClient
-            .publishCast(botConfig.SIGNER_UUID, msg, options)
+            .publishCast({
+                signerUuid: botConfig.SIGNER_UUID, 
+                text: msg, 
+                channelId: options.channelId,
+                parentAuthorFid: options.parent_author_fid,
+                parent: options.replyTo,
+
+    })
             .then(response_data => {
-                this.farcasterLog.log("Cast published successfully: " + response_data.hash, "INFO")
+                this.farcasterLog.log("Cast published successfully: " + response_data.cast.hash, "INFO")
             })
             .catch(error => {
                 if (isApiErrorResponse(error)) {
@@ -620,12 +630,12 @@ export class Farcaster {
 
 
         if ((options.replyTo) && (options.parent_author_fid)) {
-            neynarClient.publishReactionToCast(
-                botConfig.SIGNER_UUID,
-                'like',
-                options.replyTo,
-                options.parent_author_fid
-            ).then(response => {
+            neynarClient.publishReaction({
+                signerUuid: botConfig.SIGNER_UUID,
+                reactionType: 'like',
+                target: options.replyTo,
+                targetAuthorFid: options.parent_author_fid
+            }).then(response => {
                 this.farcasterLog.log("Reaction published successfully ", "INFO")
                 // console.log('Publish Reaction Operation Status:', response); // Outputs the status of the reaction post
             }).catch(error => {
@@ -681,13 +691,16 @@ export class Farcaster {
                     return;
                 }
 
-                if (data.castAddBody.parentCastId && botConfig.TARGETS.includes(data.castAddBody.parentCastId.fid)) {
+                // if (data.castAddBody.parentCastId && botConfig.TARGETS.includes(data.castAddBody.parentCastId.fid)) {
+                if ((data.castAddBody.parentCastId)
+                    && (botConfig.BotFID == data.castAddBody.parentCastId.fid)) {
                     // Target found on parentCastId (Reply)
                     this.handleReceivedReply(msgs[m]);
                     return;
                 }
 
-                const foundMention = data.castAddBody.mentions.find(mention => botConfig.TARGETS.includes(mention));
+                // const foundMention = data.castAddBody.mentions.find(mention => botConfig.TARGETS.includes(mention));
+                const foundMention = data.castAddBody.mentions.find(mention => botConfig.BotFID == mention);
                 if (foundMention) {
                     // Target found on Mention
                     this.handleMentioned(msgs[m], foundMention);
@@ -697,6 +710,11 @@ export class Farcaster {
                 if (data.castAddBody.parentUrl && urlMatchesTargetChannel(data.castAddBody.parentUrl)) {
                     // parentUrl Matches Channel
                     this.handleTargetChannelCast(msgs[m]);
+                    return;
+                }
+
+                if (data.castAddBody.embeds && data.castAddBody.embeds.find(embeds => botConfig.BotFID == embeds.castId?.fid)){
+                    this.handleQuoteCasts(msgs[m])
                     return;
                 }
 
@@ -791,7 +809,10 @@ export class Farcaster {
     private async getUserDataFromFname(fname: string): Promise<UserResponse> {
         try {
             const userData = await neynarClient
-                .lookupUserByUsernameV2(fname, { viewerFid: botConfig.BotFID })
+                .lookupUserByUsername({
+                    username: fname,
+                    viewerFid: botConfig.BotFID 
+                })
             // .fetchBulkUsers([fid], { viewerFid: botConfig.BotFID });
             // const userData = result; //select first result
             // this.farcasterLog.log(userData, "UserData");
@@ -857,6 +878,13 @@ export class Farcaster {
         //     }
         //     // this.eventBus.publish("CAST_ADD", chatmessage);
         // }
+    }
+
+    private async handleQuoteCasts(message: Message): Promise<void> {
+        // const tName = await this.handleTargetFid(message.data.castAddBody.parentCastId.fid);  // farcaster (User)Name 
+        const castObj = await this.createCastObj(message);
+        // console.dir(castObj);
+        this.eventBus.publish("WAS_REPLIED", castObj);
     }
 
     private async handleReceivedReply(message: Message): Promise<void> {
@@ -948,13 +976,13 @@ export class Farcaster {
         var lastMessages: BotChatMessage[] = [];
         try {
             const response = await neynarClient.lookupCastConversation(
-                castHashOrUrl, castParamType,
-                {
+                {identifier: castHashOrUrl, 
+                    type: castParamType,
                     replyDepth: 2,
                     includeChronologicalParentCasts: true,
                     viewerFid: botConfig.TARGETS[0],
                     limit: botConfig.LAST_CONVERSATION_LIMIT
-    //                 limit: 10,
+                    //                 limit: 10,
                     // cursor: "nextPageCursor" // Omit this parameter for the initial request
                 }
             )
@@ -970,7 +998,7 @@ export class Farcaster {
                         imageUrl = embed.url;
                     }
                     return { name: message.author.username, message: message.text, imageUrl };
-    //                 return `@${message.author.username}: ${message.text}\n`;
+                    // return `@${message.author.username}: ${message.text}\n`;
 
                 });
 

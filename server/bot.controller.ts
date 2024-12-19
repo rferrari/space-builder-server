@@ -118,7 +118,11 @@ import * as botPrompts from "./botPrompts";
 import { getLatestEvent } from './api/event'
 
 import FileLogger from './lib/FileLogger'
-import { UserResponse } from '@neynar/nodejs-sdk/build/neynar-api/v2';
+// import { UserResponse } from '@neynar/nodejs-sdk/build/';
+import { ClankerBot } from './lib/ClankerBot';
+import neynarClient from './lib/neynarClient';
+import { UserResponse } from '@neynar/nodejs-sdk/build/api/models/user-response';
+import { cat } from '@xenova/transformers/types/transformers';
 // import { cat } from "@xenova/transformers";
 // import { config, configDotenv } from "dotenv";
 
@@ -181,6 +185,8 @@ export class BotAvatar {
 
 
   private lastTrendingSummary: MessageContent;
+
+  private clanker: ClankerBot;
 
   // Internal Clock
   private agora: Date;
@@ -681,7 +687,7 @@ Summary:`;
   }
 
 
-  private async generateShouldRespond(history: string, query: string){
+  private async generateShouldRespond(history: string, query: string) {
     // Create an array of messages
     const promptTemplate = PromptTemplate.fromTemplate(
       botPrompts.shouldRespondTemplate
@@ -749,142 +755,142 @@ Summary:`;
     return ragContext;
   }
 
-//   private async replyMention(user: string, userQuery: string, vision: string = "",
-//     conversation: BotChatMessage[] = [], userDataInfo: UserResponse = null) {
-//     const config = { configurable: { thread_id: user + "_thread" } };
-//     var joinedConversation: string = '';
-//     var userInfoAbout: string = '';
-//     var userPrompt: string = '';
-//     const LOG_ID = "MENTION" + user
+  //   private async replyMention(user: string, userQuery: string, vision: string = "",
+  //     conversation: BotChatMessage[] = [], userDataInfo: UserResponse = null) {
+  //     const config = { configurable: { thread_id: user + "_thread" } };
+  //     var joinedConversation: string = '';
+  //     var userInfoAbout: string = '';
+  //     var userPrompt: string = '';
+  //     const LOG_ID = "MENTION" + user
 
-//     // set userInfo
-//     if (userDataInfo) {
-//       userInfoAbout = this.userDataInfo2Text(userDataInfo)
-//     }
+  //     // set userInfo
+  //     if (userDataInfo) {
+  //       userInfoAbout = this.userDataInfo2Text(userDataInfo)
+  //     }
 
-//     // Swap Memories retrieving the relevant messages based on keywords
-//     // experimental
-//     // this.chatChain.memory = await this.getCombinedMemory(user, userQuery);
-//     const relevantMemory = await this.getRelevantUserMemory(user, userQuery);
-//     this.chatChain.memory = relevantMemory;
+  //     // Swap Memories retrieving the relevant messages based on keywords
+  //     // experimental
+  //     // this.chatChain.memory = await this.getCombinedMemory(user, userQuery);
+  //     const relevantMemory = await this.getRelevantUserMemory(user, userQuery);
+  //     this.chatChain.memory = relevantMemory;
 
-//     // set conversationContent
-//     // filter and create a conversation content history for RAG System
-//     const chatHistoryMessages = await relevantMemory.chatHistory.getMessages();
-//     const filteredMessages = chatHistoryMessages.slice(botConfig.LAST_CONVERSATION_LIMIT); // Adjust the number as needed
-//     const memoryConversationContent = filteredMessages.map((message) => {
-//       // Check the type of the message and assign the name accordingly
-//       const name = message instanceof AIMessage ? botConfig.BotName :
-//         message instanceof HumanMessage ? user : 'User'; // Fallback in case of an unexpected type
-//       return `@${name}: ${message.content}`;
-//     }).join('\n'); // Join all messages with a newline
-
-
-//     if (conversation.length > 0) {
-//       conversation.forEach((message) => {
-//         joinedConversation += `User @${message.name} said: "${message.message}"\n\n`;
-//       });
-//       // joinedConversation += `\n`;
-//     }
+  //     // set conversationContent
+  //     // filter and create a conversation content history for RAG System
+  //     const chatHistoryMessages = await relevantMemory.chatHistory.getMessages();
+  //     const filteredMessages = chatHistoryMessages.slice(botConfig.LAST_CONVERSATION_LIMIT); // Adjust the number as needed
+  //     const memoryConversationContent = filteredMessages.map((message) => {
+  //       // Check the type of the message and assign the name accordingly
+  //       const name = message instanceof AIMessage ? botConfig.BotName :
+  //         message instanceof HumanMessage ? user : 'User'; // Fallback in case of an unexpected type
+  //       return `@${name}: ${message.content}`;
+  //     }).join('\n'); // Join all messages with a newline
 
 
-//     // if using RAG system... include conversationContent + userQuery
-//     // const ragContext = await this.getRAGContext(userQuery, user, memoryConversationContent);
-//     const ragHisstory = conversation.length > 0 ? joinedConversation : memoryConversationContent;
-//     const ragContext = await this.getRAGContext(userQuery, user, ragHisstory);
+  //     if (conversation.length > 0) {
+  //       conversation.forEach((message) => {
+  //         joinedConversation += `User @${message.name} said: "${message.message}"\n\n`;
+  //       });
+  //       // joinedConversation += `\n`;
+  //     }
 
-//     // build user Prompt form user Query
-//     // userPrompt = userQuery;
 
-//     if (joinedConversation.length > 0) userPrompt = `Continue this conversation:
-// <conversation_history>
-// ${joinedConversation}
-// </conversation_history>
+  //     // if using RAG system... include conversationContent + userQuery
+  //     // const ragContext = await this.getRAGContext(userQuery, user, memoryConversationContent);
+  //     const ragHisstory = conversation.length > 0 ? joinedConversation : memoryConversationContent;
+  //     const ragContext = await this.getRAGContext(userQuery, user, ragHisstory);
 
-// ${userPrompt}`;
+  //     // build user Prompt form user Query
+  //     // userPrompt = userQuery;
 
-//     // experimental vision
-//     if (vision && vision !== "") userPrompt = `${vision}\n${userPrompt}`;
-//     // if (userInfoAbout && userInfoAbout !== "") userPrompt = `${userInfoAbout}\n${userQuery}`;
+  //     if (joinedConversation.length > 0) userPrompt = `Continue this conversation:
+  // <conversation_history>
+  // ${joinedConversation}
+  // </conversation_history>
 
-//     // console.log("Prompt")
-//     // console.log(userQuery)
+  // ${userPrompt}`;
 
-//     // Swap Memories retrieving the relevant messages based on keywords
-//     // experimental
-//     // this.chatChain.memory = await this.getCombinedMemory(user, userQuery);
+  //     // experimental vision
+  //     if (vision && vision !== "") userPrompt = `${vision}\n${userPrompt}`;
+  //     // if (userInfoAbout && userInfoAbout !== "") userPrompt = `${userInfoAbout}\n${userQuery}`;
 
-//     userPrompt += `@${user}: ${userQuery}`;
+  //     // console.log("Prompt")
+  //     // console.log(userQuery)
 
-//     // Debug
-//     this.messagesLog.log(`-------Debug ${user} PROMPT:`, "PROMPT")
-//     // this.messagesLog.log(`<user_input>\n${userQuery}\n</user_input>\n\n`, "PROMPT")
-//     // this.messagesLog.log(`Prompt:`, "PROMPT")
-//     this.messagesLog.log(userPrompt, "PROMPT")
-//     this.messagesLog.log(`-------`, "PROMPT")
-//     this.messagesLog.log(``, "PROMPT")
+  //     // Swap Memories retrieving the relevant messages based on keywords
+  //     // experimental
+  //     // this.chatChain.memory = await this.getCombinedMemory(user, userQuery);
 
-//     try {
-//       // throw new Error('This is a TEST backup system error!');
-//       var reply = await this.chatChain.invoke({
-//         context: ragContext,
-//         userquery: userPrompt,
-//       }, config);
-//     } catch (error) {
-//       this.messagesLog.error("FALLBACK BACKUP LLM SYSTEM", "ERROR");
-//       this.messagesLog.error(error, "ERROR");
-//       this.chatChain.llm = this.chatBotBackuptLLM;
-//       var reply = await this.chatChain.invoke({
-//         context: ragContext,
-//         userquery: userPrompt,
-//       }, config);
+  //     userPrompt += `@${user}: ${userQuery}`;
 
-//       this.chatChain.llm = this.chatBotLLM;
-//       this.messagesLog.error("backup response:", "ERROR");
-//       this.messagesLog.error(reply.response, "ERROR");
-//       this.messagesLog.error("chatBotLLM restored", "ERROR");
-//     }
+  //     // Debug
+  //     this.messagesLog.log(`-------Debug ${user} PROMPT:`, "PROMPT")
+  //     // this.messagesLog.log(`<user_input>\n${userQuery}\n</user_input>\n\n`, "PROMPT")
+  //     // this.messagesLog.log(`Prompt:`, "PROMPT")
+  //     this.messagesLog.log(userPrompt, "PROMPT")
+  //     this.messagesLog.log(`-------`, "PROMPT")
+  //     this.messagesLog.log(``, "PROMPT")
 
-//     // console.log("this.chatChain.prompt");
-//     // console.log(this.chatChain.prompt);
+  //     try {
+  //       // throw new Error('This is a TEST backup system error!');
+  //       var reply = await this.chatChain.invoke({
+  //         context: ragContext,
+  //         userquery: userPrompt,
+  //       }, config);
+  //     } catch (error) {
+  //       this.messagesLog.error("FALLBACK BACKUP LLM SYSTEM", "ERROR");
+  //       this.messagesLog.error(error, "ERROR");
+  //       this.chatChain.llm = this.chatBotBackuptLLM;
+  //       var reply = await this.chatChain.invoke({
+  //         context: ragContext,
+  //         userquery: userPrompt,
+  //       }, config);
 
-//     //
-//     // check reply size
-//     var textSize = new TextEncoder().encode(encodeURI(reply.response)).byteLength;
-//     var retryCounter = 0;
-//     while ((textSize > 1024) || retryCounter > 3) {
-//       let retryPrompt =
-//         `Rewrite this text to make it concise and under 1024 bytes. Output only the rewritten text: ${reply.response}`;
-//       this.messagesLog.log(`------- RETRYPROMPT  #${retryCounter} (${textSize} bytes) --------`, LOG_ID);
-//       // console.log(retryPrompt);
-//       // console.log("----------------------------");
+  //       this.chatChain.llm = this.chatBotLLM;
+  //       this.messagesLog.error("backup response:", "ERROR");
+  //       this.messagesLog.error(reply.response, "ERROR");
+  //       this.messagesLog.error("chatBotLLM restored", "ERROR");
+  //     }
 
-//       reply = await this.chatBotLLM.invoke(retryPrompt)
+  //     // console.log("this.chatChain.prompt");
+  //     // console.log(this.chatChain.prompt);
 
-//       reply.response = reply.content
-//       textSize = new TextEncoder().encode(encodeURI(reply.response)).byteLength;
-//       retryCounter++;
-//       this.messagesLog.log(`------- RETRY #${retryCounter} (${textSize} bytes) --------`, LOG_ID);
-//       // console.log(reply.response);
-//       // console.log("----------------------------");
-//       const delay = 30000; // 30 seconds
-//       await new Promise(resolve => setTimeout(resolve, delay));
-//     }
+  //     //
+  //     // check reply size
+  //     var textSize = new TextEncoder().encode(encodeURI(reply.response)).byteLength;
+  //     var retryCounter = 0;
+  //     while ((textSize > 1024) || retryCounter > 3) {
+  //       let retryPrompt =
+  //         `Rewrite this text to make it concise and under 1024 bytes. Output only the rewritten text: ${reply.response}`;
+  //       this.messagesLog.log(`------- RETRYPROMPT  #${retryCounter} (${textSize} bytes) --------`, LOG_ID);
+  //       // console.log(retryPrompt);
+  //       // console.log("----------------------------");
 
-//     // ^ matches start, $ matches end, | matches either " or '
-//     const finalMessage = reply.response.replace(/^"|"$/g, '');
+  //       reply = await this.chatBotLLM.invoke(retryPrompt)
 
-//     this.addtoBotMemory(user, userQuery, finalMessage)
-//     await this.addtoUserMemory(user, userQuery, finalMessage)
+  //       reply.response = reply.content
+  //       textSize = new TextEncoder().encode(encodeURI(reply.response)).byteLength;
+  //       retryCounter++;
+  //       this.messagesLog.log(`------- RETRY #${retryCounter} (${textSize} bytes) --------`, LOG_ID);
+  //       // console.log(reply.response);
+  //       // console.log("----------------------------");
+  //       const delay = 30000; // 30 seconds
+  //       await new Promise(resolve => setTimeout(resolve, delay));
+  //     }
 
-//     await this.sumarizeUserHistoryMemory(user);
+  //     // ^ matches start, $ matches end, | matches either " or '
+  //     const finalMessage = reply.response.replace(/^"|"$/g, '');
 
-//     // return response to be published
-//     return {
-//       name: botConfig.BotName,
-//       message: finalMessage,
-//     };
-//   }
+  //     this.addtoBotMemory(user, userQuery, finalMessage)
+  //     await this.addtoUserMemory(user, userQuery, finalMessage)
+
+  //     await this.sumarizeUserHistoryMemory(user);
+
+  //     // return response to be published
+  //     return {
+  //       name: botConfig.BotName,
+  //       message: finalMessage,
+  //     };
+  //   }
 
 
   private async replyMessage(user: string, userQuery: string, vision: string = "",
@@ -991,15 +997,15 @@ ${userPrompt}`;
     var textSize = new TextEncoder().encode(encodeURI(reply.response)).byteLength;
     var retryCounter = 0;
     while ((textSize > 1024) || retryCounter > 3) {
-      let retryPrompt = 
-`Rewrite this text to make it concise and under 1024 bytes DO NOT INCLUDE "Here is the rewritten text:" Just RAW OUTPUT.
+      let retryPrompt =
+        `Rewrite this text to make it concise and under 1024 bytes DO NOT INCLUDE "Here is the rewritten text:" Just RAW OUTPUT.
 
 <text>
 ${reply.response}
 <text>
 
 Rewritten TEXT:`;
-      
+
       this.messagesLog.log(`------- RETRYPROMPT  #${retryCounter} (${textSize} bytes) --------`, LOG_ID);
       // console.log(retryPrompt);
       // console.log("----------------------------");
@@ -1022,8 +1028,8 @@ Rewritten TEXT:`;
     if (/namespace/i.test(finalMessage))
       console.warn("MISSPELL: namespace found in reply response");
     finalMessage = finalMessage
-        .replace(/^"|"$/g, '')                  
-        .replace(/namespace/g, 'nounspace');
+      .replace(/^"|"$/g, '')
+      .replace(/namespace/g, 'nounspace');
 
     // const finalMessage = reply.response
     //   .replace(/^"|"$/g, '')
@@ -1044,26 +1050,103 @@ Rewritten TEXT:`;
 
   // a message from target was sent, adding it to bot context
   private async handleCastAddMessage(castObj: BotCastObj): Promise<void> {
-    // const message = `${msgs.name} said: ${msgs.message}`;
     if (!botConfig.TARGETS.includes(castObj.fid)) return
-
     const message = castObj.body.textWithMentions;
 
-    this.stringPromptMemory.chatHistory.addMessage(new AIMessage({
-      content: message,
-      id: botConfig.BotName,
-      name: botConfig.BotName
-    }));
+    switch (castObj.fid) {
+      case 874542:    // clanker
+
+        const { reply, hash, fid } = await this.handleClankerNewMessages((castObj));
+        if (!reply) break;
+        this.farcaster.publishUserReply(reply, hash, fid);
+        break;
+
+      case 527313:    // nounspacetom
+        this.stringPromptMemory.chatHistory.addMessage(new AIMessage({
+          content: message,
+          id: botConfig.BotName,
+          name: botConfig.BotName
+        }));
+        break;
+
+      default:
+        break;
+    }
+
 
     if (botConfig.LOG_MESSAGES) {
       let logid = "NEW_CAST";
       this.newCasts.log("---- NEW TARGET MESSAGES WAS PUBLISHED by @" + castObj.fName, logid);
-      // this.newCasts.log("NEW_CAST:", logid);
-      // this.newCasts.log("", logid);
       this.newCasts.log(message, logid);
       this.newCasts.log("", logid);
     }
-    // console.dir(msgs);
+  }
+
+
+  async handleClankerNewMessages(castObj: BotCastObj) {
+    if (!this.clanker) {
+      this.clanker = new ClankerBot();
+    }
+
+    let clankerObj: any;
+    let reply: any;
+    try {
+      clankerObj = await this.clanker.processCast(castObj);
+      // console.dir(clankerObj);
+    } catch (error) {
+      return { reply: undefined }
+    }
+
+    const image_description = await this.visionTool(clankerObj.imageUrls, clankerObj.historyConversation);
+    const username = clankerObj.deployerInfo.username;
+    const bio = clankerObj.deployerInfo.profile.bio.text;
+
+    const prompt = `
+Task: Generate a personalized and engaging 300-character message. The message should:
+
+1. Be fun, creative, and context-aware, referencing:
+-The token’s name and symbol.
+-The user's bio, username, and other provided details like about_token and image_description.
+2. Encourage action: Prompt the user to log in to Nounspace to customize their token's space, making it feel uniquely theirs.
+3. Reflect Nounspace’s vibe: Keep it casual, playful, slightly mischievous, yet welcoming and clear. Use puns, clever references, and wordplay to match the tone.
+
+Tips for Better Output:
+-Include dynamic personalization to create a strong sense of connection.
+-Maintain clarity despite the creative tone.
+
+username: ${username}
+user's bio: ${bio}
+<about_token>
+${image_description}
+<nounspace_page>${clankerObj.nounspacePage}</nounspace_page>
+${clankerObj.historyConversation}
+<about_token>
+`;
+
+    try {
+      reply = await this.chatBotLLM.invoke(prompt)
+      const theTokenReply = reply.content;//+ `\n @${username}, here your token nounspace page: ${clankerObj.nounspacePage}`;
+
+      this.messagesLog.log("", "TOKEN_CREATION");
+      this.messagesLog.log("------------ NEW TOKEN DEPLOYED by: " + username, "TOKEN_CREATION");
+      this.messagesLog.log(`<prompt>${prompt}</prompt>`, "TOKEN_CREATION");
+      this.messagesLog.log("", "TOKEN_CREATION");
+      this.messagesLog.log(theTokenReply, "TOKEN_CREATION");
+      this.messagesLog.log("", "TOKEN_CREATION");
+
+      return {
+        reply: theTokenReply,
+        hash: clankerObj.thread_hash,
+        fid: clankerObj.deployerInfo.fid,
+      };
+
+    } catch (error) {
+      this.messagesLog.log("", "TOKEN_CREATION");
+      this.messagesLog.error(error, "TOKEN_CREATION_ERROR");
+      this.messagesLog.log("", "TOKEN_CREATION");
+
+      return { reply: undefined };
+    }
   }
 
 
@@ -1086,7 +1169,7 @@ Rewritten TEXT:`;
     //debug
 
     const tomVision = await this.visionTool(castObj.body.embeds, castObj.body.textWithMentions);
-    if(tomVision) {
+    if (tomVision) {
       console.log("TOMVISION")
       console.log(tomVision)
     }
@@ -1098,13 +1181,13 @@ Rewritten TEXT:`;
     lastConversation.forEach((message) => {
       joinedConversation += `User @${message.name} said: "${message.message}"\n\n`;
     });
-    const shouldReply = await this.generateShouldRespond(joinedConversation,tomVision + castObj.body.textWithMentions)
+    const shouldReply = await this.generateShouldRespond(joinedConversation, tomVision + castObj.body.textWithMentions)
     if ((shouldReply as string).includes("IGNORE")) {
       this.messagesLog.info("Its Better " + shouldReply, LOG_ID);
-      this.messagesLog.info("@"+castObj.fName + ": "+castObj.body.textWithMentions, LOG_ID);
-      // return
+      this.messagesLog.info("@" + castObj.fName + ": " + castObj.body.textWithMentions, LOG_ID);
+      return
     } else {
-      this.messagesLog.warn("Lets Reply  @" + castObj.fName + " " + shouldReply , LOG_ID);
+      this.messagesLog.warn("Lets Reply  @" + castObj.fName + " " + shouldReply, LOG_ID);
     }
     this.messagesLog.warn("", LOG_ID)
 
@@ -1124,13 +1207,13 @@ Rewritten TEXT:`;
     }
 
     // if (lastConversation && lastConversation.length > 0) {
-      // let joinedConversation = '';
-      // lastConversation.forEach((message) => {
-      //   joinedConversation += `@${message.name}: ${message.message}\n`;
-      // });
-      this.messagesLog.log(`Last Conversation: `, LOG_ID)
-      this.messagesLog.log(joinedConversation, LOG_ID)
-      this.messagesLog.log("------")
+    // let joinedConversation = '';
+    // lastConversation.forEach((message) => {
+    //   joinedConversation += `@${message.name}: ${message.message}\n`;
+    // });
+    this.messagesLog.log(`Last Conversation: `, LOG_ID)
+    this.messagesLog.log(joinedConversation, LOG_ID)
+    this.messagesLog.log("------")
     // }
 
     this.messagesLog.log("", LOG_ID)
@@ -1743,12 +1826,13 @@ OUTPUT:`);
         imageDescription = "A picture of a beautiful person";
 
       // const guess = recognitionResponse.content;
-      result += `<image_description>\n${imageDescription}\n</image_description>\n`
+      result += `<image_description>\n${imageDescription
+        }\n </image_description>\n`
     };
     return result
 
     // const BOT_VISION_PROMPT = `What's in this image in one short sentence?`
-// const BOT_VISION_PROMPT = `What is in this image described in a maximum of 300 characters?`
+    // const BOT_VISION_PROMPT = `What is in this image described in a maximum of 300 characters?`
     //     const BOT_VISION_RECOGNITION =
     //       `You will receive an Image Description and your job its to
     // guess what is about and here are some informations that you may find interesting to guess it.
@@ -1774,41 +1858,41 @@ OUTPUT:`);
     OUTPUT: `
     */
 
-// try {
-//   const chatCompletion = await this.botVision.chat.completions.create({
-//     "messages": [
-//       {
-//         "role": "user", "content": [
-//           {
-//             "type": "text",
-//             "text": BOT_VISION_PROMPT,
-//           },
-//           {
-//             "type": "image_url",
-//             "image_url": {
-//               "url": firstImage
-//             }
-//           }
-//         ]
-//       }
-//     ],
-//     "model": botConfig.VisionModel,
-//     "temperature": 1,
-//     "max_tokens": 1024,
-//     "top_p": 1,
-//     "stream": false,
-//     "stop": null
-//   });
+    // try {
+    //   const chatCompletion = await this.botVision.chat.completions.create({
+    //     "messages": [
+    //       {
+    //         "role": "user", "content": [
+    //           {
+    //             "type": "text",
+    //             "text": BOT_VISION_PROMPT,
+    //           },
+    //           {
+    //             "type": "image_url",
+    //             "image_url": {
+    //               "url": firstImage
+    //             }
+    //           }
+    //         ]
+    //       }
+    //     ],
+    //     "model": botConfig.VisionModel,
+    //     "temperature": 1,
+    //     "max_tokens": 1024,
+    //     "top_p": 1,
+    //     "stream": false,
+    //     "stop": null
+    //   });
 
-//   imageDescription = chatCompletion.choices[0].message.content;
-// } catch (error) {
-//   console.log(error);
-//   return undefined
-// }
+    //   imageDescription = chatCompletion.choices[0].message.content;
+    // } catch (error) {
+    //   console.log(error);
+    //   return undefined
+    // }
 
-// if (imageDescription === "") return ""
-// if (imageDescription === "Unfortunately, I cannot identify people based on their photographs.")
-//   imageDescription = "A picture of a beautiful person";
+    // if (imageDescription === "") return ""
+    // if (imageDescription === "Unfortunately, I cannot identify people based on their photographs.")
+    //   imageDescription = "A picture of a beautiful person";
 
     // const recognitionResponse = await this.assistentLLM.invoke([
     //   ["system", BOT_VISION_RECOGNITION,],
@@ -1816,10 +1900,10 @@ OUTPUT:`);
     // ]);
 
     // const guess = recognitionResponse.content;
-// const result = `<image_description>\n${imageDescription}\n</image_description>\n`
+    // const result = `<image_description>\n${imageDescription}\n</image_description>\n`
     // const result = `<image_description>\n${imageDescription}\n</image_description>\n<image_guess>\n${guess}\n</image_guess>\n`
     // console.log(result);
-// return result
+    // return result
   }
 
 
