@@ -22,7 +22,7 @@ type CastIdJson = {
 export type CastAddBodyJson = {
     text: string;
     textWithMentions?: string;
-    embeds?: string[];
+    embeds?: any[];
     mentions?: number[];
     mentionsPositions?: number[];
     parent?: CastIdJson;

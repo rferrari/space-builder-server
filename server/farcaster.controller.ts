@@ -591,13 +591,13 @@ export class Farcaster {
 
         neynarClient
             .publishCast({
-                signerUuid: botConfig.SIGNER_UUID, 
-                text: msg, 
+                signerUuid: botConfig.SIGNER_UUID,
+                text: msg,
                 channelId: options.channelId,
                 parentAuthorFid: options.parent_author_fid,
                 parent: options.replyTo,
 
-    })
+            })
             .then(response_data => {
                 this.farcasterLog.log("Cast published successfully: " + response_data.cast.hash, "INFO")
             })
@@ -713,7 +713,7 @@ export class Farcaster {
                     return;
                 }
 
-                if (data.castAddBody.embeds && data.castAddBody.embeds.find(embeds => botConfig.BotFID == embeds.castId?.fid)){
+                if (data.castAddBody.embeds && data.castAddBody.embeds.find(embeds => botConfig.BotFID == embeds.castId?.fid)) {
                     this.handleQuoteCasts(msgs[m])
                     return;
                 }
@@ -811,7 +811,7 @@ export class Farcaster {
             const userData = await neynarClient
                 .lookupUserByUsername({
                     username: fname,
-                    viewerFid: botConfig.BotFID 
+                    viewerFid: botConfig.BotFID
                 })
             // .fetchBulkUsers([fid], { viewerFid: botConfig.BotFID });
             // const userData = result; //select first result
@@ -884,7 +884,7 @@ export class Farcaster {
         // const tName = await this.handleTargetFid(message.data.castAddBody.parentCastId.fid);  // farcaster (User)Name 
         const castObj = await this.createCastObj(message);
         // console.dir(castObj);
-        this.eventBus.publish("WAS_REPLIED", castObj);
+        this.eventBus.publish("WAS_QUOTE_CAST", castObj);
     }
 
     private async handleReceivedReply(message: Message): Promise<void> {
@@ -972,19 +972,47 @@ export class Farcaster {
         return this.isConnected;
     }
 
+    public async getQuoteCastContext(castHashOrUrl: string, castParamType: CastParamType = CastParamType.Hash): Promise<BotChatMessage[]> {
+        var lastMessages: BotChatMessage[] = [];
+        try {
+            const response = await neynarClient.lookupCastConversation({
+                identifier: castHashOrUrl,
+                type: castParamType,
+                replyDepth: 2,
+                includeChronologicalParentCasts: true,
+                viewerFid: botConfig.BotFID,
+                limit: botConfig.LAST_CONVERSATION_LIMIT
+                //                 limit: 10,
+                // cursor: "nextPageCursor" // Omit this parameter for the initial request
+            });
+
+            lastMessages.push({
+                name: response.conversation.cast.author.username,
+                message: response.conversation.cast.text,
+                imageUrl: "",
+            });
+
+            return lastMessages;
+        }
+        catch (error) {
+            console.log('Get Quote Cast Context Fail:');
+            return lastMessages;
+        };
+    }
+
     public async getConversationHistory(castHashOrUrl: string, castParamType: CastParamType = CastParamType.Hash): Promise<BotChatMessage[]> {
         var lastMessages: BotChatMessage[] = [];
         try {
-            const response = await neynarClient.lookupCastConversation(
-                {identifier: castHashOrUrl, 
-                    type: castParamType,
-                    replyDepth: 2,
-                    includeChronologicalParentCasts: true,
-                    viewerFid: botConfig.BotFID,
-                    limit: botConfig.LAST_CONVERSATION_LIMIT
-                    //                 limit: 10,
-                    // cursor: "nextPageCursor" // Omit this parameter for the initial request
-                }
+            const response = await neynarClient.lookupCastConversation({
+                identifier: castHashOrUrl,
+                type: castParamType,
+                replyDepth: 2,
+                includeChronologicalParentCasts: true,
+                viewerFid: botConfig.BotFID,
+                limit: botConfig.LAST_CONVERSATION_LIMIT
+                //                 limit: 10,
+                // cursor: "nextPageCursor" // Omit this parameter for the initial request
+            }
             )
 
             const messages: CastWithInteractions[] = response.conversation.chronological_parent_casts.slice().reverse();

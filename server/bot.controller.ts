@@ -213,6 +213,7 @@ export class BotAvatar {
     this.eventBus.subscribe("CAST_ADD", (data: BotCastObj) => this.handleCastAddMessage(data));
     this.eventBus.subscribe("WAS_MENTIONED", (data: BotCastObj) => this.handleMention(data));
     this.eventBus.subscribe("WAS_REPLIED", (data: BotCastObj) => this.handleReply(data));
+    this.eventBus.subscribe("WAS_QUOTE_CAST", (data: BotCastObj) => this.handleQuoteCast(data));
     this.eventBus.subscribe("CHANNEL_NEW_MESSAGE", (data: BotCastObj) => this.handleChannelNewMessage(data));
 
     // this.eventBus.subscribe("COMMAND", (data: BotCastObj) => this.handleReply(data));
@@ -1149,6 +1150,37 @@ ${clankerObj.historyConversation}
     }
   }
 
+  private async handleQuoteCast(castObj: BotCastObj): Promise<void> {
+    const LOG_ID = "QUOTE_CAST_" + castObj.fName;
+    // const userChatMessage = { name: castObj.fName, message: castObj.body.textWithMentions }
+    const userDataInfo = await this.farcaster.handleUserInfo(castObj.fName);
+    const tomVision = "";
+
+    const lastConversation = await this.farcaster.getQuoteCastContext(castObj.body.embeds[0]);
+    let joinedConversation = "";
+    lastConversation.forEach((message) => {
+      joinedConversation += `User @${message.name} said: "${message.message}"\n\n`;
+    });
+
+    // const shouldReply = await this.generateShouldRespond(joinedConversation, tomVision + castObj.body.textWithMentions)
+    // if ((shouldReply as string).includes("IGNORE")) {
+      // this.messagesLog.info("Its Better " + shouldReply, LOG_ID);
+      // this.messagesLog.info("@" + castObj.fName + ": " + castObj.body.textWithMentions, LOG_ID);
+      // return
+    // } else {
+      // this.messagesLog.warn("Lets Reply  @" + castObj.fName + " " + shouldReply, LOG_ID);
+    // }
+    // this.messagesLog.warn("", LOG_ID)
+
+    const tomChatMessage = await this.replyMessage(
+      castObj.fName,
+      castObj.body.textWithMentions,
+      tomVision,
+      lastConversation,
+      userDataInfo);
+
+    this.farcaster.publishUserReply(tomChatMessage.message, castObj.hash, castObj.fid);
+  }
 
   private async handleReply(castObj: BotCastObj): Promise<void> {
     // handle bot reply
