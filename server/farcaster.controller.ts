@@ -980,7 +980,7 @@ export class Farcaster {
                     type: castParamType,
                     replyDepth: 2,
                     includeChronologicalParentCasts: true,
-                    viewerFid: botConfig.TARGETS[0],
+                    viewerFid: botConfig.BotFID,
                     limit: botConfig.LAST_CONVERSATION_LIMIT
                     //                 limit: 10,
                     // cursor: "nextPageCursor" // Omit this parameter for the initial request
