@@ -1369,6 +1369,7 @@ ${clankerObj.historyConversation}
           break;
         }
         tomReply = await this.replyMessage(message.name, message.message, "", [], null);
+        console.log(tomReply.name, tomReply.message)
         break;
     }
 
