@@ -3,6 +3,57 @@
 // var DEGUG_MESSAGES_COUNTER = 0
 // var DEBUG_COUNTER = 0
 
+type EmbedObject = {
+    cast_id: {
+        fid: number;
+        hash: string;
+    };
+    cast: {
+        object: string;
+        hash: string;
+        author: {
+            object: string;
+            fid: number;
+            username: string;
+            display_name: string;
+            pfp_url: string;
+        };
+        thread_hash: string;
+        parent_hash: string | null;
+        parent_url: string;
+        root_parent_url: string;
+        parent_author: {
+            fid: number | null;
+        };
+        text: string;
+        timestamp: string;
+        embeds: {
+            url: string;
+            metadata: {
+                content_type: string;
+                content_length: number | null;
+                _status: string;
+                html: {
+                    favicon: string;
+                    ogImage: { url: string }[];
+                    ogTitle: string;
+                    ogLocale: string;
+                    ogDescription: string;
+                };
+            };
+        }[];
+        channel: {
+            object: string;
+            id: string;
+            name: string;
+            image_url: string;
+            viewer_context: {
+                following: boolean;
+            };
+        };
+    };
+};
+
 // fetch conversation history last messages
 interface ConversationMessage {
     object: string;
@@ -67,6 +118,7 @@ import {
     UserNameType,
     fromFarcasterTime,
     Protocol,
+    Embed,
 } from '@farcaster/hub-nodejs'
 
 // import { CastParamType, FeedType, FilterType, isApiErrorResponse } from "@neynar/nodejs-sdk";
@@ -718,37 +770,45 @@ export class Farcaster {
                     return;
                 }
 
-                // DEBUG (optional logging block)
-                // ragSystem.waitForDocumentsToLoad().then(() => {
-                //     if(DEBUG_START=="wait_docs") {
-                //         DEBUG_COUNTER = DEGUG_MESSAGES_COUNTER_LIMIT
-                //         DEBUG_START="started"
-                //     }
-                // });
-
-                // if (DEGUG_MESSAGES_COUNTER < DEBUG_COUNTER) {
-                //     if (msgs[m].data.castAddBody.parentCastId) {
-                //         if (msgs[m].data.castAddBody.parentCastId?.hash) {
-                //             // if (msgs[m].data.castAddBody.embeds.length > 0) {
-                //             // console.log(msgs[m].data.castAddBody.embeds[0].url);
-                //             // if (msgs[m].data.castAddBody.embeds[0].url && msgs[m].data.castAddBody.embeds[0].url.includes("image")) {
-                //             this.handleReceivedReply(msgs[m]);
-                //             //    console.log("New Cast to " + data.castAddBody.parentUrl);
-                //             //    console.log(formatCasts(msgs));
-                //             DEGUG_MESSAGES_COUNTER++
-                //             console.log("DEGUG_MESSAGES_COUNTER", DEGUG_MESSAGES_COUNTER)
-                //         }
-                //     }
-                // //}
-                //     // }
-                // }
-                // })
-                // console.dir(msgs[m])
-
+                this.debugMessage(msgs[m]);
             }
         }
     }
 
+
+    private async debugMessage(message: Message) {
+        // DEBUG (optional logging block)
+        // console.dir(message)
+        this.isStopped = true;
+        this.handleMentioned(message, botConfig.BotFID);
+        return;
+
+
+        // ragSystem.waitForDocumentsToLoad().then(() => {
+        //     if (DEBUG_START == "wait_docs") {
+        //         DEBUG_COUNTER = DEGUG_MESSAGES_COUNTER_LIMIT
+        //         DEBUG_START = "started"
+        //     }
+        // });
+
+        //     if (DEGUG_MESSAGES_COUNTER < DEBUG_COUNTER) {
+        //         if (msgs[m].data.castAddBody.parentCastId) {
+        //             if (msgs[m].data.castAddBody.parentCastId?.hash) {
+        //                 // if (msgs[m].data.castAddBody.embeds.length > 0) {
+        //                 // console.log(msgs[m].data.castAddBody.embeds[0].url);
+        //                 // if (msgs[m].data.castAddBody.embeds[0].url && msgs[m].data.castAddBody.embeds[0].url.includes("image")) {
+        //                 this.handleReceivedReply(msgs[m]);
+        //                 //    console.log("New Cast to " + data.castAddBody.parentUrl);
+        //                 //    console.log(formatCasts(msgs));
+        //                 DEGUG_MESSAGES_COUNTER++
+        //                 console.log("DEGUG_MESSAGES_COUNTER", DEGUG_MESSAGES_COUNTER)
+        //             }
+        //         }
+        //         //}
+        //         // }
+        //     }
+        // })
+    }
 
     // working async with createCastObj to create cache for latter...
     // ... fetch and save into cache. return fetched data
@@ -1010,10 +1070,9 @@ export class Farcaster {
                 includeChronologicalParentCasts: true,
                 viewerFid: botConfig.BotFID,
                 limit: botConfig.LAST_CONVERSATION_LIMIT
-                //                 limit: 10,
-                // cursor: "nextPageCursor" // Omit this parameter for the initial request
-            }
-            )
+                //limit: 10,
+                //cursor: "nextPageCursor" // Omit this parameter for the initial request
+            })
 
             const messages: CastWithInteractions[] = response.conversation.chronological_parent_casts.slice().reverse();
             const lastThreeMessages: BotChatMessage[] = messages
@@ -1029,6 +1088,21 @@ export class Farcaster {
                     // return `@${message.author.username}: ${message.text}\n`;
 
                 });
+
+            // Add Embbeded Cast to conversation history if exist
+            if (response.conversation.cast.embeds.length > 0) {
+                const embbedCast = response.conversation.cast.embeds[0] as unknown as EmbedObject | undefined;
+                if (embbedCast.cast && embbedCast.cast.object &&
+                    embbedCast.cast.object === 'cast_embedded' &&
+                    embbedCast.cast.text
+                ) {
+                    lastThreeMessages.push({
+                        name: embbedCast.cast.author.username,
+                        message: embbedCast.cast.text,
+                        imageUrl: "",
+                    })
+                }
+            }
 
             lastMessages = lastThreeMessages;
         }

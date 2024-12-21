@@ -1056,7 +1056,6 @@ Rewritten TEXT:`;
 
     switch (castObj.fid) {
       case 874542:    // clanker
-
         const { reply, hash, fid } = await this.handleClankerNewMessages((castObj));
         if (!reply) break;
         this.farcaster.publishUserReply(reply, hash, fid);
@@ -1114,7 +1113,7 @@ ${clankerObj.historyConversation}
 
     try {
       reply = await this.chatBotLLM.invoke(prompt)
-      const theTokenReply = reply.content + `\n @${username}, here your token nounspace page: ${clankerObj.nounspacePage}`;
+      const theTokenReply = reply.content + `\nHere's your token nounspace: ${clankerObj.nounspacePage}`;
 
       this.messagesLog.log("", "CLANKER");
       this.messagesLog.log("------------ NEW TOKEN DEPLOYED by: " + username, "CLANKER");
