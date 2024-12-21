@@ -92,17 +92,6 @@ interface Author {
 // }
 //
 
-const Reset = "\x1b[0m",
-    Blue = "\x1b[34m",
-    Green = "\x1b[32m",
-    Red = "\x1b[31m",
-    Yellow = "\x1b[33m",
-    Magenta = "\x1b[35m",
-    Italic = "\x1b[3m",
-    Underscore = "\x1b[4m",
-    Cyan = "\x1b[36m",
-    Gray = "\x1b[90m";
-
 import { randomInt } from 'crypto';
 
 import {
@@ -681,6 +670,29 @@ export class Farcaster {
 
 
 
+        this.likeCast(options);
+        // if ((options.replyTo) && (options.parent_author_fid)) {
+        //     neynarClient.publishReaction({
+        //         signerUuid: botConfig.SIGNER_UUID,
+        //         reactionType: 'like',
+        //         target: options.replyTo,
+        //         targetAuthorFid: options.parent_author_fid
+        //     }).then(response => {
+        //         this.farcasterLog.log("Reaction published successfully ", "INFO")
+        //         // console.log('Publish Reaction Operation Status:', response); // Outputs the status of the reaction post
+        //     }).catch(error => {
+        //         if (isApiErrorResponse(error)) {
+        //             // console.error(Red + error.response.data + Reset);
+        //             this.farcasterLog.log("Failed to publish reaction: " + error.response.data, "ERROR")
+        //         } else {
+        //             this.farcasterLog.log("Failed to publish reaction: " + JSON.stringify(error), "ERROR")
+        //             // console.error(Red + "Failed to publish Reaction: " + error + + Reset);
+        //         }
+        //     });
+        // }
+    }
+
+    public async likeCast(options: any) {
         if ((options.replyTo) && (options.parent_author_fid)) {
             neynarClient.publishReaction({
                 signerUuid: botConfig.SIGNER_UUID,
@@ -777,12 +789,14 @@ export class Farcaster {
 
 
     private async debugMessage(message: Message) {
+        if (botConfig.ENV !== "development")
+            return;
+
         // DEBUG (optional logging block)
         // console.dir(message)
-        this.isStopped = true;
-        this.handleMentioned(message, botConfig.BotFID);
+        // this.isStopped = true;
+        // this.handleMentioned(message, botConfig.BotFID);
         return;
-
 
         // ragSystem.waitForDocumentsToLoad().then(() => {
         //     if (DEBUG_START == "wait_docs") {

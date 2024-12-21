@@ -1,6 +1,8 @@
 import dotenv from "dotenv";
 dotenv.config();
 
+export const ENV = process.env.ENV || "production";
+
 // configs 
 export const BotName = "nounspacetom";
 export const BotFID = 527313;
