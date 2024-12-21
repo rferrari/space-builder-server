@@ -692,6 +692,13 @@ export class Farcaster {
         // }
     }
 
+    public async delayedLikeCast(options:any){
+        const delayInMinutes = randomInt(1, 2);
+        setTimeout(() => {
+            this.likeCast(options);
+        }, delayInMinutes * 60 * 1000); // convert minutes to milliseconds
+    }
+
     public async likeCast(options: any) {
         if ((options.replyTo) && (options.parent_author_fid)) {
             neynarClient.publishReaction({

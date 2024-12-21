@@ -1202,7 +1202,7 @@ ${clankerObj.historyConversation}
     });
     const shouldReply = await this.generateShouldRespond(joinedConversation, tomVision + castObj.body.textWithMentions)
     if ((shouldReply as string).includes("IGNORE")) {
-      this.farcaster.likeCast({replyTo: castObj.hash, parent_author_fid: castObj.fid});
+      this.farcaster.delayedLikeCast({replyTo: castObj.hash, parent_author_fid: castObj.fid});
       this.messagesLog.info("Its Better " + shouldReply, LOG_ID);
       this.messagesLog.info("@" + castObj.fName + ": " + castObj.body.textWithMentions, LOG_ID);
       return
