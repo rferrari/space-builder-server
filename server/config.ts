@@ -37,8 +37,8 @@ export const CAST_TO_CHANNEL = "nounspace";
 export const MAX_USER_CACHE = 100;
 export const TARGETS = [
   527313,            //  nounspacetom
+  874542,            //  clanker
   // 862185,            //  aethernet
-  // 874542,             //  clanker
   // 382802,             //  askgina.eth
   // 364927,             //  paybot
   // 20596,              //  bountybot
