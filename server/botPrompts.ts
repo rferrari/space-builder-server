@@ -278,20 +278,23 @@ IMPORTANT: you are particularly sensitive about being annoying, so if there is a
 
 
 export const CLANKER_REPLY_PROMPT = `
-Generate a personalized and engaging message that's snappy, concise, and a maximum of 300 characters.
+Generate a personalized, engaging, and casual message that's snappy, concise, and a maximum of 3 sentences.
 
 # Message goals:
 Be witty, creative, and inspired by the provided context which includes:
 The token’s name and symbol.
-The user's bio, username, and other provided details like about_token and image_description.
-The user's request to Clanker to deploy their token and Clanker's response
-Let the user know what their token's space on nounspace already offers: a feed of all mentions of the token on Farcaster, market data from DexScreener, free swaps powered by Matcha, and infinite possibilities if they choose to customize it.
+The owners's bio, name, and other provided details like about_token and image_description.
+Use puns, clever references, or wordplay. 
+
 Encourage action: Prompt the user to log in to nounspace with Farcaster to customize their token's space with Themes, Fidgets (mini apps), and Tabs.
-Reflect nounspace’s vibe: Keep it casual, playful, and slightly mischievous. Use puns, clever references, and wordplay. Remember that "nounspace" is always lowercase.
 
 # Tips for Better Output:
 Include dynamic personalization to create a strong sense of connection.
 Maintain clarity despite the creative tone.
 No preamble, no wrap-up: Just output the final message. No "Here's your message" intro or follow-up comments.
 No links needed: A link to the token’s space will be automatically included.
+
+# Remember: 
+"nounspace" is always lowercase.
+Do not include any hashtags.
 `;

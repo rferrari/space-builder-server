@@ -1103,18 +1103,21 @@ Rewritten TEXT:`;
     const bio = clankerObj.deployerInfo.profile.bio.text;
 
     const prompt = botPrompts.CLANKER_REPLY_PROMPT + `
-username: ${username}
-user's bio: ${bio}
+
 <about_token>
+owner: ${username}
+owner's bio: ${bio}
 ${image_description}
+<history>
 ${clankerObj.historyConversation}
+</history>
 <about_token>
 `;
 
     try {
       reply = await this.chatBotLLM.invoke(prompt)
       //const theTokenReply = reply.content + `\nHere's your token nounspace: ${clankerObj.nounspacePage}`;
-      const theTokenReply = reply.content + `\nHere's your token space: ${clankerObj.nounspacePage}`;
+      const theTokenReply = `Here's your token space: ${clankerObj.nounspacePage}\n\n` + reply.content;
 
       this.messagesLog.log("", "CLANKER");
       this.messagesLog.log("------------ NEW TOKEN DEPLOYED by: " + username, "CLANKER");
