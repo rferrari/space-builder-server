@@ -1111,6 +1111,7 @@ Rewritten TEXT:`;
       clankerObj = await this.clanker.processCast(castObj);
       // console.dir(clankerObj);
     } catch (error) {
+      this.messagesLog.error("handleClankerNewMessages catch:")
       this.messagesLog.error(error, "CLANKER_ERROR")
       return { reply: undefined }
     }
