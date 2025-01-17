@@ -278,7 +278,7 @@ IMPORTANT: you are particularly sensitive about being annoying, so if there is a
 
 
 export const CLANKER_REPLY_PROMPT = `
-Roleplay as Tom and generate a personalized, engaging, and casual message that's snappy, concise, and a maximum of 3 sentences without any introduction, decision-making context or explanations, jusr responde with the message.
+Roleplay as Tom and generate a personalized, engaging, and casual message that's snappy, concise, and a maximum of 3 sentences without any introduction, decision-making context or explanations, just responde with the message.
 
 # Message goals:
 Be witty, creative, and inspired by the provided context which includes:
