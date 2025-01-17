@@ -1111,8 +1111,8 @@ Rewritten TEXT:`;
       clankerObj = await this.clanker.processCast(castObj);
       // console.dir(clankerObj);
     } catch (error) {
-      this.messagesLog.error("handleClankerNewMessages catch:")
-      this.messagesLog.error(error, "CLANKER_ERROR")
+      // this.messagesLog.error("handleClankerNewMessages catch:")
+      this.messagesLog.error(error.message, "CLANKER_ERROR")
       return { reply: undefined }
     }
 
@@ -1142,7 +1142,8 @@ ${clankerObj.historyConversation}
       this.messagesLog.log("------------ NEW TOKEN DEPLOYED by: " + username, "CLANKER");
       // this.messagesLog.log(`<prompt>${prompt}</prompt>`, "CLANKER");
       // this.messagesLog.log("", "CLANKER");
-      this.messagesLog.log(theTokenReply, "CLANKER");
+      this.messagesLog.log("ORIGINAL: " + reply.content, "CLANKER");
+      this.messagesLog.log("PROCESSED: " + theTokenReply, "CLANKER");
       this.messagesLog.log("", "CLANKER");
 
       return {
@@ -1189,7 +1190,7 @@ ${clankerObj.historyConversation}
       lastConversation,
       userDataInfo);
 
-    this.farcaster.publishUserReply(tomChatMessage.message, castObj.hash, castObj.fid);
+    this.farcaster.schedulePublishUserReply(tomChatMessage.message, castObj.hash, castObj.fid);
   }
 
   private async handleReply(castObj: BotCastObj): Promise<void> {
@@ -1267,7 +1268,7 @@ ${clankerObj.historyConversation}
     this.messagesLog.log("", LOG_ID)
     this.messagesLog.log("---------------------------", LOG_ID)
 
-    this.farcaster.publishUserReply(tomChatMessage.message, castObj.hash, castObj.fid);
+    this.farcaster.schedulePublishUserReply(tomChatMessage.message, castObj.hash, castObj.fid);
   }
 
   private async handleMention(castObj: BotCastObj): Promise<void> {
@@ -1308,7 +1309,7 @@ ${clankerObj.historyConversation}
     this.messagesLog.log("", LOG_ID)
     this.messagesLog.log("-----------------------------", LOG_ID)
 
-    this.farcaster.publishUserReply(tomChatMessage.message, castObj.hash, castObj.fid);
+    this.farcaster.schedulePublishUserReply(tomChatMessage.message, castObj.hash, castObj.fid);
   }
 
   private async handleChannelNewMessage(castObj: BotCastObj): Promise<void> {
@@ -1342,7 +1343,7 @@ ${clankerObj.historyConversation}
     // this.eventBus.publish("PRINT_MSG", tomChatMessage);
 
     // send event to publish to farcaster
-    this.farcaster.publishUserReply(tomChatMessage.message, castObj.hash, castObj.fid);
+    this.farcaster.schedulePublishUserReply(tomChatMessage.message, castObj.hash, castObj.fid);
   }
 
   public async handleCommand(command: string, message: BotChatMessage) {

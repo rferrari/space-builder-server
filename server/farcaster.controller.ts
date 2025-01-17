@@ -721,7 +721,7 @@ export class Farcaster {
         }
     }
 
-    public async publishUserReply(msg: string, parentHash: string, parentAuthorFid: number) {
+    public async schedulePublishUserReply(msg: string, parentHash: string, parentAuthorFid: number) {
         // Using the neynarClient to publish the cast.
         const options = {
             replyTo: parentHash,
@@ -737,6 +737,20 @@ export class Farcaster {
         const fName = (await this.handleUserFid(parentAuthorFid)).toUpperCase();
         if (botConfig.PUBLISH_TO_FARCASTER)
             console.log(`Scheduling msg to fid ${parentAuthorFid} '${fName}' in ${delayInMinutes} minutes`);
+    }
+
+    public async publishUserReply(msg: string, parentHash: string, parentAuthorFid: number) {
+        // Using the neynarClient to publish the cast.
+        const options = {
+            replyTo: parentHash,
+            parent_author_fid: parentAuthorFid,
+        }
+
+        this.publishToFarcaster(msg, options);
+
+        const fName = (await this.handleUserFid(parentAuthorFid)).toUpperCase();
+        if (botConfig.PUBLISH_TO_FARCASTER)
+            console.log(`Published msg to fid ${parentAuthorFid} '${fName}' now`);
     }
 
     public async publishNewChannelCast(msg: string) {
