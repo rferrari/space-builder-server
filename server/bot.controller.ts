@@ -1082,6 +1082,23 @@ Rewritten TEXT:`;
     }
   }
 
+  private extractQuotedText(text: string): string {
+    // Regular expression to match quoted text
+    const quotedTextRegex = /"(.*?)"/g;
+  
+    // Check if the text contains quoted text
+    const match = text.match(quotedTextRegex);
+  
+    // If quoted text is found, return it
+    if (match) {
+      // Join all matches into a single string
+      return match.join(' ');
+    }
+  
+    // If no quoted text is found, return the original text
+    return text;
+  }
+
 
   async handleClankerNewMessages(castObj: BotCastObj) {
     if (!this.clanker) {
@@ -1116,7 +1133,8 @@ ${clankerObj.historyConversation}
 
     try {
       reply = await this.chatBotBackuptLLM.invoke(prompt)
-      const theTokenReply = reply.content + `\nHere's your token space: ${clankerObj.nounspacePage}`;
+
+      const theTokenReply = this.extractQuotedText(reply.content) + `\nHere's your token space: ${clankerObj.nounspacePage}`;
       // const theTokenReply = `Here's your token space: ${clankerObj.nounspacePage}\n\n` + reply.content;
 
       this.messagesLog.log("", "CLANKER");
