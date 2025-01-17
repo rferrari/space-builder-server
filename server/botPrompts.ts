@@ -297,4 +297,5 @@ No links needed: A link to the token’s space will be automatically included.
 # Remember: 
 "nounspace" is always lowercase.
 Do not include any hashtags.
+ONLY OUTPUT THE MESSAGE WITHOUT INCLUDING decision-making context or explanations.
 `;
