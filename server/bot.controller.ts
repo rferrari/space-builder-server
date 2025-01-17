@@ -1134,7 +1134,7 @@ ${clankerObj.historyConversation}
     try {
       reply = await this.chatBotBackuptLLM.invoke(prompt)
 
-      const theTokenReply = this.extractQuotedText(reply.content) + `\nHere's your token space: ${clankerObj.nounspacePage}`;
+      const theTokenReply = this.extractQuotedText(reply.content) + `\n\nHere's your token space: ${clankerObj.nounspacePage}`;
       // const theTokenReply = `Here's your token space: ${clankerObj.nounspacePage}\n\n` + reply.content;
 
       this.messagesLog.log("", "CLANKER");
