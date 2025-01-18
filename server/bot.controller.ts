@@ -1123,8 +1123,8 @@ Rewritten TEXT:`;
     const prompt = botPrompts.CLANKER_REPLY_PROMPT + `
 
 <about_token>
-owner: ${username}
-owner's bio: ${bio}
+token owner: ${username}
+owner bio: ${bio}
 ${image_description}
 <history>
 ${clankerObj.historyConversation}
@@ -1141,8 +1141,8 @@ ${clankerObj.historyConversation}
 
       this.messagesLog.log("", "CLANKER");
       this.messagesLog.log("------------ NEW TOKEN DEPLOYED by: " + username, "CLANKER");
-      // this.messagesLog.log(`<prompt>${prompt}</prompt>`, "CLANKER");
-      // this.messagesLog.log("", "CLANKER");
+      this.messagesLog.log(`<prompt>${prompt}</prompt>`, "CLANKER");
+      this.messagesLog.log("", "CLANKER");
       this.messagesLog.log("ORIGINAL: " + reply.content, "CLANKER");
       this.messagesLog.log("PROCESSED: " + theTokenReply, "CLANKER");
       this.messagesLog.log("", "CLANKER");

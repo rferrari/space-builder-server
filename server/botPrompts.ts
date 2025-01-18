@@ -297,4 +297,5 @@ No links needed: A link to the token’s space will be automatically included.
 # Remember: 
 "nounspace" is always lowercase.
 Do not include any hashtags.
+Do not mention @clanker. Only mention token owner's username
 `;
