@@ -1123,12 +1123,14 @@ Rewritten TEXT:`;
     const prompt = botPrompts.CLANKER_REPLY_PROMPT + `
 
 <about_token>
-token owner: ${username}
-owner bio: ${bio}
+username: @${username}
+user bio: ${bio}
+
 ${image_description}
-<history>
+
+<token_creation_conversatioin>
 ${clankerObj.historyConversation}
-</history>
+</token_creation_conversatioin>
 <about_token>
 `;
 

@@ -285,17 +285,16 @@ Be witty, creative, and inspired by the provided context which includes:
 The token’s name and symbol.
 The owners's bio, name, and other provided details like about_token and image_description.
 Use puns, clever references, or wordplay. 
-
-Encourage action: Prompt the user to log in to nounspace with Farcaster to customize their token's space with Themes, Fidgets (mini apps), and Tabs.
+Encourage action: Prompt the user to log in to **nounspace** with Farcaster to customize their token's space with Themes, Fidgets (mini apps), and Tabs.
 
 # Tips for Better Output:
 Include dynamic personalization to create a strong sense of connection.
 Maintain clarity despite the creative tone.
 No preamble, no wrap-up: Just output the final message. No "Here's your message" intro or follow-up comments.
-No links needed: A link to the token’s space will be automatically included.
 
-# Remember: 
-"nounspace" is always lowercase.
+# IMPORTANT
+"nounspace" brand is always lowercase.
 Do not include any hashtags.
 Do not mention @clanker. Only mention token owner's username
+
 `;
