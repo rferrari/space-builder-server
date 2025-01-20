@@ -69,8 +69,8 @@ export class ClankerBot {
 
     public async processCast(cast: BotCastObj): Promise<ClankerBotResponse> {
         if (!this.isDeployEvent(cast)) {
-            // throw new Error("ClankerBot: Not a deploy event");
-            return undefined;
+            throw new Error("ClankerBot: Not a deploy event");
+            // return undefined;
         }
 
         const contractAddress = this.extractContractAddress(cast.body.text);
