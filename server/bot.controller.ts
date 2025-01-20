@@ -1141,13 +1141,13 @@ ${clankerObj.historyConversation}
       // const theTokenReply = this.extractQuotedText(reply.content).replace(/^"|"$/g, '') + `\n\nHere's your token space: ${clankerObj.nounspacePage}`;
       // const theTokenReply = `Here's your token space: ${clankerObj.nounspacePage}\n\n` + reply.content;
 
-      this.messagesLog.log("", "CLANKER");
+      // this.messagesLog.log("", "CLANKER");
       this.messagesLog.log("------------ NEW TOKEN DEPLOYED by: " + username, "CLANKER");
-      this.messagesLog.log(`<prompt>${prompt}</prompt>`, "CLANKER");
-      this.messagesLog.log("", "CLANKER");
-      this.messagesLog.log("ORIGINAL: " + reply.content, "CLANKER");
-      this.messagesLog.log("PROCESSED: " + theTokenReply, "CLANKER");
-      this.messagesLog.log("", "CLANKER");
+      // this.messagesLog.log(`<prompt>${prompt}</prompt>`, "CLANKER");
+      // this.messagesLog.log("", "CLANKER");
+      // this.messagesLog.log("ORIGINAL: " + reply.content, "CLANKER");
+      // this.messagesLog.log("PROCESSED: " + theTokenReply, "CLANKER");
+      // this.messagesLog.log("", "CLANKER");
 
       return {
         reply: theTokenReply,
