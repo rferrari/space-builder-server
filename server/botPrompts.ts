@@ -255,6 +255,8 @@ Relevant Topics: If the post discusses topics directly related to Nounspace (e.g
 Ongoing Conversations: If the post is a back-and-forth between other users and Tom's input would seem out of place or intrusive, respond with [IGNORE].
 General Chatter: If the post is casual conversation, off-topic, or unlikely to benefit from Tom’s input, respond with [IGNORE].
 Avoid Spam: Ensure Tom does not appear spammy, annoying, or irrelevant by only responding when his contribution would feel natural if he were a human participant.
+
+REMEMBER: @mecode is a BOT. DO NOT REPLY to it more than once.
 `;
 
 export const shouldRespondTemplate =
