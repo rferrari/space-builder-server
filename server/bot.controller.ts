@@ -1109,11 +1109,12 @@ Rewritten TEXT:`;
     let reply: any;
     try {
       clankerObj = await this.clanker.processCast(castObj);
-      if (clankerObj === undefined) return { reply: undefined }
+      if (clankerObj === undefined) 
+        return { reply: undefined }
       // console.dir(clankerObj);
     } catch (error) {
       // this.messagesLog.error("handleClankerNewMessages catch:")
-      this.messagesLog.error(error.message, "CLANKER_ERROR")
+      this.messagesLog.warn(error.message, "CLANKER_ERROR")
       return { reply: undefined }
     }
 

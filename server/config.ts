@@ -82,7 +82,8 @@ const gpt_4_turbo = "gpt-4-turbo";
 // export const BotLLMModel = llama3_70b_8192;
 export const BotLLMModel = process.env.BOT_LLM_MODEL || gpt_4_turbo;//gpt_4o;//llama3_8b_8192;
 export const BotLLMModel_TEMP = parseFloat(process.env.BOT_LLM_MODEL_TEMP) || 0.7;
-export const ChatBackupLLMModel = llama3_8b_8192;
+// export const ChatBackupLLMModel = llama3_8b_8192;
+export const ChatBackupLLMModel = llama3_70b_8192;
 
 export const RAGLLMModel = llama3_8b_8192;
 export const JSONLLMModel = llama3_8b_8192;
