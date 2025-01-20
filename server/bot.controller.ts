@@ -160,8 +160,9 @@ export class BotAvatar {
   private chatPrompt: ChatPromptTemplate;
 
   private chatBotBackuptLLM: ChatGroq;
+  private chatBotClankerLLM: ChatGroq;
   private chatBotLLM: ChatOpenAI;
-
+  
   private assistentLLM: ChatGroq;
 
   private isStopped: boolean;
@@ -236,12 +237,18 @@ export class BotAvatar {
     this.updateInternalClockTime();
     // this.displayInternalClock();
 
+    this.chatBotClankerLLM = new ChatGroq({
+      temperature: botConfig.BotLLMModel_TEMP,
+      model: botConfig.ChatClankersMModel,
+      stop: null,
+    });
+
     this.chatBotBackuptLLM = new ChatGroq({
       temperature: botConfig.BotLLMModel_TEMP,
       model: botConfig.ChatBackupLLMModel,
       stop: null,
     });
-
+ 
     this.chatBotLLM = new ChatOpenAI({
       openAIApiKey: botConfig.OPENAI_API_KEY,
       temperature: botConfig.BotLLMModel_TEMP,
@@ -1137,7 +1144,14 @@ ${clankerObj.historyConversation}
 `;
 
     try {
-      reply = await this.chatBotBackuptLLM.invoke(prompt)
+      try {
+        reply = await this.chatBotClankerLLM.invoke(prompt)
+      } catch (innerError) {
+        this.messagesLog.error("Primary chatbot failed", "CLANKER_ERROR");
+        this.messagesLog.error(innerError, "CLANKER_ERROR");
+        this.messagesLog.log("Going for Backup LLM", "CLANKER_ERROR");
+        reply = await this.chatBotBackuptLLM.invoke(prompt)
+      }
 
       const theTokenReply = reply.content.replace(/^"|"$/g, '') + `\n\nHere's your token space: ${clankerObj.nounspacePage}`;
       // const theTokenReply = this.extractQuotedText(reply.content).replace(/^"|"$/g, '') + `\n\nHere's your token space: ${clankerObj.nounspacePage}`;
@@ -1158,9 +1172,9 @@ ${clankerObj.historyConversation}
       };
 
     } catch (error) {
-      this.messagesLog.log("", "CLANKER_ERROR");
+      this.messagesLog.error("CLANKER_ERROR", "CLANKER_ERROR");
       this.messagesLog.error(error, "CLANKER_ERROR");
-      this.messagesLog.log("", "CLANKER_ERROR");
+      this.messagesLog.error("", "CLANKER_ERROR");
 
       return { reply: undefined };
     }
