@@ -620,9 +620,9 @@ export class Farcaster {
             let logid = "publishToFarcaster";
             if (!botConfig.PUBLISH_TO_FARCASTER)
                 this.farcasterLog.log("PUBLISH_TO_FARCASTER OFF", logid)
-            this.farcasterLog.log(`message: ${msg}`, logid);
-            this.farcasterLog.log(`options:`, logid);
-            this.farcasterLog.log(options, logid);
+            this.farcasterLog.log(`message:\n${msg}`, logid);
+            // this.farcasterLog.log(`options:`, logid);
+            // this.farcasterLog.log(options, logid);
         }
 
         if (!botConfig.PUBLISH_TO_FARCASTER) {
@@ -637,10 +637,9 @@ export class Farcaster {
                 channelId: options.channelId,
                 parentAuthorFid: options.parent_author_fid,
                 parent: options.replyTo,
-
             })
             .then(response_data => {
-                this.farcasterLog.log("Cast published successfully: " + response_data.cast.hash, "INFO")
+                this.farcasterLog.log(`Cast published successfully:\n  https://warpcast.com/${botConfig.BotName}/${response_data.cast.hash}`, "INFO")
             })
             .catch(error => {
                 if (isApiErrorResponse(error)) {
@@ -734,9 +733,9 @@ export class Farcaster {
             this.publishToFarcaster(msg, options);
         }, delayInMinutes * 60 * 1000); // convert minutes to milliseconds
 
-        const fName = (await this.handleUserFid(parentAuthorFid)).toUpperCase();
+        const fName = (await this.handleUserFid(parentAuthorFid));
         if (botConfig.PUBLISH_TO_FARCASTER)
-            console.log(`Scheduling msg to fid ${parentAuthorFid} '${fName}' in ${delayInMinutes} minutes`);
+            console.log(`Scheduling reply to FID ${parentAuthorFid} '${fName}' in ${delayInMinutes} minutes`);
     }
 
     public async publishUserReply(msg: string, parentHash: string, parentAuthorFid: number) {
@@ -748,9 +747,9 @@ export class Farcaster {
 
         this.publishToFarcaster(msg, options);
 
-        const fName = (await this.handleUserFid(parentAuthorFid)).toUpperCase();
+        const fName = (await this.handleUserFid(parentAuthorFid));
         if (botConfig.PUBLISH_TO_FARCASTER)
-            console.log(`Published msg to fid ${parentAuthorFid} '${fName}' now`);
+            console.log(`Published Reply to:\n  https://warpcast.com/${fName}/${parentHash}`);
     }
 
     public async publishNewChannelCast(msg: string) {
