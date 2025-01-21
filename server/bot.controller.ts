@@ -1298,16 +1298,28 @@ ${clankerObj.historyConversation}
 
   private async handleMention(castObj: BotCastObj): Promise<void> {
     // handle bot was mentioned
+    const userDataInfo = await this.farcaster.handleUserInfo(castObj.fName);
+    const userChatMessage = { name: castObj.fName, message: castObj.body.textWithMentions }
+    const lastConversation = await this.farcaster.getConversationHistory(castObj.hash);
+
+    const shouldReply = await this.generateShouldRespond(lastConversation.join("\n"), castObj.body.textWithMentions)
+    if ((shouldReply as string).includes("IGNORE")) {
+      // this.farcaster.delayedLikeCast({replyTo: castObj.hash, parent_author_fid: castObj.fid});
+      const LOG_ID = "MSG_" + castObj.fName;
+      this.messagesLog.info("Its Better " + shouldReply, LOG_ID);
+      this.messagesLog.info("@" + castObj.fName + ": " + castObj.body.textWithMentions, LOG_ID);
+      return
+    } else {
+      const LOG_ID = "MSG_" + castObj.fName;
+      this.messagesLog.warn("Lets Reply  @" + castObj.fName + " " + shouldReply, LOG_ID);
+    }
+
     if(botConfig.IGNORE_TARGETS.includes(castObj.fid)) {
       console.warn(castObj.fName + " is on the ignore list. Ignore mention")
       return;
     }
 
     const tomVision = await this.visionTool(castObj.body.embeds, castObj.body.textWithMentions);
-
-    const userDataInfo = await this.farcaster.handleUserInfo(castObj.fName);
-    const userChatMessage = { name: castObj.fName, message: castObj.body.textWithMentions }
-    const lastConversation = await this.farcaster.getConversationHistory(castObj.hash);
 
     const tomChatMessage = await this.replyMessage(
       castObj.fName,
