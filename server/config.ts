@@ -51,13 +51,10 @@ export const IGNORE_TARGETS = [
   // 236578,         // pepenn212
 ];
 
-export const KNOW_BOT_LIST = [
-  "mecode",
-  "pepeclankeragent",
-  "atlas",
-  "tokuanibot",
-  //  pepenn212
-]
+export const KNOW_BOT_LIST = process.env.KNOW_BOT_LIST
+  ? process.env.KNOW_BOT_LIST.split(",")
+  : [];
+
 
 // channels bot will listen to new messages
 export const TARGET_CHANNELS = [
