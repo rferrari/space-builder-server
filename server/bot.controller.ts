@@ -1143,6 +1143,8 @@ ${clankerObj.historyConversation}
 <about_token>
 `;
 
+    this.messagesLog.log("------------ NEW TOKEN DEPLOYED by: " + username, "CLANKER");
+
     try {
       try {
         reply = await this.chatBotClankerLLM.invoke(prompt)
@@ -1158,7 +1160,6 @@ ${clankerObj.historyConversation}
       // const theTokenReply = `Here's your token space: ${clankerObj.nounspacePage}\n\n` + reply.content;
 
       // this.messagesLog.log("", "CLANKER");
-      this.messagesLog.log("------------ NEW TOKEN DEPLOYED by: " + username, "CLANKER");
       // this.messagesLog.log(`<prompt>${prompt}</prompt>`, "CLANKER");
       // this.messagesLog.log("", "CLANKER");
       // this.messagesLog.log("ORIGINAL: " + reply.content, "CLANKER");
@@ -1214,6 +1215,8 @@ ${clankerObj.historyConversation}
 
   private async handleReply(castObj: BotCastObj): Promise<void> {
     // handle bot reply
+    if(botConfig.IGNORE_TARGETS.includes(castObj.fid)) return;
+
     const LOG_ID = "MSG_" + castObj.fName;
     const userChatMessage = { name: castObj.fName, message: castObj.body.textWithMentions }
     const userDataInfo = await this.farcaster.handleUserInfo(castObj.fName);
@@ -1292,6 +1295,10 @@ ${clankerObj.historyConversation}
 
   private async handleMention(castObj: BotCastObj): Promise<void> {
     // handle bot was mentioned
+
+    if(botConfig.IGNORE_TARGETS.includes(castObj.fid)) return;
+    
+
     const tomVision = await this.visionTool(castObj.body.embeds, castObj.body.textWithMentions);
 
     const userDataInfo = await this.farcaster.handleUserInfo(castObj.fName);

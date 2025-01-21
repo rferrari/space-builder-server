@@ -44,6 +44,14 @@ export const TARGETS = [
   // 20596,              //  bountybot
 ];
 
+export const IGNORE_TARGETS = [
+  905725,         //pepeclankeragent
+  883378,         //mecode
+  12193,          //@atlas
+];
+
+
+
 // channels bot will listen to new messages
 export const TARGET_CHANNELS = [
   "~/channel/nounspace",
