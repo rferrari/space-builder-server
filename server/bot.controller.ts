@@ -708,9 +708,11 @@ Summary:`;
 
     const botListString = botConfig.KNOW_BOT_LIST.filter(Boolean).join(", ");
     const messages = [
-      { role: "system", content: botPrompts.SHOULDRESPOND_SYSTEM + `\n${botListString} are BOT, avoid conversation loop responding with [IGNORE].` },
+      { role: "system", content: botPrompts.SHOULDRESPOND_SYSTEM + `\n${botListString} are BOT, dont engage responding with [IGNORE].` },
       { role: "user", content: filledPrompt },
     ];
+
+    console.dir(messages);
 
     // Invoke the model with the messages array
     const result = await this.assistentLLM.invoke(messages)
