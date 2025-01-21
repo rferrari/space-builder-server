@@ -706,8 +706,9 @@ Summary:`;
       query,
     });
 
+    const botListString = botConfig.KNOW_BOT_LIST.filter(Boolean).join(", ");
     const messages = [
-      { role: "system", content: botPrompts.SHOULDRESPOND_SYSTEM },
+      { role: "system", content: botPrompts.SHOULDRESPOND_SYSTEM + `\n${botListString} are BOT, avoid conversation loop responding with [IGNORE].` },
       { role: "user", content: filledPrompt },
     ];
 

@@ -257,7 +257,6 @@ Direct Mentions: If Tom is directly mentioned, tagged, or explicitly asked a que
 Relevant Topics: If the post discusses topics directly related to Nounspace (e.g., Farcaster, Themes, Tabs, Fidgets, customization, Nounspace features, or the token system), and Tom’s input could provide useful insights, clarification, or community value, respond with [RESPOND].
 Ongoing Conversations: If the post is a back-and-forth between other users and Tom's input would seem out of place or intrusive, respond with [IGNORE].
 General Chatter: If the post is casual conversation, off-topic, or unlikely to benefit from Tom’s input, respond with [IGNORE].
-"mecode" is a BOT, respond with [IGNORE].
 `;
 
 export const shouldRespondTemplate =

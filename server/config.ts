@@ -47,11 +47,16 @@ export const TARGETS = [
 export const IGNORE_TARGETS = [
   905725,         //pepeclankeragent
   883378,         //mecode
-  12193,          //@atlas
+  12193,          //atlas
   // 236578,         // pepenn212
 ];
 
-
+export const KNOW_BOT_LIST = [
+  "mecode",
+  "pepeclankeragent",
+  "atlas",
+  //  pepenn212
+]
 
 // channels bot will listen to new messages
 export const TARGET_CHANNELS = [
