@@ -1301,7 +1301,7 @@ ${clankerObj.historyConversation}
     if(botConfig.IGNORE_TARGETS.includes(castObj.fid)) {
       console.warn(castObj.fName + " is on the ignore list. Ignore mention")
       return;
-    } 
+    }
 
     const tomVision = await this.visionTool(castObj.body.embeds, castObj.body.textWithMentions);
 
