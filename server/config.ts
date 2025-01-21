@@ -55,6 +55,7 @@ export const KNOW_BOT_LIST = [
   "mecode",
   "pepeclankeragent",
   "atlas",
+  "tokuanibot",
   //  pepenn212
 ]
 
