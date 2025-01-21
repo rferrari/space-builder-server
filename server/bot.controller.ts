@@ -1215,7 +1215,10 @@ ${clankerObj.historyConversation}
 
   private async handleReply(castObj: BotCastObj): Promise<void> {
     // handle bot reply
-    if(botConfig.IGNORE_TARGETS.includes(castObj.fid)) return;
+    if(botConfig.IGNORE_TARGETS.includes(castObj.fid)) {
+      console.warn(castObj.fName + " is on the ignore list. Not Reply")
+      return;
+    } 
 
     const LOG_ID = "MSG_" + castObj.fName;
     const userChatMessage = { name: castObj.fName, message: castObj.body.textWithMentions }
@@ -1295,9 +1298,10 @@ ${clankerObj.historyConversation}
 
   private async handleMention(castObj: BotCastObj): Promise<void> {
     // handle bot was mentioned
-
-    if(botConfig.IGNORE_TARGETS.includes(castObj.fid)) return;
-    
+    if(botConfig.IGNORE_TARGETS.includes(castObj.fid)) {
+      console.warn(castObj.fName + " is on the ignore list. Ignore mention")
+      return;
+    } 
 
     const tomVision = await this.visionTool(castObj.body.embeds, castObj.body.textWithMentions);
 
