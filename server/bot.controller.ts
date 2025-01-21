@@ -1236,20 +1236,13 @@ ${clankerObj.historyConversation}
     // console.log("#######################################")
     //debug
 
-    const tomVision = await this.visionTool(castObj.body.embeds, castObj.body.textWithMentions);
-    if (tomVision) {
-      console.log("TOMVISION")
-      console.log(tomVision)
-    }
-    // if (!tomVision) return;    // DEBUG ONLY.    //COMMENT ME
-
     // experimental Decide Should Reply or Not
     this.messagesLog.warn("\n---- Decide Should Reply or Not", LOG_ID)
     let joinedConversation = "";
     lastConversation.forEach((message) => {
       joinedConversation += `User @${message.name} said: "${message.message}"\n\n`;
     });
-    const shouldReply = await this.generateShouldRespond(joinedConversation, tomVision + castObj.body.textWithMentions)
+    const shouldReply = await this.generateShouldRespond(joinedConversation, castObj.body.textWithMentions)
     if ((shouldReply as string).includes("IGNORE")) {
       this.farcaster.delayedLikeCast({replyTo: castObj.hash, parent_author_fid: castObj.fid});
       this.messagesLog.info("Its Better " + shouldReply, LOG_ID);
@@ -1259,6 +1252,13 @@ ${clankerObj.historyConversation}
       this.messagesLog.warn("Lets Reply  @" + castObj.fName + " " + shouldReply, LOG_ID);
     }
     this.messagesLog.warn("", LOG_ID)
+
+    const tomVision = await this.visionTool(castObj.body.embeds, castObj.body.textWithMentions);
+    if (tomVision) {
+      console.log("TOMVISION")
+      console.log(tomVision)
+    }
+    // if (!tomVision) return;    // DEBUG ONLY.    //COMMENT ME
 
     const tomChatMessage = await this.replyMessage(
       castObj.fName,
