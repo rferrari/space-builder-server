@@ -707,8 +707,10 @@ Summary:`;
     });
 
     const botListString = botConfig.KNOW_BOT_LIST.filter(Boolean).join(", ");
+    const knowbotsare = `\nKnown bots are: "${botListString}"`;
+
     const messages = [
-      { role: "system", content: botPrompts.SHOULDRESPOND_SYSTEM + `\n${botListString} are BOT, dont engage responding with [IGNORE].` },
+      { role: "system", content: botPrompts.SHOULDRESPOND_SYSTEM2 + knowbotsare },
       { role: "user", content: filledPrompt },
     ];
 
