@@ -48,6 +48,7 @@ export const IGNORE_TARGETS = [
   905725,         //pepeclankeragent
   883378,         //mecode
   12193,          //atlas
+  957325,         //TokuAniBot
   // 236578,         // pepenn212
 ];
 
