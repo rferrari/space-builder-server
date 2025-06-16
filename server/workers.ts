@@ -20,7 +20,7 @@ import { CompiledStateGraph, END, MemorySaver, START, StateDefinition, StateGrap
 
 import { ChatGroq } from "@langchain/groq";
 import { NotionAPILoader } from "@langchain/community/document_loaders/web/notionapi";
-import { NOTION_INTEGRATION_TOKEN, NOTION_DATABASE_ID } from './config'
+// import { NOTION_INTEGRATION_TOKEN, NOTION_DATABASE_ID } from './config'
 import { PromptTemplate } from "@langchain/core/prompts"; // Import the PromptTemplate class
 
 import { RAGLLMModel, JSONLLMModel } from './config'
@@ -36,7 +36,7 @@ import {
 } from "./botPrompts";
 import { loadQAMapReduceChain } from "langchain/chains";
 
-import { TokenRateLimiter } from './TokenLimiter'
+// import { TokenRateLimiter } from './TokenLimiter'
 import FileLogger from './lib/FileLogger'
 
 export interface GraphInterface {
@@ -50,7 +50,7 @@ export interface GraphInterface {
     // jsonResponseModel: ChatOllama;
 }
 
-class RAGSystem {
+class WorkersSystem {
     public MEM_USED: NodeJS.MemoryUsage;
 
     private vectorStore: MemoryVectorStore | null = null;
@@ -60,7 +60,7 @@ class RAGSystem {
     // public MEM_USED: NodeJS.MemoryUsage;
     private docsLoaded: boolean;
     private docsLoading: boolean;
-    public tokenRateLimiter: TokenRateLimiter;
+    // public tokenRateLimiter: TokenRateLimiter;
 
     constructor() {
         this.MEM_USED = process.memoryUsage();
@@ -79,13 +79,13 @@ class RAGSystem {
             })
         );
 
-        this.tokenRateLimiter = new TokenRateLimiter({
-            // 'llama-3.2-90b-text-preview': 7000,
-            // 'llama-3.2-3b-preview': 7000,
-            'llama3-8b-8192': 30000,
-            // 'gemma2-9b-it': 15000,
-            'llama3-70b-8192': 6000,
-        });
+        // this.tokenRateLimiter = new TokenRateLimiter({
+        //     // 'llama-3.2-90b-text-preview': 7000,
+        //     // 'llama-3.2-3b-preview': 7000,
+        //     'llama3-8b-8192': 30000,
+        //     // 'gemma2-9b-it': 15000,
+        //     'llama3-70b-8192': 6000,
+        // });
         //await tokenRateLimiter.submit('llama-3.2-11b-text-preview', 1000);
     }
 
@@ -171,35 +171,35 @@ class RAGSystem {
         }
     }
 
-    public async preloadDocuments() {
-        const response = await this.buildVectorStore();
-        return response.memoryVectors.length;
-    }
+    // public async preloadDocuments() {
+    //     const response = await this.buildVectorStore();
+    //     return response.memoryVectors.length;
+    // }
 
-    public waitForDocumentsToLoad(): Promise<void> {
-        return new Promise((resolve) => {
-            const interval = setInterval(() => {
-                if (this.docsLoaded) {
-                    clearInterval(interval);
-                    resolve();
-                }
-            }, 100); // Check every 100ms.
-        });
-    }
+    // public waitForDocumentsToLoad(): Promise<void> {
+    //     return new Promise((resolve) => {
+    //         const interval = setInterval(() => {
+    //             if (this.docsLoaded) {
+    //                 clearInterval(interval);
+    //                 resolve();
+    //             }
+    //         }, 100); // Check every 100ms.
+    //     });
+    // }
 
     private async buildVectorStore() {
-        if (this.docsLoaded) {
-            return this.vectorStore;
-        }
+        // if (this.docsLoaded) {
+        //     return this.vectorStore;
+        // }
 
         // If documents are currently loading, wait for the process to complete.
-        if (this.docsLoading) {
-            await this.waitForDocumentsToLoad();
-            return this.vectorStore;
-        }
+        // if (this.docsLoading) {
+        //     await this.waitForDocumentsToLoad();
+        //     return this.vectorStore;
+        // }
 
         // Start the document loading process.
-        this.docsLoading = true;
+        // this.docsLoading = true;
 
         /* Load Notion Pages
         const urls = NOTION_PAGE_IDS;
@@ -224,14 +224,14 @@ class RAGSystem {
         }))*/
 
         // notion load database
-        const dbLoader = new NotionAPILoader({
-            clientOptions: { auth: NOTION_INTEGRATION_TOKEN! },
-            id: NOTION_DATABASE_ID,
-            type: "database",
-            propertiesAsHeader: true,
-        });
-        const dbDocs = await dbLoader.load();
-        const docs = dbDocs;
+        // const dbLoader = new NotionAPILoader({
+        //     clientOptions: { auth: NOTION_INTEGRATION_TOKEN! },
+        //     id: NOTION_DATABASE_ID,
+        //     type: "database",
+        //     propertiesAsHeader: true,
+        // });
+        // const dbDocs = await dbLoader.load();
+        // const docs = dbDocs;
         // return loader.load();
 
         //console.warn("Text Splitter");
@@ -244,42 +244,42 @@ class RAGSystem {
         //     chunkOverlap: 0,
         // });
 
-        const textSplitter = RecursiveCharacterTextSplitter.fromLanguage("markdown", {
-            chunkSize: 1200,
-            chunkOverlap: 125,
-        });
+        // const textSplitter = RecursiveCharacterTextSplitter.fromLanguage("markdown", {
+        //     chunkSize: 1200,
+        //     chunkOverlap: 125,
+        // });
 
         // const textSplitter = RecursiveCharacterTextSplitter.fromLanguage("markdown", {    (original V ZERO 0.5  goods)
         //     chunkSize: 500,
         //     chunkOverlap: 0,
         // });
-        const splittedDocs = await textSplitter.splitDocuments(docs.flat());
+        // const splittedDocs = await textSplitter.splitDocuments(docs.flat());
 
         // console.warn("before"); this.printMemUsage();
         // console.log("MemoryVectorStore.fromDocuments");
 
-        try {
-            this.vectorStore = await MemoryVectorStore.fromDocuments(
-                splittedDocs,
-                new HuggingFaceTransformersEmbeddings({
-                    model: "Xenova/all-MiniLM-L6-v2",
+        // try {
+        //     this.vectorStore = await MemoryVectorStore.fromDocuments(
+        //         splittedDocs,
+        //         new HuggingFaceTransformersEmbeddings({
+        //             model: "Xenova/all-MiniLM-L6-v2",
 
-                }));
-            this.docsLoaded = true;
-        } catch (err) {
-            console.error("HuggingFaceTransformersEmbeddings");
-            console.dir(err);
-            this.docsLoaded = false;
-        }
+        //         }));
+        //     this.docsLoaded = true;
+        // } catch (err) {
+        //     console.error("HuggingFaceTransformersEmbeddings");
+        //     console.dir(err);
+        //     this.docsLoaded = false;
+        // }
 
         // console.warn("after"); this.printMemUsage();
-        this.docsLoading = false;
-        return this.vectorStore;
+        // this.docsLoading = false;
+        // return this.vectorStore;
     }
 
     private async retrieveDocs(state: GraphInterface) {
-        const vectorStore = await this.buildVectorStore();
-        const retrievedDocs = await vectorStore.asRetriever().invoke(state.question);
+        // const vectorStore = await this.buildVectorStore();
+        // const retrievedDocs = await vectorStore.asRetriever().invoke(state.question);
 
         // console.log("")
         // console.log("----- RETRIEVEDOCS ------")
@@ -287,7 +287,7 @@ class RAGSystem {
         // console.log("----------------------------")
         // console.log("")
 
-        return { documents: retrievedDocs };
+        // return { documents: retrievedDocs };
     }
 
     private async gradeDocuments(state: GraphInterface) {
@@ -416,7 +416,7 @@ class RAGSystem {
     //     return response.memoryVectors.length;
     // }
 
-    public async invokeRAG(user: string, question: string, conversationHistory: string) {
+    public async invokeWorkers(user: string, question: string, conversationHistory: string) {
         if (!this.ragApp) {
             console.error("RAG app is not initialized");
             return "";
@@ -443,4 +443,4 @@ class RAGSystem {
     }
 }
 
-export const ragSystem = new RAGSystem();
+export const workersSystem = new WorkersSystem();

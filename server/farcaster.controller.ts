@@ -129,12 +129,12 @@ import FileLogger from './lib/FileLogger'
 import { VerificationProtocol, MessageBodyJson, BotCastObj, CastAddBodyJson, BotChatMessage } from './bot.types';
 import { inspect } from 'node:util';
 // import { BulkUsersResponse, CastWithInteractions, Conversation, UserResponse } from '@neynar/nodejs-sdk/build/neynar-api/v2';
-import { ragSystem } from './ragSystem';
+import { workersSystem } from './workers';
 import { UserResponse } from '@neynar/nodejs-sdk/build/api/models/user-response';
 import { CastParamType, CastWithInteractions, FeedType, FilterType } from '@neynar/nodejs-sdk/build/api/models';
 import { isApiErrorResponse } from '@neynar/nodejs-sdk/build';
 
-const urlMatchesTargetChannel = (url: string): boolean => botConfig.TARGET_CHANNELS.some(target => url.endsWith(target));
+// const urlMatchesTargetChannel = (url: string): boolean => botConfig.TARGET_CHANNELS.some(target => url.endsWith(target));
 
 export class Farcaster {
     public MEM_USED: NodeJS.MemoryUsage;
@@ -791,11 +791,11 @@ export class Farcaster {
                     return;
                 }
 
-                if (data.castAddBody.parentUrl && urlMatchesTargetChannel(data.castAddBody.parentUrl)) {
-                    // parentUrl Matches Channel
-                    this.handleTargetChannelCast(msgs[m]);
-                    return;
-                }
+                // if (data.castAddBody.parentUrl && urlMatchesTargetChannel(data.castAddBody.parentUrl)) {
+                //     // parentUrl Matches Channel
+                //     this.handleTargetChannelCast(msgs[m]);
+                //     return;
+                // }
 
                 if (data.castAddBody.embeds && data.castAddBody.embeds.find(embeds => botConfig.BotFID == embeds.castId?.fid)) {
                     this.handleQuoteCasts(msgs[m])

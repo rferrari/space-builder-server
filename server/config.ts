@@ -4,20 +4,10 @@ dotenv.config();
 export const ENV = process.env.ENV || "production";
 
 // configs 
-export const BotName = "nounspacetom";
+export const BotName = "space-builder";
 export const BotFID = 527313;
 export const BotIcon = " ⌐◨-◨  ";
 export const TIMEZONE = process.env.TIMEZONE || "America/Chicago";
-
-export const NOTION_DATABASE_ID = process.env.NOTION_DATABASE_ID || "1510572746cd80c0bb93e2115d44340f";
-export const NOTION_PAGE_IDS = [
-  "https://nounspace.notion.site/Tom-s-Background-1460572746cd804a8216f6a0a2f34e5c",
-  "https://nounspace.notion.site/nounspace-app-info-1460572746cd802fb2dbf6a7ce99eecd",
-  "https://nounspace.notion.site/nounspace-DAO-info-1460572746cd8049b9bcf3605c7a2dda",
-  "https://nounspace.notion.site/SPACE-token-info-1460572746cd80dbbee1fa3125a5d9bd",
-  "https://nounspace.notion.site/nOGs-info-1460572746cd80f2a3b7ef6e52034424",
-  "https://nounspace.notion.site/nounspace-Fidgets-1480572746cd80eaae5ae86e630277ab"
-]
 
 // interval in minutes bot will cast new messages
 export const NEW_CASTS_INTERVAL_MIN = parseInt(process.env.NEW_CASTS_INTERVAL_MIN) || 0;
@@ -38,10 +28,6 @@ export const MAX_USER_CACHE = 100;
 export const TARGETS = [
   527313,            //  nounspacetom
   874542,            //  clanker
-  // 862185,            //  aethernet
-  // 382802,             //  askgina.eth
-  // 364927,             //  paybot
-  // 20596,              //  bountybot
 ];
 
 export const IGNORE_TARGETS = [
@@ -49,7 +35,6 @@ export const IGNORE_TARGETS = [
   883378,         //mecode
   12193,          //atlas
   957325,         //TokuAniBot
-  // 236578,         // pepenn212
 ];
 
 export const KNOW_BOT_LIST = process.env.KNOW_BOT_LIST
@@ -57,19 +42,12 @@ export const KNOW_BOT_LIST = process.env.KNOW_BOT_LIST
   : [];
 
 
-// channels bot will listen to new messages
-export const TARGET_CHANNELS = [
-  "~/channel/nounspace",
-  // "~/channel/skateboard",
-  // "~/channel/farcaster"
-]
-
 // only log AI messages, do not publish
 export const LOG_MESSAGES = true;
 export const DISPLAY_MEM_USAGE = false;
 
 export const USE_WS = process.env.USE_WS === 'true';
-export const WS_PORT = process.env.WS_PORT!;
+export const WS_PORT = process.env.WS_PORT || "4200";
 
 // in memory messages history size and expiration after X minutes with no interaction
 export const MESSAGES_HISTORY_SIZE = parseInt(process.env.MEMORY_EXPIRATION_MIN) || 20;
@@ -96,7 +74,6 @@ const gpt_4_turbo = "gpt-4-turbo";
 export const BotLLMModel = process.env.BOT_LLM_MODEL || gpt_4_turbo;//gpt_4o;//llama3_8b_8192;
 export const BotLLMModel_TEMP = parseFloat(process.env.BOT_LLM_MODEL_TEMP) || 0.7;
 export const ChatBackupLLMModel = llama3_8b_8192;
-// export const ChatBackupLLMModel = llama3_70b_8192;
 export const ChatClankersMModel = llama3_70b_8192;
 
 export const RAGLLMModel = llama3_8b_8192;
@@ -109,22 +86,10 @@ export const OPENAI_API_KEY = process.env.OPENAI_API_KEY!;
 
 export const OPENAI_BASE_URL = process.env.OPENAI_BASE_URL || "";
 
-export const NOTION_PAGE_ID = process.env.NOTION_PAGE_ID!;
-export const NOTION_INTEGRATION_TOKEN = process.env.NOTION_INTEGRATION_TOKEN!;
-//export const NOTION_PAGE_IDS = (process.env.NOTION_PAGE_IDS as string).split(",");
-
 export const NEYNAR_API_KEY = process.env.NEYNAR_API_KEY!;
 export const HUB_RPC = process.env.HUB_RPC! || "nemes.farcaster.xyz:2283";
 export const HUB_SSL = process.env.HUB_SSL! || "true";
 export const SIGNER_UUID = process.env.SIGNER_UUID!;
-
-
-export const DISCORD_ENABLED = process.env.DISCORD_ENABLED === 'true';
-export const DISCORD_TOKEN = process.env.DISCORD_TOKEN || "";
-export const DISCORD_OWNER_ID = process.env.DISCORD_OWNER_ID || "";
-export const DISCORD_CLIENT_ID = process.env.DISCORD_CLIENT_ID || "";
-export const DISCORD_GUILD_ID = process.env.DISCORD_GUILD_ID || "";
-export const DISCORD_CHANNEL_ID = process.env.DISCORD_CHANNEL_ID || "";
 
 export const PUBLISH_TO_DISCORD = process.env.PUBLISH_TO_DISCORD === 'true';
 
