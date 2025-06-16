@@ -1,11 +1,8 @@
 import * as WebSocket from 'ws';
 import { BotAvatar } from './bot.controller';
-import { Farcaster } from './farcaster.controller';
 import { EventBus, EventBusImpl } from './eventBus.interface';
 import * as botConfig from "./config";
-
 import FileLogger from './lib/FileLogger';
-import Table from 'cli-table3'
 
 const Reset = "\x1b[0m",
   Blue = "\x1b[34m",
@@ -90,9 +87,6 @@ class BotCustomServer {
     this.logger.log("Initializing Events Bus... ✅");
     this.initEventBus();
 
-    // this.logger.log("Initializing Farcaster Events... ✅")
-    // this.farcaster = new Farcaster(this.eventBus);
-
     this.logger.log("Waking up Bot " + botConfig.BotName + botConfig.BotIcon + "...  ✅");
     this.botAvatar = new BotAvatar(this.eventBus, null); //this.farcaster);
 
@@ -105,7 +99,6 @@ class BotCustomServer {
 
     // init checking options
     this.logger.log(botConfig.LOG_MESSAGES ? `LOG MESSAGES is ON` : "LOG MESSAGES is OFF");
-    // botConfig.PUBLISH_TO_FARCASTER ? this.logger.warn(Yellow + `PUBLISH TO FARCASTER is ON  ✅` + Reset) : this.logger.warn(Yellow + "PUBLISH TO FARCASTER is OFF 🚨" + Reset);
 
 
     this.logger.log("🙃 TEMPERAMENT: " + botConfig.BotLLMModel_TEMP);
@@ -120,7 +113,6 @@ class BotCustomServer {
       });
 
     // Print "Server is ready" when the server starts
-    // this.discord.sendMessageToChannel(`Good ${dayPeriod} fam! ${botConfig.BotIcon}`);
     this.logger.log(`Bot ${Cyan}${botConfig.BotName}${Reset} is up! ${Cyan}${botConfig.BotIcon}${Reset}`);
     this.logger.log("")
   }
@@ -132,19 +124,6 @@ class BotCustomServer {
     this.botAvatar.handleCommand(commandObj.message, commandObj);
   }
 
-
-  // private async handleCastNewMessagetoChannel() {
-  //   const response = await this.botAvatar.castNewMessagetoChannel();
-  //   if (!response) {
-  //     this.logger.error("Error generating new Cast Message for Channel");
-  //     return;
-  //   }
-
-  //   if (botConfig.PUBLISH_TO_FARCASTER)
-  //     this.farcaster.publishNewChannelCast(response.message);
-
-  //   return response;
-  // }
 }
 
 process.on('uncaughtException', (err) => {

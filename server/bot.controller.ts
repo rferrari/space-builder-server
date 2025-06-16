@@ -9,7 +9,6 @@ const Reset = "\x1b[0m",
   Cyan = "\x1b[36m",
   Gray = "\x1b[90m";
 
-
 interface ArtStyle {
   [key: string]: string;
 }
@@ -25,7 +24,7 @@ const artStyle: ArtStyle = {
 };
 
 
-//// DEBUG_WEEK_DAYS_PERIODS //////////
+//// DEBUG_WEEK_DAYS_PERIODS
 const DEBUG_WEEK_DAYS_PERIODS = false;
 const test_run_counter_week = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 const test_run_counter_period = [
@@ -37,52 +36,11 @@ const test_run_counter_period = [
 ];
 let weekdayCounter = 0;
 let dayPeriodCounter = 0;
-//////////////////////////////////////////
-
-const TOM_PICTURE = `
-..................=##=....................................--
-.......:=-.......:#@#+@+=-..:-............................:-
-.......-%#%%*--....=%@%++*#%##%%%#---:...:-.................
-......:-@%*++##****##***+++++***###**#+.:#@#:...............
-........+@@%*#*+-:-=++=-+++**##*++**#%##*#@@%+:.............
-.........+@@%#******+::=++#%%###*++*#%%#*%@@%%%=............
-........-#@@@@%%#+===-=#%%####%@@@**##%%##+#*#%%:.-*-.......
-........:+@@@@%%%*+#%%%%%%%#++##%#++**@%%%***##%@=@%#:......
-.-%@@@@@%%#**#%%%%%@@@@@@@@@@@@%#+*#%#**#%###%#*#%%@%:-=:...
-.-=#@@@%%%%%%@@@@@@@%#*%%@@@@#*##@@%***####*+*#*#%%@%++%=...
-....+@@@@@@@@@@@@@@@@%@@#**@%%@@@@#++**#%@%@####%@@@##%%=...
-......:*@@@@@@@%+==+#@+:::%%++++==%@@@@@@@@#%#*#%%@@@@@-....
-....:*%%@@@@@#+-::-*-::::::::::-=%%*++@@@%*#%%%%%%##@@@@+...
-...+#%**@@@@%=:::::::::::::::::--::::::@%**%@@@%%@%%%%%%@%-.
-...::*@@%%@@+-:::::::::::+*****#-:::::*###@@@@%@@%%@@@@%+*#-
-...:----=@@@@@@@%=:::::-%@@@@@@@@@#-:::+%@@@@@@@@%@@@@@@@=..
-......:+#%%%%%%%%#+=-::%#+-=----#@%#+::%@@%%@@@@%@@@@@@@@@=.
-......-+===-+*****#*+:=++****+*+*%#*+=:-%@@@@@@@@@@@@@@@#*-.
-......-++:...=@@@@###-=#=-...-%@@@%+*-:-#@@@@@@@@@@@@@@@+:..
-......-**:...=@@@@#*##***-...-@@@@%##=*##*+*@@@@@@@@@@@*:...
-......+*+:...=@@@@*+===++:...-@@@@%#*=+**###*-==-#@@@@@=....
-......:*#:...-@@@@*++::+*-...:#@@@@%*-::-#+:-+++*-=@@@:.....
-......-*#-.::-%@@@#++::**-::--*@@@%#*-:-#%=-++===*=@@-......
-......:+==*+-=+*==+*+::*=++++*###%*++-:-#+:+@*-:-==%#:......
-.......:::.=*:::-++-::::---------==-::::::*%#*+=--+-........
-...........=#:::---::::::::::-=-::::::::::==+=-:=*:.........
-...........=#::::---------#%%@@+:::::::------+*#:.........:-
-...........=@+:::%@+------....*+:::::::=*%@@@@%-.........:--
-...........:*#=:::=+:.......-+-:::::---*%+=%@%-.........::.:
-.............-#+:::+*+....+*+::::-=-=+%#+=::*%:.........--::
-...............#*-::::::::::::::+=-#@@#*=:::-#:.........----
-................+#+::::::::::-=#*#@%##*=-:::-#+:.........:--
-.................:#*-::::-#=@@@@@%*=*#+-:::::+#-...........:
-...................=%%%%%%%%@@@@@#+**+--------=%%%-.........
-............................#@##*=+####+++++++++.=++-.......
-`
 
 import OpenAI from 'openai';
 import { ChatOpenAI } from "@langchain/openai";
-// import { Groq } from 'groq-sdk';
 import { GraphInterface, workersSystem } from "./workers";
 import { ConversationChain } from "langchain/chains";
-// import { ChatGroq } from "@langchain/groq";
 
 import {
   PromptTemplate,
@@ -90,19 +48,13 @@ import {
   MessagesPlaceholder,
   SystemMessagePromptTemplate,
 } from "@langchain/core/prompts";
-
 import { BufferMemory } from "langchain/memory";
-
-///
 // Combined Memory Experimental
-
 import {
   // BufferMemory,
   CombinedMemory,
   ConversationSummaryMemory,
 } from "langchain/memory";
-// Combined Memory Experimental
-///
 
 
 import { HumanMessage, AIMessage, filterMessages, MessageContent } from "@langchain/core/messages";
@@ -120,16 +72,9 @@ import { getLatestEvent } from './api/event'
 import FileLogger from './lib/FileLogger'
 // import { UserResponse } from '@neynar/nodejs-sdk/build/';
 // import { ClankerBot } from './lib/ClankerBot';
-import neynarClient from './lib/neynarClient';
-import { UserResponse } from '@neynar/nodejs-sdk/build/api/models/user-response';
-import { cat } from '@xenova/transformers/types/transformers';
-// import { cat } from "@xenova/transformers";
-// import { config, configDotenv } from "dotenv";
-
-// import { mimeTypes } from 'mimetype';
-// import { response } from 'express';
 // import neynarClient from './lib/neynarClient';
-// import { CastParamType } from '@neynar/nodejs-sdk';
+import { UserResponse } from '@neynar/nodejs-sdk/build/api/models/user-response';
+// import { cat } from '@xenova/transformers/types/transformers';
 
 const IMG_URL_REGEX = /(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|gif|png)/;
 
@@ -152,18 +97,12 @@ export class BotAvatar {
   public MEM_USED: NodeJS.MemoryUsage;
 
   private eventBus: EventBus;
-  // private farcaster: Farcaster;
 
   private openai: OpenAI;
-  // private botVision: Groq;
 
   private chatPrompt: ChatPromptTemplate;
-
-  // private chatBotBackuptLLM: ChatGroq;
-  // private chatBotClankerLLM: ChatGroq;
   private chatBotLLM: ChatOpenAI;
   
-  // private assistentLLM: ChatGroq;
 
   private isStopped: boolean;
   private userAskToStart: string;
@@ -178,16 +117,9 @@ export class BotAvatar {
   private memoryLog: FileLogger;
   private newCasts: FileLogger;
 
-  // private resumoHumanos: any;
-  // private resumoTom: any;
-  // private resumoAll: any;
-
   private userMemories: Map<string, UserMemory> = new Map();
 
-
   private lastTrendingSummary: MessageContent;
-
-  // private clanker: ClankerBot;
 
   // Internal Clock
   private agora: Date;
@@ -197,10 +129,6 @@ export class BotAvatar {
   private weekday: string;
   private dayPeriod: string;
 
-
-  //
-  // Constructor
-  //
   constructor(eventBus: EventBus, farcaster: Farcaster) {
     this.printTomPicture();
 
@@ -211,59 +139,22 @@ export class BotAvatar {
     this.eventBus = eventBus;
     // this.farcaster = farcaster;
 
-    // this.eventBus.subscribe("CAST_ADD", (data: BotCastObj) => this.handleCastAddMessage(data));
-    // this.eventBus.subscribe("WAS_MENTIONED", (data: BotCastObj) => this.handleMention(data));
-    // this.eventBus.subscribe("WAS_REPLIED", (data: BotCastObj) => this.handleReply(data));
-    // this.eventBus.subscribe("WAS_QUOTE_CAST", (data: BotCastObj) => this.handleQuoteCast(data));
-    // this.eventBus.subscribe("CHANNEL_NEW_MESSAGE", (data: BotCastObj) => this.handleChannelNewMessage(data));
-
-    // this.eventBus.subscribe("COMMAND", (data: BotCastObj) => this.handleReply(data));
-
     this.messagesLog = new FileLogger({ folder: './logs-messages', printconsole: true });
     this.memoryLog = new FileLogger({ folder: './logs-memory', printconsole: false });
     this.newCasts = new FileLogger({ folder: './logs-newcasts', printconsole: false });
-
-    // this.resumoHumanos = new FileLogger({ folder: './logs-resumos' });
-    // this.resumoTom = new FileLogger({ folder: './logs-resumos' });
-    // this.resumoAll = new FileLogger({ folder: './logs-resumos' });
 
     this.userMemories = new Map();
 
     this.MESSAGES_HISTORY_SIZE = botConfig.MESSAGES_HISTORY_SIZE; // Set the maximum history limit
     this.MEMORY_EXPIRATION_MIN = botConfig.MEMORY_EXPIRATION_MIN * 60 * 1000; // 24 hours
 
-    // this.botAvatar = new Groq({ apiKey: botConfig.GROQ_API_KEY });
-
     this.updateInternalClockTime();
-    // this.displayInternalClock();
-
-    // this.chatBotClankerLLM = new ChatGroq({
-    //   temperature: botConfig.BotLLMModel_TEMP,
-    //   model: botConfig.ChatClankersMModel,
-    //   stop: null,
-    // });
-
-    // this.chatBotBackuptLLM = new ChatGroq({
-    //   temperature: botConfig.BotLLMModel_TEMP,
-    //   model: botConfig.ChatBackupLLMModel,
-    //   stop: null,
-    // });
  
     this.chatBotLLM = new ChatOpenAI({
       openAIApiKey: botConfig.OPENAI_API_KEY,
       temperature: botConfig.BotLLMModel_TEMP,
       modelName: botConfig.BotLLMModel,
-      // apiKey: botConfig.OPENAI_API_KEY,
-      // model: botConfig.BotLLMModel,
-      // modelName: "gpt-4-turbo",
-      // stop: null,
     });
-
-    // this.assistentLLM = new ChatGroq({
-    //   temperature: 0.7,
-    //   model: botConfig.AssistentModel, //llama-3.2-90b-text-preview
-    //   stop: null,
-    // });
 
     this.chatPrompt = ChatPromptTemplate.fromMessages([
       ["system", botPrompts.BOT_SYSTEM_PROMPT,],
@@ -271,8 +162,6 @@ export class BotAvatar {
     ]);
 
     this.chatChain = new ConversationChain({
-      // memory: this.getCurrentUserMemory(user),
-      // memory: await this.getRelevantUserMemory(user, userQuery),
       memory: null,
       prompt: this.chatPrompt,
       llm: this.chatBotLLM,
@@ -290,104 +179,17 @@ export class BotAvatar {
     setInterval(() =>
       this.cleanupOldMemories.call(this)
       , botConfig.MEMORY_CLEANUP_MIN * 60 * 1000); // Run every hour
-
-    // Schedule get Farcasater Trendings Feed 
-    // setInterval(() =>
-    //   this.getFarcasaterTrendingFeed()
-    //   , botConfig.FARCASTER_TRENDING_MIN * 60 * 1000); // Run 24 hour
-
-    // const chatPrompt = ChatPromptTemplate.fromMessages([
-    //   ["system",
-    //     botPrompts.BOT_SYSTEM_PROMPT2,
-    //   ],
-    //   new MessagesPlaceholder("history"),
-    //   ["human", "{input}"],
-    // ]);
-
-    // this.chatChain = new ConversationChain({
-    //   memory: this.stringPromptMemory,
-    //   prompt: chatPrompt,
-    //   llm: this.botLLM,
-    // });
-
-    // this.printMemorySummary();
   }
-
-  // public async preloadNotionDocuments(): Promise<boolean> {
-  //   console.log("Loading Notions Documents...")
-  //   console.time("Document Load Time");             // Start the timer
-  //   // ragSystem.preloadDocuments();
-  //   ragSystem.preloadDocuments()
-  //     .then((chunks) => {
-  //       console.log(`Documents loaded successfully. Created ${chunks} vector chunks.`);
-  //       console.timeEnd("Document Load Time");   // End the timer and print the time
-  //       return true;
-  //     })
-  //     .catch(() => {
-  //       console.error("Failed loading documents. Please restart service.");
-  //       console.timeEnd("Document Load Time");    // Ensure the timer ends even in case of failure
-  //       return false;
-  //     });
-  //   return false;
-  // }
 
   private cleanupOldMemories() {
     const currentTime = Date.now();
     for (const [userId, userMemory] of this.userMemories.entries()) {
       if (currentTime - userMemory.lastInteraction > this.MEMORY_EXPIRATION_MIN) {
         this.userMemories.delete(userId); // Remove outdated memory
-
-        // console.warn(`Memory for user ${userId} removed due to inactivity.`);
-        // this.messagesLog.log(``, "MEM_CLEAN_UP")
         this.memoryLog.log(`Memory for user ${userId} removed due to inactivity.`, "MEM_CLEAN_UP")
-        // this.messagesLog.log(``, "MEM_CLEAN_UP")
       }
     }
   }
-
-//   private async sumarizeUserHistoryMemory(userId: string) {
-//     // Load current memory variables
-//     let userMem = this.userMemories.get(userId);
-//     const storedMessages = await userMem.memory.loadMemoryVariables({});
-
-//     // Check if the number of messages exceeds the limit
-//     if (storedMessages.history.length > this.MESSAGES_HISTORY_SIZE) {
-//       this.memoryLog.warn("User " + userId + " Memory is " + storedMessages.history.length, "MEM_CLEAN_UP");
-//       // this.logger.log("", "CONSOLE")
-//       // this.logger.log("User " + userId + " Memory is " + storedMessages.history.length, "CONSOLE");
-//       // this.logger.log("", "CONSOLE")
-
-//       const messages = await storedMessages.history;
-//       const filteredMessages = filterMessages(messages, { includeTypes: [AIMessage, HumanMessage] });
-//       const conversationContent = filteredMessages.map((message) => {
-//         // Check the type of the message and assign the name accordingly
-//         const name = message instanceof AIMessage ? botConfig.BotName :
-//           message instanceof HumanMessage ? userId :
-//             'Unknown'; // Fallback in case of an unexpected type
-//         return `${name}: ${message.content}`;
-//       }).join('\n'); // Join all messages with a newline
-
-//       // Create a prompt for summarization
-//       const prompt =
-//         `Summarize these conversation between Tom and ${userId} as concise first-person insights in 5 sentences max.
-// Remember: omit any introductory phrases or explanations:
-// ${conversationContent}
-// Summary:`;
-
-//       // Get the summary from the model
-//       const summaryResponse = await this.assistentLLM.invoke([{ role: 'system', content: prompt }]);
-//       // this.assistentLLM.invoke([{ role: 'user', content: prompt }]);
-
-//       let logid = `${userId}_Summary`;
-//       this.memoryLog.log(``, logid)
-//       this.memoryLog.log(`SummaryResponse for ${userId}`, logid)
-//       this.memoryLog.log(summaryResponse.content, logid)
-//       this.memoryLog.log(``, logid)
-
-//       userMem.memory.clear().then(() => { userMem.memory.chatHistory.addUserMessage(summaryResponse.content as string) })
-//     }
-//   }
-
 
   private async addtoUserMemory(userId: string, userQuery: string, aiResponse: string) {
     // Retrieve the existing memory object
@@ -399,11 +201,6 @@ export class BotAvatar {
     // Add the new interaction (user query and AI response) to the history
     await userMem.memory.chatHistory.addUserMessage(userQuery);
     await userMem.memory.chatHistory.addAIChatMessage(aiResponse);
-
-    // (Optional) Log or perform any additional actions with the updated memory
-    // console.log(`Memory updated for user ${userId}:`, userQuery + "\n" + aiResponse);
-    // this.limitUserHistoryMemory(userId);
-
   }
 
   private async addtoBotMemory(userId: string, userQuery: string, aiResponse: string) {
@@ -433,10 +230,8 @@ export class BotAvatar {
     return memory;
   }
 
-  //
   // Return the relevant Yser Memory entries based on keywords
   // create a new one if do not exist
-  //
   private async getRelevantUserMemory(userId: string, userQuery: string): Promise<BufferMemory> {
     // Check if the BufferMemory for the user already exists
     if (!this.userMemories.has(userId)) {
@@ -519,15 +314,6 @@ export class BotAvatar {
       // Clear the current memory and save the trimmed memory
       await this.stringPromptMemory.clear(); // Clear existing memory
       await this.stringPromptMemory.chatHistory.addAIChatMessage(resumoConversa.toString());
-
-      // await this.stringPromptMemory.chatHistory.addAIChatMessage(resumoConversa.toString());
-      // await this.stringPromptMemory.saveContext(resumoConversa);
-      // for (const message of trimmedMemory) {
-      //   await this.stringPromptMemory.saveContext(
-      //     { content: message.content, role: message.role },
-      //     { content: '', role: 'assistant' } // Placeholder for assistant response
-      //   );
-      // }
     }
   }
 
@@ -548,115 +334,11 @@ export class BotAvatar {
       // Create a prompt for summarization
       const prompt = botPrompts.WHATS_IS_TRENDING + feed;
       this.stringPromptMemory.chatHistory.addMessage(new AIMessage({ content: prompt, id: "tom", name: "tom" }));
-
-      // Get the summary from the model
-      // const summaryResponse = await this.assistentLLM.invoke([{ role: 'user', content: prompt }]);
-      // Output the summary as text
-      // return summaryResponse.content; // Return the summary if needed
     } catch (error) {
       this.memoryLog.error("Error summarizing conversation:", "ERROR");
       this.memoryLog.error(error, "ERROR");
     }
   }
-
-  // async summarizeConversationHumans() {
-  //   try {
-  //     // Load the memory variables
-  //     const messages = await this.stringPromptMemory.chatHistory.getMessages()
-
-  //     // Extract content from memorySummary based on user messages only
-  //     const filteredMessages = filterMessages(messages, { includeTypes: [HumanMessage] });
-  //     const conversationContent = filteredMessages.map((message) => {
-  //       return `${message.name}: ${message.content}`;
-  //     }).join('\n'); // Join all messages with a newline;
-
-  //     // Create a prompt for summarization
-  //     const prompt = `Summarize what users are talking about:\n${conversationContent}`;
-
-  //     // Get the summary from the model
-  //     const summaryResponse = await this.assistentLLM.invoke([{ role: 'user', content: prompt }]);
-
-  //     // Output the summary as text
-  //     return summaryResponse.content; // Return the summary if needed
-  //   } catch (error) {
-  //     this.memoryLog.error("Error summarizing conversation:", "ERROR");
-  //     this.memoryLog.error(error, "ERROR");
-  //   }
-  // }
-
-  // async summarizeConversationTom() {
-  //   try {
-  //     // Load the memory variables
-  //     // Extract content from memorySummary based on AI messages only
-  //     const messages = await this.stringPromptMemory.chatHistory.getMessages()
-  //     const filteredMessages = filterMessages(messages, { includeTypes: [AIMessage, HumanMessage] });
-  //     const conversationContent = filteredMessages.map((message) => {
-  //       return `${message.name}: ${message.content}`;
-  //     }).join('\n'); // Join all messages with a newline;
-
-  //     // Create a prompt for summarization
-  //     const prompt = `Summarize this messages in first person insights:\n${conversationContent}`;
-
-  //     // Get the summary from the model
-  //     // const summaryResponse = await this.assistentLLM.invoke([{ role: 'user', content: prompt }]);
-
-  //     // Output the summary as text
-  //     return summaryResponse.content; // Return the summary if needed
-  //   } catch (error) {
-  //     this.memoryLog.error("Error summarizing conversation:", "ERROR");
-  //     this.memoryLog.error(error, "ERROR");
-  //   }
-  // }
-
-  // async summarizeConversation() {
-  //   try {
-  //     // Load the memory variables
-  //     // Extract content from memorySummary
-  //     // Extract content from memorySummary based on user and AI messages
-  //     const messages = await this.stringPromptMemory.chatHistory.getMessages()
-  //     const filteredMessages = filterMessages(messages, { includeTypes: [AIMessage] });
-
-  //     // console.warn("filteredMessages length: " + filterMessages.length)
-  //     // Get the last 10 messages
-  //     const lastTenMessages = filteredMessages.slice(-10);
-  //     // console.warn("lastTenMessages length: " + lastTenMessages.length)
-
-  //     const conversationContent = lastTenMessages.map((message) => {
-  //       return `${message.name}: ${message.content}`;
-  //     }).join('\n'); // Join all messages with a newline;
-
-  //     // console.warn("conversationContent: ");
-  //     // console.dir(conversationContent);
-
-  //     // Create a prompt for summarization
-  //     const prompt = `Summarize the following conversation:\n${conversationContent}`;
-  //     // const prompt = `Please summarize the following conversation:\n${memorySummary}`;
-
-  //     // Get the summary from the model
-  //     const summaryResponse = await this.assistentLLM.invoke([{ role: 'user', content: prompt }]);
-
-  //     // Output the summary as text
-  //     // console.warn("Conversation Summary:", summaryResponse.content);
-  //     return summaryResponse.content; // Return the summary if needed
-  //   } catch (error) {
-  //     this.memoryLog.error("Error summarizing conversation:", "ERROR");
-  //     this.memoryLog.error(error, "ERROR");
-  //   }
-  // }
-
-  // private async getFarcasaterTrendingFeed() {
-  //   const trendingFeed = await this.farcaster.getTrendingFeed();
-  //   const trendingSummary = await this.summarizeTrendingFeed(trendingFeed);
-  //   if (!trendingSummary) return;
-
-  //   const chatmessage = {
-  //     name: botConfig.BotName,
-  //     message: trendingSummary
-  //   }
-
-  //   this.lastTrendingSummary = trendingSummary;
-  //   // this.eventBus.publish("PRINT_MSG", chatmessage);
-  // }
 
   private countChars(text: string): number {
     return text.length;
@@ -768,144 +450,6 @@ export class BotAvatar {
     return ragContext;
   }
 
-  //   private async replyMention(user: string, userQuery: string, vision: string = "",
-  //     conversation: BotChatMessage[] = [], userDataInfo: UserResponse = null) {
-  //     const config = { configurable: { thread_id: user + "_thread" } };
-  //     var joinedConversation: string = '';
-  //     var userInfoAbout: string = '';
-  //     var userPrompt: string = '';
-  //     const LOG_ID = "MENTION" + user
-
-  //     // set userInfo
-  //     if (userDataInfo) {
-  //       userInfoAbout = this.userDataInfo2Text(userDataInfo)
-  //     }
-
-  //     // Swap Memories retrieving the relevant messages based on keywords
-  //     // experimental
-  //     // this.chatChain.memory = await this.getCombinedMemory(user, userQuery);
-  //     const relevantMemory = await this.getRelevantUserMemory(user, userQuery);
-  //     this.chatChain.memory = relevantMemory;
-
-  //     // set conversationContent
-  //     // filter and create a conversation content history for RAG System
-  //     const chatHistoryMessages = await relevantMemory.chatHistory.getMessages();
-  //     const filteredMessages = chatHistoryMessages.slice(botConfig.LAST_CONVERSATION_LIMIT); // Adjust the number as needed
-  //     const memoryConversationContent = filteredMessages.map((message) => {
-  //       // Check the type of the message and assign the name accordingly
-  //       const name = message instanceof AIMessage ? botConfig.BotName :
-  //         message instanceof HumanMessage ? user : 'User'; // Fallback in case of an unexpected type
-  //       return `@${name}: ${message.content}`;
-  //     }).join('\n'); // Join all messages with a newline
-
-
-  //     if (conversation.length > 0) {
-  //       conversation.forEach((message) => {
-  //         joinedConversation += `User @${message.name} said: "${message.message}"\n\n`;
-  //       });
-  //       // joinedConversation += `\n`;
-  //     }
-
-
-  //     // if using RAG system... include conversationContent + userQuery
-  //     // const ragContext = await this.getRAGContext(userQuery, user, memoryConversationContent);
-  //     const ragHisstory = conversation.length > 0 ? joinedConversation : memoryConversationContent;
-  //     const ragContext = await this.getRAGContext(userQuery, user, ragHisstory);
-
-  //     // build user Prompt form user Query
-  //     // userPrompt = userQuery;
-
-  //     if (joinedConversation.length > 0) userPrompt = `Continue this conversation:
-  // <conversation_history>
-  // ${joinedConversation}
-  // </conversation_history>
-
-  // ${userPrompt}`;
-
-  //     // experimental vision
-  //     if (vision && vision !== "") userPrompt = `${vision}\n${userPrompt}`;
-  //     // if (userInfoAbout && userInfoAbout !== "") userPrompt = `${userInfoAbout}\n${userQuery}`;
-
-  //     // console.log("Prompt")
-  //     // console.log(userQuery)
-
-  //     // Swap Memories retrieving the relevant messages based on keywords
-  //     // experimental
-  //     // this.chatChain.memory = await this.getCombinedMemory(user, userQuery);
-
-  //     userPrompt += `@${user}: ${userQuery}`;
-
-  //     // Debug
-  //     this.messagesLog.log(`-------Debug ${user} PROMPT:`, "PROMPT")
-  //     // this.messagesLog.log(`<user_input>\n${userQuery}\n</user_input>\n\n`, "PROMPT")
-  //     // this.messagesLog.log(`Prompt:`, "PROMPT")
-  //     this.messagesLog.log(userPrompt, "PROMPT")
-  //     this.messagesLog.log(`-------`, "PROMPT")
-  //     this.messagesLog.log(``, "PROMPT")
-
-  //     try {
-  //       // throw new Error('This is a TEST backup system error!');
-  //       var reply = await this.chatChain.invoke({
-  //         context: ragContext,
-  //         userquery: userPrompt,
-  //       }, config);
-  //     } catch (error) {
-  //       this.messagesLog.error("FALLBACK BACKUP LLM SYSTEM", "ERROR");
-  //       this.messagesLog.error(error, "ERROR");
-  //       this.chatChain.llm = this.chatBotBackuptLLM;
-  //       var reply = await this.chatChain.invoke({
-  //         context: ragContext,
-  //         userquery: userPrompt,
-  //       }, config);
-
-  //       this.chatChain.llm = this.chatBotLLM;
-  //       this.messagesLog.error("backup response:", "ERROR");
-  //       this.messagesLog.error(reply.response, "ERROR");
-  //       this.messagesLog.error("chatBotLLM restored", "ERROR");
-  //     }
-
-  //     // console.log("this.chatChain.prompt");
-  //     // console.log(this.chatChain.prompt);
-
-  //     //
-  //     // check reply size
-  //     var textSize = new TextEncoder().encode(encodeURI(reply.response)).byteLength;
-  //     var retryCounter = 0;
-  //     while ((textSize > 1024) || retryCounter > 3) {
-  //       let retryPrompt =
-  //         `Rewrite this text to make it concise and under 1024 bytes. Output only the rewritten text: ${reply.response}`;
-  //       this.messagesLog.log(`------- RETRYPROMPT  #${retryCounter} (${textSize} bytes) --------`, LOG_ID);
-  //       // console.log(retryPrompt);
-  //       // console.log("----------------------------");
-
-  //       reply = await this.chatBotLLM.invoke(retryPrompt)
-
-  //       reply.response = reply.content
-  //       textSize = new TextEncoder().encode(encodeURI(reply.response)).byteLength;
-  //       retryCounter++;
-  //       this.messagesLog.log(`------- RETRY #${retryCounter} (${textSize} bytes) --------`, LOG_ID);
-  //       // console.log(reply.response);
-  //       // console.log("----------------------------");
-  //       const delay = 30000; // 30 seconds
-  //       await new Promise(resolve => setTimeout(resolve, delay));
-  //     }
-
-  //     // ^ matches start, $ matches end, | matches either " or '
-  //     const finalMessage = reply.response.replace(/^"|"$/g, '');
-
-  //     this.addtoBotMemory(user, userQuery, finalMessage)
-  //     await this.addtoUserMemory(user, userQuery, finalMessage)
-
-  //     await this.sumarizeUserHistoryMemory(user);
-
-  //     // return response to be published
-  //     return {
-  //       name: botConfig.BotName,
-  //       message: finalMessage,
-  //     };
-  //   }
-
-
   private async replyMessage(user: string, userQuery: string, vision: string = "",
     conversation: BotChatMessage[] = [], userDataInfo: UserResponse = null) {
     const config = { configurable: { thread_id: user + "_thread" } };
@@ -920,8 +464,6 @@ export class BotAvatar {
     }
 
     // Swap Memories retrieving the relevant messages based on keywords
-    // experimental
-    // this.chatChain.memory = await this.getCombinedMemory(user, userQuery);
     const relevantMemory = await this.getRelevantUserMemory(user, userQuery);
     this.chatChain.memory = relevantMemory;
 
@@ -962,14 +504,6 @@ ${userPrompt}`;
 
     // experimental vision
     if (vision && vision !== "") userPrompt = `${vision}\n${userPrompt}`;
-    // if (userInfoAbout && userInfoAbout !== "") userPrompt = `${userInfoAbout}\n${userQuery}`;
-
-    // console.log("Prompt")
-    // console.log(userQuery)
-
-    // Swap Memories retrieving the relevant messages based on keywords
-    // experimental
-    // this.chatChain.memory = await this.getCombinedMemory(user, userQuery);
 
     userPrompt += `@${user}: ${userQuery}`;
 
@@ -990,22 +524,8 @@ ${userPrompt}`;
     } catch (error) {
       this.messagesLog.error("FALLBACK BACKUP LLM SYSTEM", "ERROR");
       this.messagesLog.error(error, "ERROR");
-      // this.chatChain.llm = this.chatBotBackuptLLM;
-      // var reply = await this.chatChain.invoke({
-      //   context: ragContext,
-      //   userquery: userPrompt,
-      // }, config);
-
-      // this.chatChain.llm = this.chatBotLLM;
-      // this.messagesLog.error("backup response:", "ERROR");
-      // this.messagesLog.error(reply.response, "ERROR");
-      // this.messagesLog.error("chatBotLLM restored", "ERROR");
     }
 
-    // console.log("this.chatChain.prompt");
-    // console.log(this.chatChain.prompt);
-
-    //
     // check reply size
     var textSize = new TextEncoder().encode(encodeURI(reply.response)).byteLength;
     var retryCounter = 0;
@@ -1036,17 +556,12 @@ Rewritten TEXT:`;
     }
 
     // Remove Quotes
-    // do not misspell nounspace
     var finalMessage = reply.response;
     if (/namespace/i.test(finalMessage))
       console.warn("MISSPELL: namespace found in reply response");
     finalMessage = finalMessage
       .replace(/^"|"$/g, '')
       .replace(/namespace/g, 'nounspace');
-
-    // const finalMessage = reply.response
-    //   .replace(/^"|"$/g, '')
-    //   .replace(/namespace/g, 'nounspace');
 
     this.addtoBotMemory(user, userQuery, finalMessage)
     await this.addtoUserMemory(user, userQuery, finalMessage)
@@ -1059,339 +574,6 @@ Rewritten TEXT:`;
       message: finalMessage,
     };
   }
-
-
-  // a message from target was sent, adding it to bot context
-  private async handleCastAddMessage(castObj: BotCastObj): Promise<void> {
-    // if (!botConfig.TARGETS.includes(castObj.fid)) return
-    // const message = castObj.body.textWithMentions;
-
-    // switch (castObj.fid) {
-    //   case 874542:    // clanker
-    //     const { reply, hash, fid } = await this.handleClankerNewMessages((castObj));
-    //     if (!reply) break;
-    //     this.farcaster.publishUserReply(reply, hash, fid);
-    //     break;
-
-    //   case 527313:    // nounspacetom
-    //     this.stringPromptMemory.chatHistory.addMessage(new AIMessage({
-    //       content: message,
-    //       id: botConfig.BotName,
-    //       name: botConfig.BotName
-    //     }));
-    //     break;
-
-    //   default:
-    //     break;
-    // }
-
-
-    // if (botConfig.LOG_MESSAGES) {
-    //   let logid = "NEW_CAST";
-    //   this.newCasts.log("---- NEW TARGET MESSAGES WAS PUBLISHED by @" + castObj.fName, logid);
-    //   this.newCasts.log(message, logid);
-    //   this.newCasts.log("", logid);
-    // }
-  }
-
-  private extractQuotedText(text: string): string {
-    // Regular expression to match quoted text
-    const quotedTextRegex = /"(.*?)"/g;
-  
-    // Check if the text contains quoted text
-    const match = text.match(quotedTextRegex);
-  
-    // If quoted text is found, return it
-    if (match) {
-      // Join all matches into a single string
-      return match.join(' ');
-    }
-  
-    // If no quoted text is found, return the original text
-    return text;
-  }
-
-
-//   async handleClankerNewMessages(castObj: BotCastObj) {
-//     if (!this.clanker) {
-//       this.clanker = new ClankerBot();
-//     }
-
-//     let clankerObj: any;
-//     let reply: any;
-//     try {
-//       clankerObj = await this.clanker.processCast(castObj);
-//       if (clankerObj === undefined) 
-//         return { reply: undefined }
-//       // console.dir(clankerObj);
-//     } catch (error) {
-//       // this.messagesLog.error("handleClankerNewMessages catch:")
-//       this.messagesLog.warn(error.message, "CLANKER_ERROR")
-//       return { reply: undefined }
-//     }
-
-//     const image_description = await this.visionTool(clankerObj.imageUrls, clankerObj.historyConversation);
-//     const username = clankerObj.deployerInfo.username;
-//     const bio = clankerObj.deployerInfo.profile.bio.text;
-
-//     const prompt = botPrompts.CLANKER_REPLY_PROMPT + `
-
-// <about_token>
-// username: @${username}
-// user bio: ${bio}
-
-// ${image_description}
-
-// <token_creation_conversatioin>
-// ${clankerObj.historyConversation}
-// </token_creation_conversatioin>
-// <about_token>
-// `;
-
-//     this.messagesLog.log("------------ NEW TOKEN DEPLOYED by: " + username, "CLANKER");
-
-//     try {
-//       try {
-//         reply = await this.chatBotClankerLLM.invoke(prompt)
-//       } catch (innerError) {
-//         this.messagesLog.error("Primary chatbot failed", "CLANKER_ERROR");
-//         this.messagesLog.error(innerError, "CLANKER_ERROR");
-//         this.messagesLog.log("Going for Backup LLM", "CLANKER_ERROR");
-//         reply = await this.chatBotBackuptLLM.invoke(prompt)
-//       }
-
-//       const theTokenReply = reply.content.replace(/^"|"$/g, '') + `\n\nHere's your token space: ${clankerObj.nounspacePage}`;
-//       // const theTokenReply = this.extractQuotedText(reply.content).replace(/^"|"$/g, '') + `\n\nHere's your token space: ${clankerObj.nounspacePage}`;
-//       // const theTokenReply = `Here's your token space: ${clankerObj.nounspacePage}\n\n` + reply.content;
-
-//       // this.messagesLog.log("", "CLANKER");
-//       // this.messagesLog.log(`<prompt>${prompt}</prompt>`, "CLANKER");
-//       // this.messagesLog.log("", "CLANKER");
-//       // this.messagesLog.log("ORIGINAL: " + reply.content, "CLANKER");
-//       // this.messagesLog.log("PROCESSED: " + theTokenReply, "CLANKER");
-//       // this.messagesLog.log("", "CLANKER");
-
-//       return {
-//         reply: theTokenReply,
-//         hash: clankerObj.thread_hash,
-//         fid: clankerObj.deployerInfo.fid,
-//       };
-
-//     } catch (error) {
-//       this.messagesLog.error("CLANKER_ERROR", "CLANKER_ERROR");
-//       this.messagesLog.error(error, "CLANKER_ERROR");
-//       this.messagesLog.error("", "CLANKER_ERROR");
-
-//       return { reply: undefined };
-//     }
-//   }
-
-  // private async handleQuoteCast(castObj: BotCastObj): Promise<void> {
-  //   const LOG_ID = "QUOTE_CAST_" + castObj.fName;
-  //   // const userChatMessage = { name: castObj.fName, message: castObj.body.textWithMentions }
-  //   const userDataInfo = await this.farcaster.handleUserInfo(castObj.fName);
-  //   const tomVision = "";
-
-  //   const lastConversation = await this.farcaster.getQuoteCastContext(castObj.body.embeds[0]);
-  //   let joinedConversation = "";
-  //   lastConversation.forEach((message) => {
-  //     joinedConversation += `User @${message.name} said: "${message.message}"\n\n`;
-  //   });
-
-  //   // const shouldReply = await this.generateShouldRespond(joinedConversation, tomVision + castObj.body.textWithMentions)
-  //   // if ((shouldReply as string).includes("IGNORE")) {
-  //   // this.messagesLog.info("Its Better " + shouldReply, LOG_ID);
-  //   // this.messagesLog.info("@" + castObj.fName + ": " + castObj.body.textWithMentions, LOG_ID);
-  //   // return
-  //   // } else {
-  //   // this.messagesLog.warn("Lets Reply  @" + castObj.fName + " " + shouldReply, LOG_ID);
-  //   // }
-  //   // this.messagesLog.warn("", LOG_ID)
-
-  //   const tomChatMessage = await this.replyMessage(
-  //     castObj.fName,
-  //     castObj.body.textWithMentions,
-  //     tomVision,
-  //     lastConversation,
-  //     userDataInfo);
-
-  //   this.farcaster.schedulePublishUserReply(tomChatMessage.message, castObj.hash, castObj.fid);
-  // }
-
-  // private async handleReply(castObj: BotCastObj): Promise<void> {
-  //   // handle bot reply
-  //   if(botConfig.IGNORE_TARGETS.includes(castObj.fid)) {
-  //     console.warn(castObj.fName + " is on the ignore list. Not Reply")
-  //     return;
-  //   } 
-
-  //   const LOG_ID = "MSG_" + castObj.fName;
-  //   const userChatMessage = { name: castObj.fName, message: castObj.body.textWithMentions }
-  //   const userDataInfo = await this.farcaster.handleUserInfo(castObj.fName);
-  //   const lastConversation = await this.farcaster.getConversationHistory(castObj.hash);
-
-  //   //debug
-  //   // console.log("#######################################")
-  //   // if (userDataInfo) {
-  //   //   console.log("userDataInfo:")
-  //   //   console.dir(userDataInfo);
-  //   // } else console.log("no userDataInfo yet...")
-  //   // console.log("lastConversation:")
-  //   // console.dir(lastConversation);
-  //   // console.log("#######################################")
-  //   //debug
-
-  //   // experimental Decide Should Reply or Not
-  //   this.messagesLog.warn("\n---- Decide Should Reply or Not", LOG_ID)
-  //   let joinedConversation = "";
-  //   lastConversation.forEach((message) => {
-  //     joinedConversation += `User @${message.name} said: "${message.message}"\n\n`;
-  //   });
-  //   const shouldReply = await this.generateShouldRespond(joinedConversation, castObj.body.textWithMentions)
-  //   if ((shouldReply as string).includes("IGNORE")) {
-  //     this.farcaster.delayedLikeCast({replyTo: castObj.hash, parent_author_fid: castObj.fid});
-  //     this.messagesLog.info("Its Better " + shouldReply, LOG_ID);
-  //     this.messagesLog.info("@" + castObj.fName + ": " + castObj.body.textWithMentions, LOG_ID);
-  //     return
-  //   } else {
-  //     this.messagesLog.warn("Lets Reply  @" + castObj.fName + " " + shouldReply, LOG_ID);
-  //   }
-  //   this.messagesLog.warn("", LOG_ID)
-
-  //   // const tomVision = await this.visionTool(castObj.body.embeds, castObj.body.textWithMentions);
-  //   // if (tomVision) {
-  //   //   console.log("TOMVISION")
-  //   //   console.log(tomVision)
-  //   // }
-  //   // if (!tomVision) return;    // DEBUG ONLY.    //COMMENT ME
-
-  //   const tomChatMessage = await this.replyMessage(
-  //     castObj.fName,
-  //     castObj.body.textWithMentions,
-  //     "",//tomVision,
-  //     lastConversation,
-  //     userDataInfo);
-
-  //   this.messagesLog.log("", LOG_ID)
-  //   this.messagesLog.log("------ HANDLE REPLY -------", LOG_ID)
-  //   // if (tomVision) {
-  //   //   this.messagesLog.log(`Vision: `, LOG_ID)
-  //   //   this.messagesLog.log(tomVision, LOG_ID)
-  //   //   this.messagesLog.log("------")
-  //   // }
-
-  //   // if (lastConversation && lastConversation.length > 0) {
-  //   // let joinedConversation = '';
-  //   // lastConversation.forEach((message) => {
-  //   //   joinedConversation += `@${message.name}: ${message.message}\n`;
-  //   // });
-  //   this.messagesLog.log(`Last Conversation: `, LOG_ID)
-  //   this.messagesLog.log(joinedConversation, LOG_ID)
-  //   this.messagesLog.log("------")
-  //   // }
-
-  //   this.messagesLog.log("", LOG_ID)
-  //   this.messagesLog.log("INPUT", LOG_ID)
-  //   this.messagesLog.info(`@${userChatMessage.name}: ${userChatMessage.message}`, LOG_ID)
-  //   this.messagesLog.log("REPLY")
-  //   this.messagesLog.warn(`@${tomChatMessage.name}: ${tomChatMessage.message}`, LOG_ID)
-  //   this.messagesLog.log("", LOG_ID)
-  //   this.messagesLog.log("---------------------------", LOG_ID)
-
-  //   this.farcaster.schedulePublishUserReply(tomChatMessage.message, castObj.hash, castObj.fid);
-  // }
-
-  // private async handleMention(castObj: BotCastObj): Promise<void> {
-  //   // handle bot was mentioned
-  //   const userDataInfo = await this.farcaster.handleUserInfo(castObj.fName);
-  //   const userChatMessage = { name: castObj.fName, message: castObj.body.textWithMentions }
-  //   const lastConversation = await this.farcaster.getConversationHistory(castObj.hash);
-
-  //   const shouldReply = await this.generateShouldRespond(lastConversation.join("\n"), castObj.body.textWithMentions)
-  //   if ((shouldReply as string).includes("IGNORE")) {
-  //     // this.farcaster.delayedLikeCast({replyTo: castObj.hash, parent_author_fid: castObj.fid});
-  //     const LOG_ID = "MSG_" + castObj.fName;
-  //     this.messagesLog.info("Its Better " + shouldReply, LOG_ID);
-  //     this.messagesLog.info("@" + castObj.fName + ": " + castObj.body.textWithMentions, LOG_ID);
-  //     return
-  //   } else {
-  //     const LOG_ID = "MSG_" + castObj.fName;
-  //     this.messagesLog.warn("Lets Reply  @" + castObj.fName + " " + shouldReply, LOG_ID);
-  //   }
-
-  //   if(botConfig.IGNORE_TARGETS.includes(castObj.fid)) {
-  //     console.warn(castObj.fName + " is on the ignore list. Ignore mention")
-  //     return;
-  //   }
-
-  //   // const tomVision = await this.visionTool(castObj.body.embeds, castObj.body.textWithMentions);
-
-  //   const tomChatMessage = await this.replyMessage(
-  //     castObj.fName,
-  //     castObj.body.textWithMentions,
-  //     "",// tomVision,
-  //     lastConversation,
-  //     userDataInfo);
-
-  //   // this.eventBus.publish("PRINT_MSG", userChatMessage);
-  //   // this.eventBus.publish("PRINT_MSG", tomChatMessage);
-  //   let LOG_ID = "MENTIONS" + castObj.fName;
-  //   this.messagesLog.log("", LOG_ID)
-  //   this.messagesLog.log("------ HANDLE MENTION -------", LOG_ID)
-  //   // if (tomVision) {
-  //     // this.messagesLog.log(`Vision: `, LOG_ID)
-  //     // this.messagesLog.log(tomVision, LOG_ID)
-  //   // }
-
-  //   if (lastConversation && lastConversation.length > 0) {
-  //     let joinedConversation = '';
-  //     lastConversation.forEach((message) => {
-  //       joinedConversation += `${message.name}: ${message.message}\n`;
-  //     });
-  //     // this.messagesLog.log(`Last Conversation: `, LOG_ID)
-  //     this.messagesLog.log(joinedConversation, LOG_ID)
-  //   }
-  //   this.messagesLog.log(`@${userChatMessage.name}: ${userChatMessage.message}`, LOG_ID)
-  //   this.messagesLog.log(`@${tomChatMessage.name}: ${tomChatMessage.message}`, LOG_ID)
-  //   this.messagesLog.log("", LOG_ID)
-  //   this.messagesLog.log("-----------------------------", LOG_ID)
-
-  //   this.farcaster.schedulePublishUserReply(tomChatMessage.message, castObj.hash, castObj.fid);
-  // }
-
-  // private async handleChannelNewMessage(castObj: BotCastObj): Promise<void> {
-  //   // handle channel new message
-  //   if (!this.shouldReply(castObj.fid, castObj.body.textWithMentions)) return
-
-  //   // seek for the first embbed image
-  //   // const tomVision = await this.visionTool(castObj.body.embeds, castObj.body.textWithMentions);
-
-  //   const userDataInfo = await this.farcaster.handleUserInfo(castObj.fName);
-
-  //   // save new message
-  //   const userChatMessage = { name: castObj.fName, message: castObj.body.textWithMentions }
-
-  //   // save bot reply
-  //   const tomChatMessage = await this.replyMessage(
-  //     castObj.fName,
-  //     castObj.body.textWithMentions,
-  //     "",// tomVision,
-  //     [],
-  //     userDataInfo);
-
-  //   // log conversation messages
-  //   let logid = "MESSAGES";
-  //   this.messagesLog.log("\n------ CHANNEL NEW MESSAGE -------", logid)
-  //   this.messagesLog.log(`@${userChatMessage.name}: ${userChatMessage.message}`, logid)
-  //   this.messagesLog.log(`@${tomChatMessage.name}: ${tomChatMessage.message}\n`, logid)
-
-  //   // publish new event print message
-  //   // this.eventBus.publish("PRINT_MSG", userChatMessage);
-  //   // this.eventBus.publish("PRINT_MSG", tomChatMessage);
-
-  //   // send event to publish to farcaster
-  //   this.farcaster.schedulePublishUserReply(tomChatMessage.message, castObj.hash, castObj.fid);
-  // }
 
   public async handleCommand(command: string, message: BotChatMessage) {
     let tomReply = { name: botConfig.BotName, message: "" }
@@ -1580,52 +762,17 @@ Rewritten TEXT:`;
     }
   }
 
-  private fakeTodaySpaceTime() {
-    // Get the current weekday and day period based on counters
-    const currentWeekday = test_run_counter_week[weekdayCounter];
-    const currentDayPeriod = test_run_counter_period[dayPeriodCounter];
-
-    // Update instance variables
-    this.weekday = currentWeekday;
-    this.dayPeriod = currentDayPeriod;
-
-    // Increment counters
-    dayPeriodCounter++;
-    if (dayPeriodCounter >= test_run_counter_period.length) {
-      dayPeriodCounter = 0; // Reset day period counter
-      weekdayCounter++;
-    }
-    if (weekdayCounter >= test_run_counter_week.length) {
-      weekdayCounter = 0; // Reset weekday counter
-    }
-  }
-
   async castNewMessagetoChannel(): Promise<BotChatMessage> {
     if (this.isStopped) return { name: botConfig.BotName, message: "Zzzzzzzzzz" };
 
     // update Space Time Awereness
     this.updateInternalClockTime();
 
-    //////////////////////////////
-    // if (DEBUG_WEEK_DAYS_PERIODS)
-    //   this.fakeTodaySpaceTime();
-    //////////////////////////////
-
-
     // if (this.lastTrendingSummary === undefined)
     //   await this.getFarcasaterTrendingFeed();
 
     // const resumoConversa = await this.summarizeConversation();
     // const smSugestion = await this.socialMediaSugestion(resumoConversa, this.lastTrendingSummary);
-
-    // Experimental
-    // this.resumoAll.log(resumoConversa);
-    // const resumoConversaHumanos = await this.summarizeConversationHumans();
-    // this.resumoHumanos.log(resumoConversaHumanos);
-    // const resumoConversaTom = await this.summarizeConversationTom();
-    // this.resumoTom.log(resumoConversaTom);
-    // this.logger.log(resumoConversa);
-    // console.warn(resumoConversa)
 
     const castPromptForToday =
       //botPrompts.CAST_WEEK_PROMPT[this.weekday]+
@@ -1642,18 +789,11 @@ Rewritten TEXT:`;
     //   suggestion: smSugestion.content,
     // });
 
-    // get llm reply
-    // const chatCompletion = await this.getTomNewMessage(filledPrompt);
-    // const reply = chatCompletion.content;
-    // const chatCompletion = await this.getTomNewMessage(filledPrompt);
     const reply = "" //chatCompletion.choices[0]?.message?.content || "";
 
     // attach image
     var designerImage: any;
-    // if(this.weekday=="Sunday"){
-    // designerImage = await this.drawingTool(reply); // message the url and name the prompt
-    // imageUrl.message = imageUrl.message;
-    // }
+
 
     if (reply !== "") {
       // add this cast to memory
@@ -1685,9 +825,6 @@ Rewritten TEXT:`;
         this.newCasts.log("", logid);
       }
 
-      // Limit the history
-      // await this.trimMemoryHistory(resumoConversa);
-
       return tomReply;
     } else {
       return undefined;
@@ -1695,29 +832,15 @@ Rewritten TEXT:`;
   }
 
   public getMemUsed() {
-    // const memFarcaster = this.farcaster.MEM_USED.rss;
     const memRag = workersSystem.MEM_USED.rss;
-    // const memTLimiter = ragSystem.tokenRateLimiter.MEM_USED.rss;
-
     return {
-      // memFarcaster,
       memRag,
-      // memTLimiter
     }
   }
 
   private async getBotStatus(): Promise<BotChatMessage> {
     const lastEventId = await getLatestEvent();
-    // const connStatus = this.farcaster.getConnectionStatus() === true
-    //   ? "Im connected to Farcaster" : `Im disconnected from Farcaster cause ${this.userAskToStop} told so.`;
     const message = `helloww!`
-
-// I have ${this.userMemories.size} users on my memory;
-// ${connStatus};
-// The last Farcaster Event ID processed was ${lastEventId};
-
-// Mem. Usage: ${Math.round(this.MEM_USED.rss / 1024 / 1024 * 100) / 100} MB
-// `
     return { name: botConfig.BotName, message: message }
   }
 
@@ -1744,58 +867,10 @@ Rewritten TEXT:`;
   }
 
 
-
-  // async getFirstImage(embeds): Promise<string> {
-  //   const mimeTypes = [
-  //     'image/jpeg',
-  //     'image/png',
-  //     // 'image/gif',
-  //     // Add more image mime types as needed
-  //   ];
-
-
-  //   if (Object.keys(embeds).length > 0) {
-  //     const promises = Object.values(embeds).map((value) => {
-  //       if (typeof value === 'object' && ('url' in value)) { // Check if value is an object and has a url property
-  //         if (value.url) { // Check if value has a url property
-  //           return fetch(value.url as string, { method: 'HEAD' })
-  //             .then((response) => 
-  //               response.headers.get('Content-Type'))
-  //             .then((mimeType) => {
-  //               if (mimeTypes.includes(mimeType)) {
-  //                 // if(mimeType == "image/gif"){
-  //                 //   const response = await fetch(value.url);
-  //                 //   const gifBuffer = await response.arrayBuffer();
-  //                 //   const sharp = Sharp(gifBuffer);
-  //                 //   const { data } = await sharp.frame(1);
-  //                 //   return data;
-  //                 // }
-  //                 return value.url; // Return the first image URL found
-  //               }
-  //             });
-  //         }
-  //       }
-  //     });
-
-  //     const imageUrls = await Promise.all(promises)
-  //       .then((results) => results.filter((result) => result !== null));
-
-  //     // Wait for all promises to resolve
-  //     const results = await Promise.all(promises);
-
-  //     if (imageUrls[0])
-  //       return imageUrls[0].toString();
-  //     else return null; // Return the first image URL found, or null if none
-  //   }
-
-  //   return null;
-  // }
-
   async getEmbedsFirstImage(embedsLinks: string[]): Promise<string | null> {
     const mimeTypes = [
       'image/jpeg',
       'image/png',
-      // Add more image mime types as needed
     ];
 
     try {
@@ -1866,172 +941,6 @@ OUTPUT:`);
       return { name: "Error generating image:", message: "" }
     }
   }
-
-  // async visionTool(embeddes: any, context: string): Promise<string | undefined> {
-  //   var imageDescription = "";
-  //   var result = "";
-  //   // debug
-  //   // castObj Mode
-  //   // [
-  //   //   "https://imagedelivery.net/BXluQx4ige9GuW0Ia56BHw/bc04781b-3f0b-4144-c6b2-4144f5dff600/original",
-  //   // ]
-  //   // Farcaster Mode
-  //   // embeddes = [{
-  //   //   "url": "https://imagedelivery.net/BXluQx4ige9GuW0Ia56BHw/0c9c9666-18fc-4cb8-ba2a-add67a7d2d00/original"
-  //   // }]
-  //   if (!embeddes) return undefined;
-
-  //   // this.botVision = new Groq();
-  //   // const firstImage = await this.getFirstImage(embeddes);
-  //   const embedsImages = await this.getEmbedsImages(embeddes);
-  //   if (!embedsImages) return undefined
-
-  //   for await (const image of embedsImages) {
-  //     const BOT_VISION_PROMPT = `What is in this image described in a maximum of 300 characters?`
-  //     try {
-  //       const chatCompletion = await this.botVision.chat.completions.create({
-  //         "messages": [
-  //           {
-  //             "role": "user", "content": [
-  //               {
-  //                 "type": "text",
-  //                 "text": BOT_VISION_PROMPT,
-  //               },
-  //               {
-  //                 "type": "image_url",
-  //                 "image_url": {
-  //                   "url": image
-  //                 }
-  //               }
-  //             ]
-  //           }
-  //         ],
-  //         "model": botConfig.VisionModel,
-  //         "temperature": 1,
-  //         "max_tokens": 1024,
-  //         "top_p": 1,
-  //         "stream": false,
-  //         "stop": null
-  //       });
-
-  //       imageDescription = chatCompletion.choices[0].message.content;
-  //     } catch (error) {
-  //       // console.log(error);
-  //       // return undefined
-  //     }
-
-  //     if (imageDescription === "Unfortunately, I cannot identify people based on their photographs.")
-  //       imageDescription = "A picture of a beautiful person";
-
-  //     // const guess = recognitionResponse.content;
-  //     result += `<image_description>\n${imageDescription
-  //       }\n </image_description>\n`
-  //   };
-  //   return result
-
-  //   // const BOT_VISION_PROMPT = `What's in this image in one short sentence?`
-  //   // const BOT_VISION_PROMPT = `What is in this image described in a maximum of 300 characters?`
-  //   //     const BOT_VISION_RECOGNITION =
-  //   //       `You will receive an Image Description and your job its to
-  //   // guess what is about and here are some informations that you may find interesting to guess it.
-
-  //   // -${context}
-
-  //   // Remember: Output directly your guess without introduction comments
-  //   // OUTPUT: `
-
-  //   /*
-  //   `You will receive an Image Description and your job its to
-  //   guess what is about and here are some informations that you may find interesting to guess it.
-    
-  //   Clues:
-  //   -Draw of a guy in a white shirt, jeans, wearing sunglasses, is probably TOM or a User from nounspace;
-  //   -Person wearing sunglasses, is probably a User from nounspace;
-  //   -Person Face with sunglasses, say it' a beauty using a nOGs sunglass;
-  //   -Using Sunglasses, probably it's a nOGs sunglass;
-  //   -Offer/Sale/Buy, it is probably an NFT promo;
-  //   -${context}
-    
-  //   Remember: Output directly your guess without introduction comments
-  //   OUTPUT: `
-  //   */
-
-  //   // try {
-  //   //   const chatCompletion = await this.botVision.chat.completions.create({
-  //   //     "messages": [
-  //   //       {
-  //   //         "role": "user", "content": [
-  //   //           {
-  //   //             "type": "text",
-  //   //             "text": BOT_VISION_PROMPT,
-  //   //           },
-  //   //           {
-  //   //             "type": "image_url",
-  //   //             "image_url": {
-  //   //               "url": firstImage
-  //   //             }
-  //   //           }
-  //   //         ]
-  //   //       }
-  //   //     ],
-  //   //     "model": botConfig.VisionModel,
-  //   //     "temperature": 1,
-  //   //     "max_tokens": 1024,
-  //   //     "top_p": 1,
-  //   //     "stream": false,
-  //   //     "stop": null
-  //   //   });
-
-  //   //   imageDescription = chatCompletion.choices[0].message.content;
-  //   // } catch (error) {
-  //   //   console.log(error);
-  //   //   return undefined
-  //   // }
-
-  //   // if (imageDescription === "") return ""
-  //   // if (imageDescription === "Unfortunately, I cannot identify people based on their photographs.")
-  //   //   imageDescription = "A picture of a beautiful person";
-
-  //   // const recognitionResponse = await this.assistentLLM.invoke([
-  //   //   ["system", BOT_VISION_RECOGNITION,],
-  //   //   ["user", imageDescription],
-  //   // ]);
-
-  //   // const guess = recognitionResponse.content;
-  //   // const result = `<image_description>\n${imageDescription}\n</image_description>\n`
-  //   // const result = `<image_description>\n${imageDescription}\n</image_description>\n<image_guess>\n${guess}\n</image_guess>\n`
-  //   // console.log(result);
-  //   // return result
-  // }
-
-
-  // for gifs
-  // import { Sharp } from 'sharp';
-
-  // if (Object.keys(embeds).length > 0) {
-  //   const promises = Object.values(embeds).map(async (value) => {
-  //     if (typeof value === 'object' && ('url' in value)) {
-  //       if (value.url) {
-  //         const response = await fetch(value.url);
-
-  //         const response_1 = await fetch(value.url as string, { method: 'HEAD' });
-  //         const mimeType = response_1.headers.get('Content-Type');
-  //         if (mimeTypes.includes(mimeType)) {
-  //           if (mimeType == "image/gif") {
-  //             const gifBuffer = await (getGifFrame(value.url));
-  //             return gifBuffer;
-  //           }
-  //           return value.url;
-  //         }
-  //       }
-  //     }
-  //   });
-
-  //   function getGifFrame(url: string): Promise<Buffer> {
-  //     return fetch(url)
-  //       .then(response => response.arrayBuffer())
-  //       .then(buffer => Sharp(buffer).frame(1));
-  //   }
 
   private userDataInfo2Text(userDataInfo: UserResponse) {
     // console.dir(userDataInfo)
