@@ -10,21 +10,16 @@ Cyan = "\x1b[36m",
 Gray = "\x1b[90m";
 
 /* eslint-disable @typescript-eslint/no-unused-vars */
-
 import { CheerioWebBaseLoader } from "@langchain/community/document_loaders/web/cheerio";
 import { HuggingFaceTransformersEmbeddings } from "@langchain/community/embeddings/hf_transformers";
 import { Document } from "@langchain/core/documents";
 import { StringOutputParser } from "@langchain/core/output_parsers";
 import { ChatPromptTemplate } from "@langchain/core/prompts";
 import { CompiledStateGraph, END, MemorySaver, START, StateDefinition, StateGraph } from "@langchain/langgraph";
-
 import { ChatGroq } from "@langchain/groq";
-import { NotionAPILoader } from "@langchain/community/document_loaders/web/notionapi";
-// import { NOTION_INTEGRATION_TOKEN, NOTION_DATABASE_ID } from './config'
+// import { NotionAPILoader } from "@langchain/community/document_loaders/web/notionapi";
 import { PromptTemplate } from "@langchain/core/prompts"; // Import the PromptTemplate class
-
 import { RAGLLMModel, JSONLLMModel } from './config'
-
 import * as hub from "langchain/hub";
 import { CharacterTextSplitter, RecursiveCharacterTextSplitter } from "langchain/text_splitter";
 import { MemoryVectorStore } from "langchain/vectorstores/memory";
@@ -35,8 +30,6 @@ import {
     TOM_SECRETARY
 } from "./botPrompts";
 import { loadQAMapReduceChain } from "langchain/chains";
-
-// import { TokenRateLimiter } from './TokenLimiter'
 import FileLogger from './lib/FileLogger'
 
 export interface GraphInterface {
@@ -46,8 +39,6 @@ export interface GraphInterface {
     documents: Document[];
     model: ChatGroq;
     jsonResponseModel: ChatGroq;
-    // model: ChatOllama;
-    // jsonResponseModel: ChatOllama;
 }
 
 class WorkersSystem {
@@ -57,10 +48,8 @@ class WorkersSystem {
     private graph: StateGraph<GraphInterface> | null = null;
     private ragApp: CompiledStateGraph<GraphInterface, Partial<GraphInterface>, "__start__", StateDefinition, StateDefinition, StateDefinition> | null = null;
     private logSecretary: FileLogger;
-    // public MEM_USED: NodeJS.MemoryUsage;
     private docsLoaded: boolean;
     private docsLoading: boolean;
-    // public tokenRateLimiter: TokenRateLimiter;
 
     constructor() {
         this.MEM_USED = process.memoryUsage();
@@ -78,15 +67,6 @@ class WorkersSystem {
                 model: "Xenova/all-MiniLM-L6-v2",
             })
         );
-
-        // this.tokenRateLimiter = new TokenRateLimiter({
-        //     // 'llama-3.2-90b-text-preview': 7000,
-        //     // 'llama-3.2-3b-preview': 7000,
-        //     'llama3-8b-8192': 30000,
-        //     // 'gemma2-9b-it': 15000,
-        //     'llama3-70b-8192': 6000,
-        // });
-        //await tokenRateLimiter.submit('llama-3.2-11b-text-preview', 1000);
     }
 
     private initializeGraph() {
@@ -149,11 +129,6 @@ class WorkersSystem {
         };
     }
 
-    // private async printMemUsage() {
-    //     for (let key in this.MEM_USED)
-    //         console.warn(`${key}: ${Math.round(this.MEM_USED[key] / 1024 / 1024 * 100) / 100} MB`);
-    // }
-
     // Helper function to wait for documents to load.
     public async reloadDocuments(): Promise<number> {
         const start = new Date().getTime();
@@ -171,22 +146,7 @@ class WorkersSystem {
         }
     }
 
-    // public async preloadDocuments() {
-    //     const response = await this.buildVectorStore();
-    //     return response.memoryVectors.length;
-    // }
-
-    // public waitForDocumentsToLoad(): Promise<void> {
-    //     return new Promise((resolve) => {
-    //         const interval = setInterval(() => {
-    //             if (this.docsLoaded) {
-    //                 clearInterval(interval);
-    //                 resolve();
-    //             }
-    //         }, 100); // Check every 100ms.
-    //     });
-    // }
-
+   
     private async buildVectorStore() {
         // if (this.docsLoaded) {
         //     return this.vectorStore;

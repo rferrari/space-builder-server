@@ -73,12 +73,12 @@ class BotCustomServer {
           // Check if the message is a command
           this.handleCommand(this.wss, data);
 
-          this.wss.clients.forEach((client: WebSocket) => {
-            if (client !== ws && client.readyState === WebSocket.OPEN) {
-              this.logger.log('Sending to another client:', data);
-              client.send(data);
-            }
-          });
+          // this.wss.clients.forEach((client: WebSocket) => {
+          //   if (client !== ws && client.readyState === WebSocket.OPEN) {
+          //     this.logger.log('Sending to another client:', data);
+          //     client.send(data);
+          //   }
+          // });
         });
       });
   }

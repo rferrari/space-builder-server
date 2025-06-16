@@ -9,39 +9,10 @@ const Reset = "\x1b[0m",
   Cyan = "\x1b[36m",
   Gray = "\x1b[90m";
 
-interface ArtStyle {
-  [key: string]: string;
-}
-
-const artStyle: ArtStyle = {
-  'Sunday': '64-bit Pixel Art',
-  'Monday': '64-bit Oil Painting ',
-  'Tuesday': 'Solarpunk Pixel Art',
-  'Wednesday': '64-bit Watercolor Painting',
-  'Thursday': '64-bit Retro Sci-fi Art',
-  'Friday': 'Psychedelic 64-bit Pixel Art',
-  'Saturday': '64-bit Abstract Pixel Art'
-};
-
-
-//// DEBUG_WEEK_DAYS_PERIODS
-const DEBUG_WEEK_DAYS_PERIODS = false;
-const test_run_counter_week = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
-const test_run_counter_period = [
-  // "Morning",
-  "Afternoon",
-  // "Night", 
-  // "Late Night",
-  // "Early Morning"
-];
-let weekdayCounter = 0;
-let dayPeriodCounter = 0;
-
 import OpenAI from 'openai';
 import { ChatOpenAI } from "@langchain/openai";
 import { GraphInterface, workersSystem } from "./workers";
 import { ConversationChain } from "langchain/chains";
-
 import {
   PromptTemplate,
   ChatPromptTemplate,
@@ -49,34 +20,21 @@ import {
   SystemMessagePromptTemplate,
 } from "@langchain/core/prompts";
 import { BufferMemory } from "langchain/memory";
-// Combined Memory Experimental
 import {
-  // BufferMemory,
   CombinedMemory,
   ConversationSummaryMemory,
 } from "langchain/memory";
-
-
 import { HumanMessage, AIMessage, filterMessages, MessageContent } from "@langchain/core/messages";
-
 import { EventBus } from './eventBus.interface'
 import { Farcaster } from './farcaster.controller';
-
 import { BotCastObj, BotChatMessage, CastIdJson } from './bot.types';
-
 import * as botConfig from "./config";
 import * as botPrompts from "./botPrompts";
-
-import { getLatestEvent } from './api/event'
-
+// import { getLatestEvent } from './api/event'
 import FileLogger from './lib/FileLogger'
-// import { UserResponse } from '@neynar/nodejs-sdk/build/';
-// import { ClankerBot } from './lib/ClankerBot';
-// import neynarClient from './lib/neynarClient';
 import { UserResponse } from '@neynar/nodejs-sdk/build/api/models/user-response';
-// import { cat } from '@xenova/transformers/types/transformers';
 
-const IMG_URL_REGEX = /(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|gif|png)/;
+// const IMG_URL_REGEX = /(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|gif|png)/;
 
 const WEEKDAYS = [
   "Sunday",
@@ -95,30 +53,21 @@ interface UserMemory {
 
 export class BotAvatar {
   public MEM_USED: NodeJS.MemoryUsage;
-
   private eventBus: EventBus;
-
   private openai: OpenAI;
-
   private chatPrompt: ChatPromptTemplate;
   private chatBotLLM: ChatOpenAI;
-  
-
   private isStopped: boolean;
   private userAskToStart: string;
   private userAskToStop: string;
-
   private stringPromptMemory: BufferMemory;
   private chatChain: ConversationChain;
   private MESSAGES_HISTORY_SIZE: number;
   private MEMORY_EXPIRATION_MIN: number;
-
   private messagesLog: FileLogger;
   private memoryLog: FileLogger;
   private newCasts: FileLogger;
-
   private userMemories: Map<string, UserMemory> = new Map();
-
   private lastTrendingSummary: MessageContent;
 
   // Internal Clock
@@ -130,21 +79,14 @@ export class BotAvatar {
   private dayPeriod: string;
 
   constructor(eventBus: EventBus, farcaster: Farcaster) {
-    this.printTomPicture();
-
     this.MEM_USED = process.memoryUsage();
-
     this.isStopped = false;
-
     this.eventBus = eventBus;
     // this.farcaster = farcaster;
-
     this.messagesLog = new FileLogger({ folder: './logs-messages', printconsole: true });
     this.memoryLog = new FileLogger({ folder: './logs-memory', printconsole: false });
     this.newCasts = new FileLogger({ folder: './logs-newcasts', printconsole: false });
-
     this.userMemories = new Map();
-
     this.MESSAGES_HISTORY_SIZE = botConfig.MESSAGES_HISTORY_SIZE; // Set the maximum history limit
     this.MEMORY_EXPIRATION_MIN = botConfig.MEMORY_EXPIRATION_MIN * 60 * 1000; // 24 hours
 
@@ -340,42 +282,6 @@ export class BotAvatar {
     }
   }
 
-  private countChars(text: string): number {
-    return text.length;
-  }
-
-  private countWords(text: string): number {
-    // const words = text.trim().split(/\s+/).filter(word => word.length > 0);
-
-    // for also count japanese. experimental
-    const regex = /[\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FFF]+/g;
-    const words = text.trim().match(regex).filter(word => word.length > 0);
-
-    return words.length;
-  }
-
-  private isQuestion(text: string): boolean {
-    // Define common question-related characters and phrases
-    const questionMarks = ["?", "？", "¿", "⁇", "⸮", "❓", "❔", "؟"];
-    const questionPhrases = [
-      "how do", "how much", "what is", "why is", "can you",
-      "is it", "does it", "do you", "should i", "could you"
-    ];
-
-    // Convert text to lowercase for comparison
-    const normalizedText = text.toLowerCase().trim();
-
-    // Check if the text contains any question marks
-    const hasQuestionMark = questionMarks.some(mark => normalizedText.includes(mark));
-
-    // Check if the text contains any question phrases
-    const containsQuestionPhrase = questionPhrases.some(phrase =>
-      normalizedText.includes(phrase)
-    );
-
-    return hasQuestionMark || containsQuestionPhrase;
-  }
-
 
   private async generateShouldRespond(history: string, query: string) {
     // Create an array of messages
@@ -388,12 +294,16 @@ export class BotAvatar {
       query,
     });
 
-    const botListString = botConfig.KNOW_BOT_LIST.filter(Boolean).join(", ");
-    const knowbotsare = `\nKnown bots are: "${botListString}"`;
+    // const botListString = botConfig.KNOW_BOT_LIST.filter(Boolean).join(", ");
+    // const knowbotsare = `\nKnown bots are: "${botListString}"`;
 
     const messages = [
-      { role: "system", content: botPrompts.SHOULDRESPOND_SYSTEM2 + knowbotsare },
-      { role: "user", content: filledPrompt },
+      { role: "system", 
+        content: botPrompts.SHOULDRESPOND_SYSTEM2 //+ knowbotsare 
+      },
+      { role: "user", 
+        content: filledPrompt
+      },
     ];
 
     console.dir(messages);
@@ -403,27 +313,6 @@ export class BotAvatar {
     return result.content;
   }
 
-  private shouldReply(fid: number, text: string): boolean {
-    // is Own message? Should Reply?
-    if (fid == botConfig.BotFID) return false
-
-    // const wordCount = this.countWords(text);
-    const wordCount = this.countChars(text);
-
-    const isQuestion = this.isQuestion(text);
-    const keywords = ["good morning", "gm"]; // List of keywords to check
-    // Normalize text for case-insensitive comparison
-    const normalizedText = text.toLowerCase().trim();
-    // Check if any keyword exists in the text
-    const containsKeyword = keywords.some(keyword => normalizedText.includes(keyword.toLowerCase()));
-
-    if (!isQuestion && wordCount < botConfig.MIN_REPLY_WORD_COUNT && !containsKeyword) {
-      this.messagesLog.log(
-        `Reply too small (${wordCount} < ${botConfig.MIN_REPLY_WORD_COUNT}), and no keywords."`, "MESSAGE");
-      return false;
-    }
-    return true; // Reply if it's a question, long enough, or contains a keyword
-  }
 
 
   private async getRAGContext(userQuery: string, user, history): Promise<string> {
@@ -565,9 +454,7 @@ Rewritten TEXT:`;
 
     this.addtoBotMemory(user, userQuery, finalMessage)
     await this.addtoUserMemory(user, userQuery, finalMessage)
-
     // await this.sumarizeUserHistoryMemory(user);
-
     // return response to be published
     return {
       name: botConfig.BotName,
@@ -579,52 +466,16 @@ Rewritten TEXT:`;
     let tomReply = { name: botConfig.BotName, message: "" }
 
     switch (command) {
-      case "start":
-        this.userAskToStart = message.name;
-        tomReply = this.setBotStart(message.message);
-        break;
-      case "stop":
-        this.userAskToStop = message.name;
-        this.setBotStop();
-        break;
-      case "status":
-        tomReply = await this.getBotStatus();
-        break;
       case "ping":
         tomReply = { 
           name: "Space Builder", 
           message: "pong"
         };
         break;
-      case "pixelart":
-        tomReply = await this.drawingTool(message.message)
-        break;
-      case "reload":
-        switch (message.message) {
-          case "reloadVars":
-            tomReply.message = "Sorry I cant do that.";
-            // tomReply.message = "Reloading env vars (experimental)...";
-            // const loadConfig = () => {
-            //   const newBotConfig = require('./config');
-            //   return newBotConfig;
-            // };
-            // botConfig = loadConfig();
-            break
-          case "reloadDocs":
-            const result = await workersSystem.reloadDocuments();
-            tomReply.message = result >= 0 ? `Reloaded in ${result} seconds!` : "Failed reloading docs. Try Again.";
-            break
-        }
-        break;
-      case "vision":
-        // let cmdvision = await this.visionTool([message.imageUrl], message.message);
-        // tomReply.message = cmdvision;
-        // tomReply = await this.replyMessage(message.name, message.message, cmdvision, [], null);
-        break;
       default:
         // messages from discord dont have fid -1 set
-        if (!this.shouldReply(-1, message.message)) {
-          tomReply = { name: botConfig.BotName, message: "Message Too Short!" };
+        if (!this.generateShouldRespond("", message.message)) {
+          tomReply = { name: botConfig.BotName, message: "Cant help with that!" };
           break;
         }
         tomReply = await this.replyMessage(message.name, message.message, "", [], null);
@@ -636,40 +487,17 @@ Rewritten TEXT:`;
     return tomReply;
   }
 
+  // // Get Groq chat completion
+  // async getTomNewMessage(user_prompt: string): Promise<any> {
+  //   // Create an array of messages
+  //   const messages = [
+  //     { role: "system", content: botPrompts.BOT_NEW_CAST_SYSTEM },
+  //     { role: "user", content: user_prompt },
+  //   ];
 
-  // Get Groq chat completion
-  async socialMediaSugestion(resumoConversa: MessageContent, trendingTopics: MessageContent): Promise<any> {
-    // Create an array of messages
-    const promptTemplate = PromptTemplate.fromTemplate(
-      botPrompts.SOCIAL_MEDIA_MANAGER_SUGESTION
-    );
-
-    const filledPrompt = await promptTemplate.format({
-      trending: trendingTopics,
-      summary: resumoConversa,
-      todaycontext: botPrompts.CAST_WEEK_PROMPT[this.weekday]
-    });
-
-    const messages = [
-      { role: "system", content: botPrompts.SOCIAL_MEDIA_MANAGER },
-      { role: "user", content: filledPrompt },
-    ];
-
-    // Invoke the model with the messages array
-    return this.chatBotLLM.invoke(messages);
-  }
-
-  // Get Groq chat completion
-  async getTomNewMessage(user_prompt: string): Promise<any> {
-    // Create an array of messages
-    const messages = [
-      { role: "system", content: botPrompts.BOT_NEW_CAST_SYSTEM },
-      { role: "user", content: user_prompt },
-    ];
-
-    // Invoke the model with the messages array
-    return this.chatBotLLM.invoke(messages);
-  }
+  //   // Invoke the model with the messages array
+  //   return this.chatBotLLM.invoke(messages);
+  // }
 
 
   public formatTimeOfDay(hour: number): string {
@@ -735,10 +563,6 @@ Rewritten TEXT:`;
     this.dayPeriod = this.formatTimeOfDay(this.hour);
   }
 
-  private printTomPicture() {
-    // console.log(TOM_PICTURE);
-  }
-
   public async displayInternalClock() {
     this.updateInternalClockTime();
     console.warn(`
@@ -768,12 +592,6 @@ Rewritten TEXT:`;
     // update Space Time Awereness
     this.updateInternalClockTime();
 
-    // if (this.lastTrendingSummary === undefined)
-    //   await this.getFarcasaterTrendingFeed();
-
-    // const resumoConversa = await this.summarizeConversation();
-    // const smSugestion = await this.socialMediaSugestion(resumoConversa, this.lastTrendingSummary);
-
     const castPromptForToday =
       //botPrompts.CAST_WEEK_PROMPT[this.weekday]+
       botPrompts.BOT_NEW_CAST_PROMPT;
@@ -790,21 +608,14 @@ Rewritten TEXT:`;
     // });
 
     const reply = "" //chatCompletion.choices[0]?.message?.content || "";
-
-    // attach image
     var designerImage: any;
 
-
     if (reply !== "") {
-      // add this cast to memory
-      // this.stringPromptMemory.chatHistory.addAIChatMessage(reply);
       this.stringPromptMemory.chatHistory.addMessage(new AIMessage({
         content: reply,
         id: botConfig.BotName,
         name: botConfig.BotName
       }));
-      // this.CheckWarning();
-      // const reply = "";
 
       const tomReply: BotChatMessage = {
         name: botConfig.BotName,
@@ -813,13 +624,10 @@ Rewritten TEXT:`;
       }
 
       if (botConfig.LOG_MESSAGES) {
-        // let logid = "CAST_NEW_MESSAGE";
-
         let logid = this.weekday;
         this.newCasts.log("", logid);
         this.newCasts.log("", logid);
         this.newCasts.log("CAST_NEW_MESSAGE " + this.weekday + " " + this.dayPeriod, logid);
-        // this.newCasts.log(`SMM: ${smSugestion.content}`, logid);
         this.newCasts.log("", logid);
         this.newCasts.log(`${tomReply.name}: ${tomReply.message}`, logid);
         this.newCasts.log("", logid);
@@ -838,112 +646,7 @@ Rewritten TEXT:`;
     }
   }
 
-  private async getBotStatus(): Promise<BotChatMessage> {
-    const lastEventId = await getLatestEvent();
-    const message = `helloww!`
-    return { name: botConfig.BotName, message: message }
-  }
-
-  private setBotStop(): BotChatMessage {
-    let message = "Fail";
-    // if (this.farcaster.stop()) {
-      this.isStopped = true;
-      message = "Stop";
-      return { name: botConfig.BotName, message: message }
-    // }
-  }
-
-  private setBotStart(from: string): BotChatMessage {
-    let message = "Fail";
-    // if (this.farcaster.start(from)) {
-      this.isStopped = false;
-      message = "Start";
-    // }
-    return { name: botConfig.BotName, message: message }
-  }
-
-  public getisRunning() {
-    return !this.isStopped;
-  }
-
-
-  async getEmbedsFirstImage(embedsLinks: string[]): Promise<string | null> {
-    const mimeTypes = [
-      'image/jpeg',
-      'image/png',
-    ];
-
-    try {
-      const promises = embedsLinks.map(async (link) => {
-        const response = await fetch(link, { method: 'HEAD' });
-        const mimeType = response.headers.get('Content-Type');
-        return mimeType && mimeTypes.includes(mimeType) ? link : null;
-      });
-
-      const imageUrls = await Promise.all(promises)
-        .then((results) =>
-          results.filter((result) => result !== null));
-      return imageUrls[0] ?? null;
-    } catch (err) {
-    }
-    return null;
-  }
-
-  async getEmbedsImages(embedsLinks: string[]): Promise<string[] | null> {
-    const mimeTypes = [
-      'image/jpeg',
-      'image/png',
-      // Add more image mime types as needed
-    ];
-
-    try {
-      const promises = embedsLinks.map(async (link) => {
-        const response = await fetch(link, { method: 'HEAD' });
-        const mimeType = response.headers.get('Content-Type');
-        return mimeType && mimeTypes.includes(mimeType) ? link : null;
-      });
-
-      const imageUrls = await Promise.all(promises)
-        .then((results) =>
-          results.filter((result) => result !== null));
-      return imageUrls ?? null;
-    } catch (err) {
-      return null;
-    }
-  }
-
-
-  async drawingTool(subject: string): Promise<BotChatMessage> {
-
-    const tomversion = await this.chatBotLLM.invoke(
-      `Describe in one sentences an image to match the following text:
-${subject}
-OUTPUT:`);
-
-    var dayArtStyle = artStyle[this.weekday];
-    const DESIGNER_PROMPT = `Generate in "${dayArtStyle}" style: ` + (tomversion.content as string);
-
-    const openai = new OpenAI();
-    try {
-      // console.log(tomversion.content);
-      const response = await openai.images.generate({
-        prompt: DESIGNER_PROMPT,
-        n: 1, // Number of images to generate
-        size: "1024x1024", // Image resolution
-      });
-
-      // console.log(response.data); // URL of the generated image
-      return { name: (tomversion.content as string) + " (" + dayArtStyle + ")", message: response.data[0].url }
-    } catch (error) {
-      this.messagesLog.error("Error generating image:", "ERROR");
-      this.messagesLog.error(error, "ERROR");
-
-      return { name: "Error generating image:", message: "" }
-    }
-  }
-
   private userDataInfo2Text(userDataInfo: UserResponse) {
-    // console.dir(userDataInfo)
     if (userDataInfo.user.experimental.neynar_user_score) {
       console.log("--- Neynar Score @" + userDataInfo.user.username + ": " + userDataInfo.user.experimental.neynar_user_score)
       console.log("--- BIO @" + userDataInfo.user.username + ": " + userDataInfo.user.profile.bio.text)
