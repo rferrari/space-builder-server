@@ -4,6 +4,12 @@ import { EventBus, EventBusImpl } from './eventBus.interface';
 import * as botConfig from "./config";
 import FileLogger from './lib/FileLogger';
 
+// declare module 'ws' {
+//   interface WebSocket {
+//     id?: number; // Optional property
+//   }
+// }
+
 const Reset = "\x1b[0m",
   Blue = "\x1b[34m",
   Green = "\x1b[32m",
@@ -32,7 +38,8 @@ class BotCustomServer {
   }
 
   private async initEventBus() {
-    this.eventBus.subscribe('LAST_EVENT_ID', (logData) => {
+
+    this.eventBus.subscribe('PLANNER_LOGS', (logData) => {
       if (this.wss)
         this.wss.clients.forEach((client: WebSocket) => {
           if (client.readyState === WebSocket.OPEN) {
@@ -41,7 +48,7 @@ class BotCustomServer {
         });
     });
 
-    this.eventBus.subscribe('LOG', (logData) => {
+    this.eventBus.subscribe('BUILDER_LOGS', (logData) => {
       if (this.wss)
         this.wss.clients.forEach((client: WebSocket) => {
           if (client.readyState === WebSocket.OPEN) {
@@ -50,28 +57,54 @@ class BotCustomServer {
         });
     });
 
-    this.eventBus.subscribe('PRINT_MSG', (data) => {
+    this.eventBus.subscribe('PRIVATE_REPLY', (payload: { clientId: number, message: any }) => {
+      this.wss.clients.forEach((client: WebSocket & { id?: number }) => {
+        if (client.readyState === WebSocket.OPEN && client.id === payload.clientId) {
+          client.send(JSON.stringify({ type: 'REPLY', message: payload.message }));
+        }
+      });
+    });
+
+    this.eventBus.subscribe('AGENT_LOGS', (payload: { clientId: number, type: string, name: string, message: any }) => {
       if (this.wss)
-        this.wss.clients.forEach((client: WebSocket) => {
-          if (client.readyState === WebSocket.OPEN) {
-            const message = JSON.stringify(data);
-            client.send(message);
+        this.wss.clients.forEach((client: WebSocket & { id?: number }) => {
+          if (client.readyState === WebSocket.OPEN && client.id === payload.clientId) {
+            client.send(JSON.stringify({ 
+              type: payload.type, 
+              name: payload.name, 
+              message: payload.message }));
           }
         });
+
+      // this.wss.clients.forEach((client: WebSocket) => {
+        // if (client.readyState === WebSocket.OPEN) {
+          // const message = JSON.stringify(data);
+          // client.send(message);
+        // }
+      // });
     });
   }
+
+
 
   private initWebSockets() {
     // this.wss = new WebSocket.Server({ port: 3030 });
     if (botConfig.USE_WS)
       this.wss = new WebSocket.Server({ port: parseInt(botConfig.WS_PORT) });
 
-    if (this.wss)
-      this.wss.on('connection', (ws: WebSocket) => {
+    if (this.wss) {
+      let clientId = 0; // Initialize a client ID counter
+
+      this.wss.on('connection', (ws: WebSocket & { id?: number }) => {
+
+        ws.id = clientId++;
+
         ws.on('message', (data: string) => {
 
           // Check if the message is a command
-          this.handleCommand(this.wss, data);
+          // this.handleCommand(this.wss, data);
+          this.handleCommand(this.wss, ws, data);
+
 
           // this.wss.clients.forEach((client: WebSocket) => {
           //   if (client !== ws && client.readyState === WebSocket.OPEN) {
@@ -81,6 +114,7 @@ class BotCustomServer {
           // });
         });
       });
+    }
   }
 
   private async init() {
@@ -117,9 +151,12 @@ class BotCustomServer {
     this.logger.log("")
   }
 
-  private async handleCommand(wss: WebSocket.Server, data: string) {
+  // private async handleCommand(wss: WebSocket.Server, data: string) {
+  private async handleCommand(wss: WebSocket.Server, ws: WebSocket & { id?: number }, data: string) {
     const { name, message } = JSON.parse(data);
-    const commandObj = { name, message }
+    // const commandObj = { name, message }
+    const commandObj = { name, message, clientId: ws.id };
+
     //await
     this.botAvatar.handleCommand(commandObj.message, commandObj);
   }

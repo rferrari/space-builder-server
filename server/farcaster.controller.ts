@@ -129,7 +129,7 @@ import FileLogger from './lib/FileLogger'
 import { VerificationProtocol, MessageBodyJson, BotCastObj, CastAddBodyJson, BotChatMessage } from './bot.types';
 import { inspect } from 'node:util';
 // import { BulkUsersResponse, CastWithInteractions, Conversation, UserResponse } from '@neynar/nodejs-sdk/build/neynar-api/v2';
-import { workersSystem } from './workers';
+// import { workersSystem } from './workers';
 import { UserResponse } from '@neynar/nodejs-sdk/build/api/models/user-response';
 import { CastParamType, CastWithInteractions, FeedType, FilterType } from '@neynar/nodejs-sdk/build/api/models';
 import { isApiErrorResponse } from '@neynar/nodejs-sdk/build';

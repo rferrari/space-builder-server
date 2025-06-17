@@ -11,7 +11,7 @@ const Reset = "\x1b[0m",
 
 import OpenAI from 'openai';
 import { ChatOpenAI } from "@langchain/openai";
-import { GraphInterface, workersSystem } from "./workers";
+import { GraphInterface, WorkersSystem } from "./workers";
 import { ConversationChain } from "langchain/chains";
 import {
   PromptTemplate,
@@ -69,6 +69,7 @@ export class BotAvatar {
   private newCasts: FileLogger;
   private userMemories: Map<string, UserMemory> = new Map();
   private lastTrendingSummary: MessageContent;
+  private workersSystem: WorkersSystem;
 
   // Internal Clock
   private agora: Date;
@@ -82,6 +83,7 @@ export class BotAvatar {
     this.MEM_USED = process.memoryUsage();
     this.isStopped = false;
     this.eventBus = eventBus;
+    
     // this.farcaster = farcaster;
     this.messagesLog = new FileLogger({ folder: './logs-messages', printconsole: true });
     this.memoryLog = new FileLogger({ folder: './logs-memory', printconsole: false });
@@ -91,7 +93,7 @@ export class BotAvatar {
     this.MEMORY_EXPIRATION_MIN = botConfig.MEMORY_EXPIRATION_MIN * 60 * 1000; // 24 hours
 
     this.updateInternalClockTime();
- 
+
     this.chatBotLLM = new ChatOpenAI({
       openAIApiKey: botConfig.OPENAI_API_KEY,
       temperature: botConfig.BotLLMModel_TEMP,
@@ -283,34 +285,49 @@ export class BotAvatar {
   }
 
 
-  private async generateShouldRespond(history: string, query: string) {
-    // Create an array of messages
+  private async generateShouldRespond(history: string, query: BotChatMessage): Promise<boolean> {
     const promptTemplate = PromptTemplate.fromTemplate(
       botPrompts.shouldRespondTemplate
     );
 
-    const filledPrompt = await promptTemplate.format({
-      history,
-      query,
-    });
-
-    // const botListString = botConfig.KNOW_BOT_LIST.filter(Boolean).join(", ");
-    // const knowbotsare = `\nKnown bots are: "${botListString}"`;
+    const filledPrompt = await promptTemplate.format({ history, query: query.message });
 
     const messages = [
-      { role: "system", 
-        content: botPrompts.SHOULDRESPOND_SYSTEM2 //+ knowbotsare 
-      },
-      { role: "user", 
-        content: filledPrompt
-      },
+      { role: "system", content: botPrompts.SHOULDRESPOND_SYSTEM },
+      { role: "user", content: filledPrompt },
     ];
 
-    console.dir(messages);
+    const result = await this.chatBotLLM.invoke(messages);
 
-    // Invoke the model with the messages array
-    const result = await this.chatBotLLM.invoke(messages)
-    return result.content;
+    // Convert complex message content to string
+    const responseText = Array.isArray(result.content)
+      ? result.content.map((c: any) => c.text || c.value || "").join(" ")
+      : String(result.content || "");
+
+    // Try to parse JSON first
+    try {
+      const parsed = JSON.parse(responseText);
+      const action = parsed?.action?.toUpperCase?.();
+
+      // this.eventBus.publish("AGENT_LOGS", {name: botConfig.BotName, message: action + " " + parsed?.reason?.()});
+      let tomReply: BotChatMessage = { 
+        name: botConfig.BotName, 
+        message: parsed?.reason, 
+        clientId: query.clientId,
+        type: "LOG", 
+      }
+      this.eventBus.publish("AGENT_LOGS", tomReply);
+
+      if (action === "RESPOND") return true;
+      if (action === "IGNORE") return false;
+    } catch (e) {
+      // Fallback to text matching
+      const lower = responseText.toLowerCase();
+      if (lower.includes("respond")) return true;
+      if (lower.includes("ignore")) return false;
+    }
+
+    return false;
   }
 
 
@@ -321,18 +338,18 @@ export class BotAvatar {
 
     if (RAG_SYSTEM) {
       // experimental send more context from user to RAG
-      const ragResponse = await workersSystem.invokeWorkers(
+      const ragResponse = await this.workersSystem.invokeWorkers(
         user,
         `@${user}: ${userQuery}`,
         history)
         // const ragResponse = await ragSystem.invokeRAG(user, `${userQuery}`)
         .catch(err => {
           this.messagesLog.error("Failed to generate RAG response", "RAG-ERROR");
-          this.messagesLog.error(err.error.error.code, "RAG-ERROR");
+          this.messagesLog.error(err.message, "RAG-ERROR");
         }) as GraphInterface;
 
-      if (ragResponse && ragResponse.generatedAnswer) {
-        ragContext = ragResponse.generatedAnswer;
+      if (ragResponse && ragResponse.communicatorOutput) {
+        ragContext = ragResponse.communicatorOutput;
       }
     }
 
@@ -340,7 +357,8 @@ export class BotAvatar {
   }
 
   private async replyMessage(user: string, userQuery: string, vision: string = "",
-    conversation: BotChatMessage[] = [], userDataInfo: UserResponse = null) {
+    conversation: BotChatMessage[] = [], userDataInfo: UserResponse = null)
+  {
     const config = { configurable: { thread_id: user + "_thread" } };
     var joinedConversation: string = '';
     var userInfoAbout: string = '';
@@ -463,27 +481,37 @@ Rewritten TEXT:`;
   }
 
   public async handleCommand(command: string, message: BotChatMessage) {
-    let tomReply = { name: botConfig.BotName, message: "" }
+    let tomReply: BotChatMessage = {
+      name: botConfig.BotName,
+      message: "",
+      clientId: message.clientId
+    }
 
     switch (command) {
       case "ping":
-        tomReply = { 
-          name: "Space Builder", 
-          message: "pong"
-        };
+        tomReply.message = "pong";
         break;
       default:
         // messages from discord dont have fid -1 set
-        if (!this.generateShouldRespond("", message.message)) {
-          tomReply = { name: botConfig.BotName, message: "Cant help with that!" };
+        const shouldReply = await this.generateShouldRespond("", message)
+        if (!shouldReply ) {
+          tomReply.message = "Cant help with that!";
           break;
         }
-        tomReply = await this.replyMessage(message.name, message.message, "", [], null);
+
+        this.workersSystem = new WorkersSystem(this.eventBus, message.clientId);
+        const reply = await this.replyMessage(message.name, message.message, "", [], null);
+        tomReply = {
+          ...reply,
+          type: "REPLY",
+          clientId: message.clientId, // ensure clientId is preserved
+        };
+        // tomReply = await this.replyMessage(message.name, message.message, "", [], null);
         console.log(tomReply.name, tomReply.message)
         break;
     }
 
-    this.eventBus.publish("PRINT_MSG", tomReply);
+    this.eventBus.publish("AGENT_LOGS", tomReply);
     return tomReply;
   }
 
@@ -586,64 +614,65 @@ Rewritten TEXT:`;
     }
   }
 
-  async castNewMessagetoChannel(): Promise<BotChatMessage> {
-    if (this.isStopped) return { name: botConfig.BotName, message: "Zzzzzzzzzz" };
+  // async castNewMessagetoChannel(): Promise<BotChatMessage> {
+  //   if (this.isStopped) return { name: botConfig.BotName, message: "Zzzzzzzzzz" };
 
-    // update Space Time Awereness
-    this.updateInternalClockTime();
+  //   // update Space Time Awereness
+  //   this.updateInternalClockTime();
 
-    const castPromptForToday =
-      //botPrompts.CAST_WEEK_PROMPT[this.weekday]+
-      botPrompts.BOT_NEW_CAST_PROMPT;
+  //   const castPromptForToday =
+  //     //botPrompts.CAST_WEEK_PROMPT[this.weekday]+
+  //     botPrompts.BOT_NEW_CAST_PROMPT;
 
-    const promptTemplate = PromptTemplate.fromTemplate(
-      castPromptForToday
-    );
+  //   const promptTemplate = PromptTemplate.fromTemplate(
+  //     castPromptForToday
+  //   );
 
-    // const filledPrompt = await promptTemplate.format({
-    //   // weekday: this.weekday,
-    //   today: this.today,
-    //   dayPeriod: this.dayPeriod,
-    //   suggestion: smSugestion.content,
-    // });
+  //   // const filledPrompt = await promptTemplate.format({
+  //   //   // weekday: this.weekday,
+  //   //   today: this.today,
+  //   //   dayPeriod: this.dayPeriod,
+  //   //   suggestion: smSugestion.content,
+  //   // });
 
-    const reply = "" //chatCompletion.choices[0]?.message?.content || "";
-    var designerImage: any;
+  //   const reply = "" //chatCompletion.choices[0]?.message?.content || "";
+  //   var designerImage: any;
 
-    if (reply !== "") {
-      this.stringPromptMemory.chatHistory.addMessage(new AIMessage({
-        content: reply,
-        id: botConfig.BotName,
-        name: botConfig.BotName
-      }));
+  //   if (reply !== "") {
+  //     this.stringPromptMemory.chatHistory.addMessage(new AIMessage({
+  //       content: reply,
+  //       id: botConfig.BotName,
+  //       name: botConfig.BotName
+  //     }));
 
-      const tomReply: BotChatMessage = {
-        name: botConfig.BotName,
-        message: reply + " --- " + designerImage.name,
-        imageUrl: designerImage.message,
-      }
+  //     const tomReply: BotChatMessage = {
+  //       name: botConfig.BotName,
+  //       message: reply + " --- " + designerImage.name,
+  //       imageUrl: designerImage.message,
+  //     }
 
-      if (botConfig.LOG_MESSAGES) {
-        let logid = this.weekday;
-        this.newCasts.log("", logid);
-        this.newCasts.log("", logid);
-        this.newCasts.log("CAST_NEW_MESSAGE " + this.weekday + " " + this.dayPeriod, logid);
-        this.newCasts.log("", logid);
-        this.newCasts.log(`${tomReply.name}: ${tomReply.message}`, logid);
-        this.newCasts.log("", logid);
-      }
+  //     if (botConfig.LOG_MESSAGES) {
+  //       let logid = this.weekday;
+  //       this.newCasts.log("", logid);
+  //       this.newCasts.log("", logid);
+  //       this.newCasts.log("CAST_NEW_MESSAGE " + this.weekday + " " + this.dayPeriod, logid);
+  //       this.newCasts.log("", logid);
+  //       this.newCasts.log(`${tomReply.name}: ${tomReply.message}`, logid);
+  //       this.newCasts.log("", logid);
+  //     }
 
-      return tomReply;
-    } else {
-      return undefined;
-    }
-  }
+  //     return tomReply;
+  //   } else {
+  //     return undefined;
+  //   }
+  // }
 
   public getMemUsed() {
-    const memRag = workersSystem.MEM_USED.rss;
-    return {
-      memRag,
-    }
+    return undefined;
+    // const memRag = this.workersSystem.MEM_USED.rss;
+    // return {
+    //   memRag,
+    // }
   }
 
   private userDataInfo2Text(userDataInfo: UserResponse) {

@@ -6,6 +6,8 @@ interface BotChatMessage {
     name: string;
     message: string;
     imageUrl?: string;
+    clientId?: number;
+    type?: string;
 }
 
 // export type CastIdJson = {

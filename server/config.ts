@@ -47,7 +47,7 @@ export const LOG_MESSAGES = true;
 export const DISPLAY_MEM_USAGE = false;
 
 export const USE_WS = process.env.USE_WS === 'true';
-export const WS_PORT = process.env.WS_PORT || "4200";
+export const WS_PORT = process.env.WS_PORT || "3040";
 
 // in memory messages history size and expiration after X minutes with no interaction
 export const MESSAGES_HISTORY_SIZE = parseInt(process.env.MEMORY_EXPIRATION_MIN) || 20;
@@ -60,26 +60,29 @@ export const FARCASTER_TRENDING_MIN = parseInt(process.env.FARCASTER_TRENDING_MI
 
 
 // LLM Available Models 
-const llama3_8b_8192 = "llama3-8b-8192";
-const llama32_90b_textpreview = "llama-3.2-90b-text-preview";
-const llama32_3b_preview = "llama-3.2-3b-preview";
-const llama3_70b_8192 = "llama3-70b-8192";
-const llama32_90b_vision = "llama-3.2-90b-vision-preview";
-const llama_32_11b_vision = "llama-3.2-11b-vision-preview";
-const gpt_4o = "gpt-4o";
-const gpt_4_turbo = "gpt-4-turbo";
+// const llama3_8b_8192 = "llama3-8b-8192";
+// const llama32_90b_textpreview = "llama-3.2-90b-text-preview";
+// const llama32_3b_preview = "llama-3.2-3b-preview";
+// const llama3_70b_8192 = "llama3-70b-8192";
+// const llama32_90b_vision = "llama-3.2-90b-vision-preview";
+// const llama_32_11b_vision = "llama-3.2-11b-vision-preview";
+// const gpt_4o = "gpt-4o";
+// const gpt_4_turbo = "gpt-4-turbo";
+
+const gpt_4o_mini = "gpt-4o-mini";       // Smaller, cheaper, faster version of GPT-4o
+const gpt_41 = "gpt-4-1";                // Full GPT-4.1 model (API only, not in ChatGPT UI)
 
 
 // export const BotLLMModel = llama3_70b_8192;
-export const BotLLMModel = process.env.BOT_LLM_MODEL || gpt_4_turbo;//gpt_4o;//llama3_8b_8192;
+export const BotLLMModel = process.env.BOT_LLM_MODEL || gpt_4o_mini;//gpt_4_turbo;//gpt_4o;//llama3_8b_8192;
 export const BotLLMModel_TEMP = parseFloat(process.env.BOT_LLM_MODEL_TEMP) || 0.7;
-export const ChatBackupLLMModel = llama3_8b_8192;
-export const ChatClankersMModel = llama3_70b_8192;
+export const ChatBackupLLMModel = gpt_4o_mini;
+export const ChatClankersMModel = gpt_4o_mini;
 
-export const RAGLLMModel = llama3_8b_8192;
-export const JSONLLMModel = llama3_8b_8192;
-export const AssistentModel = llama3_8b_8192;
-export const VisionModel = llama32_90b_vision;
+export const RAGLLMModel = gpt_4o_mini;
+export const JSONLLMModel = gpt_4o_mini;
+export const AssistentModel = gpt_4o_mini;
+export const VisionModel = gpt_4o_mini;
 
 export const GROQ_API_KEY = process.env.GROQ_API_KEY!;
 export const OPENAI_API_KEY = process.env.OPENAI_API_KEY!;
