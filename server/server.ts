@@ -30,31 +30,31 @@ class BotCustomServer {
 
   private async initEventBus() {
 
-    this.eventBus.subscribe('PLANNER_LOGS', (logData) => {
-      if (this.wss)
-        this.wss.clients.forEach((client: WebSocket) => {
-          if (client.readyState === WebSocket.OPEN) {
-            client.send(JSON.stringify({ type: 'LAST_EVENT_ID', message: logData }));
-          }
-        });
-    });
-
-    this.eventBus.subscribe('BUILDER_LOGS', (logData) => {
-      if (this.wss)
-        this.wss.clients.forEach((client: WebSocket) => {
-          if (client.readyState === WebSocket.OPEN) {
-            client.send(JSON.stringify({ type: 'LOG', message: logData }));
-          }
-        });
-    });
-
-    // this.eventBus.subscribe('PRIVATE_REPLY', (payload: { clientId: number, message: any }) => {
-    //   this.wss.clients.forEach((client: WebSocket & { id?: number }) => {
-    //     if (client.readyState === WebSocket.OPEN && client.id === payload.clientId) {
-    //       client.send(JSON.stringify({ type: 'REPLY', message: payload.message }));
-    //     }
-    //   });
+    // this.eventBus.subscribe('PLANNER_LOGS', (logData) => {
+    //   if (this.wss)
+    //     this.wss.clients.forEach((client: WebSocket) => {
+    //       if (client.readyState === WebSocket.OPEN) {
+    //         client.send(JSON.stringify({ type: 'LAST_EVENT_ID', message: logData }));
+    //       }
+    //     });
     // });
+
+    // this.eventBus.subscribe('BUILDER_LOGS', (logData) => {
+    //   if (this.wss)
+    //     this.wss.clients.forEach((client: WebSocket) => {
+    //       if (client.readyState === WebSocket.OPEN) {
+    //         client.send(JSON.stringify({ type: 'LOG', message: logData }));
+    //       }
+    //     });
+    // });
+
+    // // this.eventBus.subscribe('PRIVATE_REPLY', (payload: { clientId: number, message: any }) => {
+    // //   this.wss.clients.forEach((client: WebSocket & { id?: number }) => {
+    // //     if (client.readyState === WebSocket.OPEN && client.id === payload.clientId) {
+    // //       client.send(JSON.stringify({ type: 'REPLY', message: payload.message }));
+    // //     }
+    // //   });
+    // // });
 
     this.eventBus.subscribe('AGENT_LOGS', (payload: { clientId: number, type: string, name: string, message: any }) => {
       if (this.wss)

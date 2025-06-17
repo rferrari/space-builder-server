@@ -75,13 +75,14 @@ export class WorkersSystem {
         const jsonModel = new ChatOpenAI({
             model: JSONLLMModel,
             temperature: 0,
-            apiKey: process.env.OPENAI_API_KEY as string
+            apiKey: process.env.OPENAI_API_KEY as string,
+            modelKwargs: {
+                response_format: { type: "json_object" }
+            }
         });
 
         return {
-            jsonResponseModel: jsonModel.withConfig({
-                response_format: { type: "json_object" }
-            })
+            jsonResponseModel: jsonModel
         };
     }
 
@@ -99,10 +100,10 @@ export class WorkersSystem {
         this.log.log("[PLANNER] Plan generated:", "PLANNER");
         this.log.log(output, "PLANNER");
         const logPublish = {
-          name: "Planner",
-          type: "REPLY",
-          clientId: this.wsClientId, // ensure clientId is preserved
-          message: output
+            name: "Planner",
+            type: "PLANNER_LOGS",
+            clientId: this.wsClientId, // ensure clientId is preserved
+            message: output
         };
         this.eventBus.publish("AGENT_LOGS", logPublish);
         return { plannerOutput: output };
@@ -123,10 +124,10 @@ export class WorkersSystem {
         this.log.log("[BUILDER] JSON generated:", "BUILDER");
         this.log.log(output, "BUILDER");
         const logPublish = {
-          name: "BUILDER",
-          type: "REPLY",
-          clientId: this.wsClientId, // ensure clientId is preserved
-          message: output
+            name: "BUILDER",
+            type: "BUILDER_LOGS",
+            clientId: this.wsClientId, // ensure clientId is preserved
+            message: output
         };
         this.eventBus.publish("AGENT_LOGS", logPublish);
         return { builderOutput: output };
@@ -135,7 +136,7 @@ export class WorkersSystem {
     private async communicating(state: GraphInterface): Promise<Partial<GraphInterface>> {
         const prompt = new PromptTemplate({
             template: COMMUNICATING_SYSTEM,
-            inputVariables: ["plan", 
+            inputVariables: ["plan",
                 // "json", "history", 
                 "question"]
         });
@@ -150,10 +151,10 @@ export class WorkersSystem {
         this.log.log("[COMMUNICATOR] Final message:", "COMMUNICATOR");
         this.log.log(output, "COMMUNICATOR");
         const logPublish = {
-          name: "COMMUNICATOR",
-          type: "REPLY",
-          clientId: this.wsClientId, // ensure clientId is preserved
-          message: output
+            name: "COMMUNICATOR",
+            type: "COMM_LOGS",
+            clientId: this.wsClientId, // ensure clientId is preserved
+            message: output
         };
         this.eventBus.publish("AGENT_LOGS", logPublish);
         return { communicatorOutput: output };
@@ -163,10 +164,10 @@ export class WorkersSystem {
         this.log.log("[RESULT] Returning response:", "RESULT");
         this.log.log(state.communicatorOutput || "No output", "RESULT");
         const logPublish = {
-          name: "RESULT",
-          type: "REPLY",
-          clientId: this.wsClientId, // ensure clientId is preserved
-          message: state.communicatorOutput
+            name: "RESULT",
+            type: "PLANNER_LOGS",
+            clientId: this.wsClientId, // ensure clientId is preserved
+            message: state.communicatorOutput
         };
         this.eventBus.publish("AGENT_LOGS", logPublish);
         return { communicatorOutput: state.communicatorOutput };
@@ -192,7 +193,7 @@ export class WorkersSystem {
         const graphResponse = await this.ragApp.invoke(
             { user_query: question, conversationHistory },
             // { configurable: { thread_id: crypto.randomUUID() } }
-            
+
             // TODO 
             // understand and debug user_thread id
             { configurable: { thread_id: user + "_thread" } }
