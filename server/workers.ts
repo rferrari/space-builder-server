@@ -7,8 +7,10 @@ import { RAGLLMModel, JSONLLMModel } from "./config";
 import { PLANING_SYSTEM, BUILDER_SYSTEM, COMMUNICATING_SYSTEM } from "./botPrompts";
 import FileLogger from "./lib/FileLogger";
 import { EventBus } from "./eventBus.interface";
+import { BotChatMessage } from "./bot.types";
 
 export interface GraphInterface {
+    clientId: number;
     question: string;
     conversationHistory: string;
     plannerOutput?: string;
@@ -23,18 +25,19 @@ export class WorkersSystem {
     private ragApp: CompiledStateGraph<GraphInterface, Partial<GraphInterface>, "__start__", StateDefinition, StateDefinition, StateDefinition> | null = null;
     private log: FileLogger;
     private eventBus: EventBus;
-    private wsClientId: number;
+    // private wsClientId: number;
 
     constructor(eventBus: EventBus, clientId: number) {
         this.log = new FileLogger({ folder: './logs', printconsole: true });
         this.eventBus = eventBus;
-        this.wsClientId = clientId;
+        // this.wsClientId = clientId;
         this.initializeGraph();
     }
 
     private initializeGraph() {
         const graphState = {
             question: null,
+            clientId: null,
             conversationHistory: null,
             plannerOutput: null,
             builderOutput: null,
@@ -102,7 +105,7 @@ export class WorkersSystem {
         const logPublish = {
             name: "Planner",
             type: "PLANNER_LOGS",
-            clientId: this.wsClientId, // ensure clientId is preserved
+            clientId: state.clientId, // ensure clientId is preserved
             message: output
         };
         this.eventBus.publish("AGENT_LOGS", logPublish);
@@ -126,7 +129,7 @@ export class WorkersSystem {
         const logPublish = {
             name: "BUILDER",
             type: "BUILDER_LOGS",
-            clientId: this.wsClientId, // ensure clientId is preserved
+            clientId: state.clientId, // ensure clientId is preserved
             message: output
         };
         this.eventBus.publish("AGENT_LOGS", logPublish);
@@ -153,7 +156,7 @@ export class WorkersSystem {
         const logPublish = {
             name: "COMMUNICATOR",
             type: "COMM_LOGS",
-            clientId: this.wsClientId, // ensure clientId is preserved
+            clientId: state.clientId, // ensure clientId is preserved
             message: output
         };
         this.eventBus.publish("AGENT_LOGS", logPublish);
@@ -166,7 +169,7 @@ export class WorkersSystem {
         const logPublish = {
             name: "RESULT",
             type: "PLANNER_LOGS",
-            clientId: this.wsClientId, // ensure clientId is preserved
+            clientId: state.clientId,
             message: state.communicatorOutput
         };
         this.eventBus.publish("AGENT_LOGS", logPublish);
@@ -178,7 +181,7 @@ export class WorkersSystem {
     }
 
 
-    public async invokeWorkers(user: string, question: string, conversationHistory: string) {
+    public async invokeWorkers(inputQuery: BotChatMessage, conversationHistory: string) {
         if (!this.ragApp) {
             console.error("RAG app is not initialized");
             return "";
@@ -191,12 +194,16 @@ export class WorkersSystem {
         // console.log("")
 
         const graphResponse = await this.ragApp.invoke(
-            { user_query: question, conversationHistory },
+            {
+                user_query: inputQuery.message,
+                conversationHistory,
+                clientId: inputQuery.clientId
+            },
             // { configurable: { thread_id: crypto.randomUUID() } }
 
             // TODO 
             // understand and debug user_thread id
-            { configurable: { thread_id: user + "_thread" } }
+            { configurable: { thread_id: inputQuery.name + "_thread" } }
         );
 
         // this.tokenRateLimiter.printTokensUsedPerMinute();

@@ -63,7 +63,7 @@ class BotCustomServer {
             client.send(JSON.stringify({
               type: payload.type,
               name: payload.name,
-              message: payload.message
+              message: "[your ID is: " + payload.clientId + "]" + payload.message
             }));
           }
         });
@@ -138,7 +138,7 @@ class BotCustomServer {
   private async handleCommand(wss: WebSocket.Server, ws: WebSocket & { id?: number }, data: string) {
     const { name, message } = JSON.parse(data);
     // const commandObj = { name, message }
-    const commandObj = { name, message, clientId: ws.id };
+    const commandObj = { name, message, clientId: ws.id, type: null };
 
     //await
     this.botAvatar.handleCommand(commandObj.message, commandObj);

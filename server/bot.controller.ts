@@ -290,13 +290,13 @@ export class BotAvatar {
       const action = parsed?.action?.toUpperCase?.();
 
       // this.eventBus.publish("AGENT_LOGS", {name: botConfig.BotName, message: action + " " + parsed?.reason?.()});
-      let tomReply: BotChatMessage = { 
+      let agentReply: BotChatMessage = { 
         name: botConfig.BotName, 
         message: parsed?.reason, 
         clientId: query.clientId,
         type: "LOG", 
       }
-      this.eventBus.publish("AGENT_LOGS", tomReply);
+      this.eventBus.publish("AGENT_LOGS", agentReply);
 
       if (action === "RESPOND") return true;
       if (action === "IGNORE") return false;
@@ -312,15 +312,15 @@ export class BotAvatar {
 
 
 
-  private async getRAGContext(userQuery: string, user, history): Promise<string> {
+  private async getRAGContext(userQuery: BotChatMessage, history): Promise<string> {
     const RAG_SYSTEM = true;
     var ragContext = "";
 
     if (RAG_SYSTEM) {
       // experimental send more context from user to RAG
       const ragResponse = await this.workersSystem.invokeWorkers(
-        user,
-        `@${user}: ${userQuery}`,
+        userQuery,
+        // `@${user}: ${userQuery}`,
         history)
         // const ragResponse = await ragSystem.invokeRAG(user, `${userQuery}`)
         .catch(err => {
@@ -336,14 +336,14 @@ export class BotAvatar {
     return ragContext;
   }
 
-  private async replyMessage(user: string, userQuery: string, vision: string = "",
+  private async replyMessage(inputMessage: BotChatMessage, vision: string = "",
     conversation: BotChatMessage[] = [], userDataInfo: UserResponse = null)
   {
-    const config = { configurable: { thread_id: user + "_thread" } };
+    const config = { configurable: { thread_id: inputMessage.name + "_thread" } };
     var joinedConversation: string = '';
     var userInfoAbout: string = '';
     var userPrompt: string = '';
-    const LOG_ID = "REPLY" + user
+    const LOG_ID = "REPLY" + inputMessage.name
 
     // set userInfo
     if (userDataInfo) {
@@ -351,7 +351,7 @@ export class BotAvatar {
     }
 
     // Swap Memories retrieving the relevant messages based on keywords
-    const relevantMemory = await this.getRelevantUserMemory(user, userQuery);
+    const relevantMemory = await this.getRelevantUserMemory(inputMessage.name, inputMessage.message);
     this.chatChain.memory = relevantMemory;
 
     // set conversationContent
@@ -361,7 +361,7 @@ export class BotAvatar {
     const memoryConversationContent = filteredMessages.map((message) => {
       // Check the type of the message and assign the name accordingly
       const name = message instanceof AIMessage ? botConfig.BotName :
-        message instanceof HumanMessage ? user : 'User'; // Fallback in case of an unexpected type
+        message instanceof HumanMessage ? message.name : 'User'; // Fallback in case of an unexpected type
       return `@${name}: ${message.content}`;
     }).join('\n'); // Join all messages with a newline
 
@@ -377,7 +377,7 @@ export class BotAvatar {
     // if using RAG system... include conversationContent + userQuery
     // const ragContext = await this.getRAGContext(userQuery, user, memoryConversationContent);
     const ragHisstory = conversation.length > 0 ? joinedConversation : memoryConversationContent;
-    const ragContext = await this.getRAGContext(userQuery, user, ragHisstory);
+    const ragContext = await this.getRAGContext(inputMessage, ragHisstory);
 
     // build user Prompt form user Query
     // userPrompt = userQuery;
@@ -392,10 +392,10 @@ ${userPrompt}`;
     // experimental vision
     if (vision && vision !== "") userPrompt = `${vision}\n${userPrompt}`;
 
-    userPrompt += `@${user}: ${userQuery}`;
+    userPrompt += `@${inputMessage.name}: ${inputMessage.message}`;
 
     // Debug
-    this.messagesLog.log(`-------Debug ${user} PROMPT:`, "PROMPT")
+    this.messagesLog.log(`-------Debug ${inputMessage.name} PROMPT:`, "PROMPT")
     // this.messagesLog.log(`<user_input>\n${userQuery}\n</user_input>\n\n`, "PROMPT")
     // this.messagesLog.log(`Prompt:`, "PROMPT")
     this.messagesLog.log(userPrompt, "PROMPT")
@@ -450,8 +450,8 @@ Rewritten TEXT:`;
       .replace(/^"|"$/g, '')
       .replace(/namespace/g, 'nounspace');
 
-    this.addtoBotMemory(user, userQuery, finalMessage)
-    await this.addtoUserMemory(user, userQuery, finalMessage)
+    this.addtoBotMemory(inputMessage.name, inputMessage.message, finalMessage)
+    await this.addtoUserMemory(inputMessage.name, inputMessage.message, finalMessage)
     // await this.sumarizeUserHistoryMemory(user);
     // return response to be published
     return {
@@ -461,38 +461,39 @@ Rewritten TEXT:`;
   }
 
   public async handleCommand(command: string, message: BotChatMessage) {
-    let tomReply: BotChatMessage = {
+    let agentReply: BotChatMessage = {
       name: botConfig.BotName,
       message: "",
-      clientId: message.clientId
+      clientId: message.clientId,
+      type: "REPLY"
     }
 
     switch (command) {
       case "ping":
-        tomReply.message = "pong";
+        agentReply.message = "pong";
         break;
       default:
         // messages from discord dont have fid -1 set
         const shouldReply = await this.generateShouldRespond("", message)
         if (!shouldReply ) {
-          tomReply.message = "Cant help with that!";
+          agentReply.message = "Cant help with that!";
           break;
         }
 
         this.workersSystem = new WorkersSystem(this.eventBus, message.clientId);
-        const reply = await this.replyMessage(message.name, message.message, "", [], null);
-        tomReply = {
+        const reply = await this.replyMessage(message, "", [], null);
+        agentReply = {
           ...reply,
           type: "REPLY",
           clientId: message.clientId, // ensure clientId is preserved
         };
         // tomReply = await this.replyMessage(message.name, message.message, "", [], null);
-        console.log(tomReply.name, tomReply.message)
+        console.log(agentReply.name, agentReply.message)
         break;
     }
 
-    this.eventBus.publish("AGENT_LOGS", tomReply);
-    return tomReply;
+    this.eventBus.publish("AGENT_LOGS", agentReply);
+    return agentReply;
   }
 
   // // Get Groq chat completion
