@@ -3,18 +3,17 @@ dotenv.config();
 
 export const ENV = process.env.ENV || "production";
 
-// configs 
 export const BotName = "space-builder";
 export const BotFID = 527313;
 export const BotIcon = " ⌐◨-◨  ";
 export const TIMEZONE = process.env.TIMEZONE || "America/Chicago";
 
 // interval in minutes bot will cast new messages
-export const NEW_CASTS_INTERVAL_MIN = parseInt(process.env.NEW_CASTS_INTERVAL_MIN) || 0;
-export const PUBLISH_TO_FARCASTER = process.env.PUBLISH_TO_FARCASTER === 'true';
+// export const NEW_CASTS_INTERVAL_MIN = parseInt(process.env.NEW_CASTS_INTERVAL_MIN) || 0;
+// export const PUBLISH_TO_FARCASTER = process.env.PUBLISH_TO_FARCASTER === 'true';
 
-export const MIN_REPLY_WORD_COUNT = parseInt(process.env.MIN_REPLY_WORD_COUNT) || 10;
-export const MIN_REPLY_CHAR_COUNT = parseInt(process.env.MIN_REPLY_CHAR_COUNT) || 10;
+// export const MIN_REPLY_WORD_COUNT = parseInt(process.env.MIN_REPLY_WORD_COUNT) || 10;
+// export const MIN_REPLY_CHAR_COUNT = parseInt(process.env.MIN_REPLY_CHAR_COUNT) || 10;
 
 // filter last messages from a conversation FC chronological_parent_casts
 export const LAST_CONVERSATION_LIMIT = parseInt(process.env.LAST_CONVERSATION_LIMIT) || 5;
@@ -23,23 +22,23 @@ export const LAST_CONVERSATION_LIMIT = parseInt(process.env.LAST_CONVERSATION_LI
 // targets
 // Maximum farcast fid/fname cache storage
 // channel that bot will cast new messages
-export const CAST_TO_CHANNEL = "nounspace";
-export const MAX_USER_CACHE = 100;
-export const TARGETS = [
-  527313,            //  nounspacetom
-  874542,            //  clanker
-];
+// export const CAST_TO_CHANNEL = "nounspace";
+// export const MAX_USER_CACHE = 100;
+// export const TARGETS = [
+//   527313,            //  nounspacetom
+//   874542,            //  clanker
+// ];
 
-export const IGNORE_TARGETS = [
-  905725,         //pepeclankeragent
-  883378,         //mecode
-  12193,          //atlas
-  957325,         //TokuAniBot
-];
+// export const IGNORE_TARGETS = [
+//   905725,         //pepeclankeragent
+//   883378,         //mecode
+//   12193,          //atlas
+//   957325,         //TokuAniBot
+// ];
 
-export const KNOW_BOT_LIST = process.env.KNOW_BOT_LIST
-  ? process.env.KNOW_BOT_LIST.split(",")
-  : [];
+// export const KNOW_BOT_LIST = process.env.KNOW_BOT_LIST
+//   ? process.env.KNOW_BOT_LIST.split(",")
+//   : [];
 
 
 // only log AI messages, do not publish
@@ -55,7 +54,7 @@ export const MEMORY_EXPIRATION_MIN = parseInt(process.env.MEMORY_EXPIRATION_MIN)
 
 // timer to check and clean up old memories
 export const MEMORY_CLEANUP_MIN = parseInt(process.env.MEMORY_CLEANUP_MIN) || 60;
-export const FARCASTER_TRENDING_MIN = parseInt(process.env.FARCASTER_TRENDING_MIN) || 1440;
+// export const FARCASTER_TRENDING_MIN = parseInt(process.env.FARCASTER_TRENDING_MIN) || 1440;
 
 
 
@@ -84,16 +83,13 @@ export const JSONLLMModel = gpt_4o_mini;
 export const AssistentModel = gpt_4o_mini;
 export const VisionModel = gpt_4o_mini;
 
-export const GROQ_API_KEY = process.env.GROQ_API_KEY!;
+// export const GROQ_API_KEY = process.env.GROQ_API_KEY!;
 export const OPENAI_API_KEY = process.env.OPENAI_API_KEY!;
-
 export const OPENAI_BASE_URL = process.env.OPENAI_BASE_URL || "";
 
-export const NEYNAR_API_KEY = process.env.NEYNAR_API_KEY!;
-export const HUB_RPC = process.env.HUB_RPC! || "nemes.farcaster.xyz:2283";
-export const HUB_SSL = process.env.HUB_SSL! || "true";
-export const SIGNER_UUID = process.env.SIGNER_UUID!;
+// export const NEYNAR_API_KEY = process.env.NEYNAR_API_KEY!;
+// export const HUB_RPC = process.env.HUB_RPC! || "nemes.farcaster.xyz:2283";
+// export const HUB_SSL = process.env.HUB_SSL! || "true";
+// export const SIGNER_UUID = process.env.SIGNER_UUID!;
 
-export const PUBLISH_TO_DISCORD = process.env.PUBLISH_TO_DISCORD === 'true';
-
-
+// export const PUBLISH_TO_DISCORD = process.env.PUBLISH_TO_DISCORD === 'true';

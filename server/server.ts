@@ -3,6 +3,7 @@ import { BotAvatar } from './bot.controller';
 import { EventBus, EventBusImpl } from './eventBus.interface';
 import * as botConfig from "./config";
 import FileLogger from './lib/FileLogger';
+import { Cyan, Reset } from './lib/colors';
 
 // declare module 'ws' {
 //   interface WebSocket {
@@ -10,16 +11,6 @@ import FileLogger from './lib/FileLogger';
 //   }
 // }
 
-const Reset = "\x1b[0m",
-  Blue = "\x1b[34m",
-  Green = "\x1b[32m",
-  Red = "\x1b[31m",
-  Yellow = "\x1b[33m",
-  Magenta = "\x1b[35m",
-  Italic = "\x1b[3m",
-  Underscore = "\x1b[4m",
-  Cyan = "\x1b[36m",
-  Gray = "\x1b[90m";
 
 class BotCustomServer {
   public MEM_USED: NodeJS.MemoryUsage;
@@ -57,38 +48,36 @@ class BotCustomServer {
         });
     });
 
-    this.eventBus.subscribe('PRIVATE_REPLY', (payload: { clientId: number, message: any }) => {
-      this.wss.clients.forEach((client: WebSocket & { id?: number }) => {
-        if (client.readyState === WebSocket.OPEN && client.id === payload.clientId) {
-          client.send(JSON.stringify({ type: 'REPLY', message: payload.message }));
-        }
-      });
-    });
+    // this.eventBus.subscribe('PRIVATE_REPLY', (payload: { clientId: number, message: any }) => {
+    //   this.wss.clients.forEach((client: WebSocket & { id?: number }) => {
+    //     if (client.readyState === WebSocket.OPEN && client.id === payload.clientId) {
+    //       client.send(JSON.stringify({ type: 'REPLY', message: payload.message }));
+    //     }
+    //   });
+    // });
 
     this.eventBus.subscribe('AGENT_LOGS', (payload: { clientId: number, type: string, name: string, message: any }) => {
       if (this.wss)
         this.wss.clients.forEach((client: WebSocket & { id?: number }) => {
           if (client.readyState === WebSocket.OPEN && client.id === payload.clientId) {
-            client.send(JSON.stringify({ 
-              type: payload.type, 
-              name: payload.name, 
-              message: payload.message }));
+            client.send(JSON.stringify({
+              type: payload.type,
+              name: payload.name,
+              message: payload.message
+            }));
           }
         });
 
       // this.wss.clients.forEach((client: WebSocket) => {
-        // if (client.readyState === WebSocket.OPEN) {
-          // const message = JSON.stringify(data);
-          // client.send(message);
-        // }
+      // if (client.readyState === WebSocket.OPEN) {
+      // const message = JSON.stringify(data);
+      // client.send(message);
+      // }
       // });
     });
   }
 
-
-
   private initWebSockets() {
-    // this.wss = new WebSocket.Server({ port: 3030 });
     if (botConfig.USE_WS)
       this.wss = new WebSocket.Server({ port: parseInt(botConfig.WS_PORT) });
 
@@ -96,16 +85,13 @@ class BotCustomServer {
       let clientId = 0; // Initialize a client ID counter
 
       this.wss.on('connection', (ws: WebSocket & { id?: number }) => {
-
         ws.id = clientId++;
 
         ws.on('message', (data: string) => {
-
           // Check if the message is a command
-          // this.handleCommand(this.wss, data);
           this.handleCommand(this.wss, ws, data);
 
-
+          // send message to all connected clients
           // this.wss.clients.forEach((client: WebSocket) => {
           //   if (client !== ws && client.readyState === WebSocket.OPEN) {
           //     this.logger.log('Sending to another client:', data);
@@ -118,37 +104,34 @@ class BotCustomServer {
   }
 
   private async init() {
-    this.logger.log("Initializing Events Bus... ✅");
+    this.logger.log("✅ Initializing Events Bus...");
     this.initEventBus();
 
-    this.logger.log("Waking up Bot " + botConfig.BotName + botConfig.BotIcon + "...  ✅");
-    this.botAvatar = new BotAvatar(this.eventBus, null); //this.farcaster);
+    this.logger.log("✅ Waking up Bot " + botConfig.BotName + botConfig.BotIcon + "...");
+    this.botAvatar = new BotAvatar(this.eventBus);
 
     // display date time now
     const { dayPeriod } = await this.botAvatar.displayInternalClock();
 
-    this.logger.log(botConfig.USE_WS ? "Initializing WebSockets...  ✅" : "WebSockets OFF  🚨");
+    this.logger.log(botConfig.USE_WS ? "✅ Initializing WebSockets..." : "🚨 WebSockets OFF");
     if (botConfig.USE_WS)
       this.initWebSockets();
 
     // init checking options
-    this.logger.log(botConfig.LOG_MESSAGES ? `LOG MESSAGES is ON` : "LOG MESSAGES is OFF");
+    this.logger.log(botConfig.LOG_MESSAGES ? `✅ LOG MESSAGES is ON` : "🚨 LOG MESSAGES is OFF");
 
 
     this.logger.log("🙃 TEMPERAMENT: " + botConfig.BotLLMModel_TEMP);
-    this.logger.log("🤖 Tom Model: " + botConfig.BotLLMModel);
-    this.logger.log("📄 RAG Model: " + botConfig.RAGLLMModel);
+    this.logger.log("🤖 Agent Model: " + botConfig.BotLLMModel);
+    this.logger.log("📄 Workers Model: " + botConfig.RAGLLMModel);
     this.logger.log("👀 Vision: " + botConfig.VisionModel);
     this.logger.log("💻 Assistent: " + botConfig.AssistentModel);
-
+    this.logger.log("")
     if (this.wss)
       this.wss.on('listening', () => {
-        this.logger.log('WS Server ready on port: ' + botConfig.WS_PORT);
+        this.logger.log('✅ WS Server ready on port: ' + botConfig.WS_PORT);
+        this.logger.log(`✅ Agent ${Cyan}${botConfig.BotName}${Reset} is up! ${Cyan}${botConfig.BotIcon}${Reset}`);
       });
-
-    // Print "Server is ready" when the server starts
-    this.logger.log(`Bot ${Cyan}${botConfig.BotName}${Reset} is up! ${Cyan}${botConfig.BotIcon}${Reset}`);
-    this.logger.log("")
   }
 
   // private async handleCommand(wss: WebSocket.Server, data: string) {

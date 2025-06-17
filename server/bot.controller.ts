@@ -1,14 +1,3 @@
-const Reset = "\x1b[0m",
-  Blue = "\x1b[34m",
-  Green = "\x1b[32m",
-  Red = "\x1b[31m",
-  Yellow = "\x1b[33m",
-  Magenta = "\x1b[35m",
-  Italic = "\x1b[3m",
-  Underscore = "\x1b[4m",
-  Cyan = "\x1b[36m",
-  Gray = "\x1b[90m";
-
 import OpenAI from 'openai';
 import { ChatOpenAI } from "@langchain/openai";
 import { GraphInterface, WorkersSystem } from "./workers";
@@ -26,13 +15,14 @@ import {
 } from "langchain/memory";
 import { HumanMessage, AIMessage, filterMessages, MessageContent } from "@langchain/core/messages";
 import { EventBus } from './eventBus.interface'
-import { Farcaster } from './farcaster.controller';
+// import { Farcaster } from './farcaster.controller';
 import { BotCastObj, BotChatMessage, CastIdJson } from './bot.types';
 import * as botConfig from "./config";
 import * as botPrompts from "./botPrompts";
 // import { getLatestEvent } from './api/event'
 import FileLogger from './lib/FileLogger'
 import { UserResponse } from '@neynar/nodejs-sdk/build/api/models/user-response';
+import { Magenta, Reset, Yellow } from './lib/colors';
 
 // const IMG_URL_REGEX = /(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|gif|png)/;
 
@@ -79,15 +69,17 @@ export class BotAvatar {
   private weekday: string;
   private dayPeriod: string;
 
-  constructor(eventBus: EventBus, farcaster: Farcaster) {
+  constructor(eventBus: EventBus
+    // , farcaster: Farcaster
+    ) {
     this.MEM_USED = process.memoryUsage();
     this.isStopped = false;
     this.eventBus = eventBus;
     
     // this.farcaster = farcaster;
-    this.messagesLog = new FileLogger({ folder: './logs-messages', printconsole: true });
-    this.memoryLog = new FileLogger({ folder: './logs-memory', printconsole: false });
-    this.newCasts = new FileLogger({ folder: './logs-newcasts', printconsole: false });
+    this.messagesLog = new FileLogger({ folder: './logs', printconsole: true });
+    this.memoryLog = new FileLogger({ folder: './logs', printconsole: false });
+    // this.newCasts = new FileLogger({ folder: './logs', printconsole: false });
     this.userMemories = new Map();
     this.MESSAGES_HISTORY_SIZE = botConfig.MESSAGES_HISTORY_SIZE; // Set the maximum history limit
     this.MEMORY_EXPIRATION_MIN = botConfig.MEMORY_EXPIRATION_MIN * 60 * 1000; // 24 hours
@@ -101,7 +93,7 @@ export class BotAvatar {
     });
 
     this.chatPrompt = ChatPromptTemplate.fromMessages([
-      ["system", botPrompts.BOT_SYSTEM_PROMPT,],
+      ["system", botPrompts.MAIN_SYSTEM_PROMPT,],
       ["human", "{userquery}"],
     ]);
 
@@ -272,18 +264,6 @@ export class BotAvatar {
 
     }, 5 * 60 * 1000); // 5 minutes
   }
-
-  async summarizeTrendingFeed(feed: string) {
-    try {
-      // Create a prompt for summarization
-      const prompt = botPrompts.WHATS_IS_TRENDING + feed;
-      this.stringPromptMemory.chatHistory.addMessage(new AIMessage({ content: prompt, id: "tom", name: "tom" }));
-    } catch (error) {
-      this.memoryLog.error("Error summarizing conversation:", "ERROR");
-      this.memoryLog.error(error, "ERROR");
-    }
-  }
-
 
   private async generateShouldRespond(history: string, query: BotChatMessage): Promise<boolean> {
     const promptTemplate = PromptTemplate.fromTemplate(
@@ -600,8 +580,8 @@ Rewritten TEXT:`;
     ⌐◨-◨  Greetings from ${botConfig.BotName}!
     ⌐◨-◨  
     ⌐◨-◨  ${Magenta}Today is ${this.weekday}, ${this.today}. ${Yellow}
-    ⌐◨-◨  ${Magenta}It's currently ${this.nowis}, and we're in the ${this.dayPeriod}. ${Yellow}
-    ⌐◨-◨  ${Magenta}Hope you're having a great day! ${Yellow}
+    ⌐◨-◨  ${Magenta}It's currently ${this.nowis} in ${botConfig.TIMEZONE}, and we're in the ${this.dayPeriod}. ${Yellow}
+    ⌐◨-◨  ${Magenta}Best Day Ever! ${Yellow}
     ⌐◨-◨      
     ⌐◨-◨  ⌐◨-◨  ⌐◨-◨  ⌐◨-◨  ⌐◨-◨  ⌐◨-◨  ⌐◨-◨  ⌐◨-◨  ⌐◨-◨  ⌐◨-◨
     ${Reset}`);

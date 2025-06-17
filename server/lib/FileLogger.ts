@@ -1,16 +1,6 @@
 import * as fs from 'fs';
 import * as path from 'path';
-
-const Reset = "\x1b[0m",
-    Blue = "\x1b[34m",
-    Green = "\x1b[32m",
-    Red = "\x1b[31m",
-    Yellow = "\x1b[33m",
-    Magenta = "\x1b[35m",
-    Italic = "\x1b[3m",
-    Underscore = "\x1b[4m",
-    Cyan = "\x1b[36m",
-    Gray = "\x1b[90m";
+import { Green, Red, Reset, Yellow } from './colors';
 
 interface LogOptions {
     folder: string;
@@ -91,8 +81,6 @@ class FileLogger {
         this.logtofile(logmessage, logKey);
         this.logtoconsole(logmessage, "");
     }
-
-
 }
 
 export default FileLogger;

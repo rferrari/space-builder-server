@@ -26,7 +26,7 @@ export class WorkersSystem {
     private wsClientId: number;
 
     constructor(eventBus: EventBus, clientId: number) {
-        this.log = new FileLogger({ folder: './logs-messages', printconsole: true });
+        this.log = new FileLogger({ folder: './logs', printconsole: true });
         this.eventBus = eventBus;
         this.wsClientId = clientId;
         this.initializeGraph();
@@ -72,14 +72,14 @@ export class WorkersSystem {
     }
 
     private async createJsonResponseModel(state: GraphInterface) {
-        const groqModel = new ChatOpenAI({
+        const jsonModel = new ChatOpenAI({
             model: JSONLLMModel,
             temperature: 0,
             apiKey: process.env.OPENAI_API_KEY as string
         });
 
         return {
-            jsonResponseModel: groqModel.withConfig({
+            jsonResponseModel: jsonModel.withConfig({
                 response_format: { type: "json_object" }
             })
         };

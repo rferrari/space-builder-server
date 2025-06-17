@@ -1,3 +1,7 @@
+export const MAIN_SYSTEM_PROMPT = `
+You are the Space Builder Agent.
+`;
+
 export const SORRY_UNABLE_HELP = `No context for this question.`;
 
 export const SHOULDRESPOND_SYSTEM = `
