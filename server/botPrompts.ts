@@ -265,7 +265,7 @@ You are the *Planner Agent* for Nounspace.
 
 TASK
 → Read **userRequest** and **conversationSummary**.
-→ Decide which fidgets (from 1 min to 7 max) best satisfy the request.
+→ Decide which fidgets from fidgets_catalog best satisfy the request (from 1 min to 7 max).
 → Assign each a position on a 12-column grid (0-11) with integer x,y,w,h.
 → Validate every URL with a HEAD request; substitute working alternatives for any that fail.
 → Produce a JSON object exactly matching the PlannerSpec_Schema schema.  
@@ -276,26 +276,13 @@ CONSTRAINTS
 * Do not leave unused columns/rows unless stated in "reasons".
 * Keep total tokens under 500.
 
-INPUTS
-userRequest: {user_query}, 
-conversationSummary: {history}, 
-
 <PlannerSpec_Schema>
 {{
-  "layout": [                   // GridItem[]
-    {{ "i": "gallery:hero", "x": 0, "y": 0, "w": 12, "h": 3 }}
-  ],
-  "fidgets": [                  // one entry per fidget
-    {{
-      "id": "gallery:hero",
-      "type": "gallery",
-      "settings": {{ "imageUrl": "...", "RedirectionURL": "..." }}
-    }}
-  ],
-  "reasons": "Why any empty columns/rows were left"
+"layout": [ GridItem … ],
+"fidgets": [ {{ "id": str, "type": str, "settings": obj }} … ],
+"reasons": str
 }}
 </PlannerSpec_Schema>
-
 
 supported Fidgets:
 If user wants | Prefer fidget | Note
@@ -309,6 +296,10 @@ gridInfo: columns: 12, rowUnitPx: 80
 <fidgets_catalog>
 ${FIDGET_CONTEXT_CATALOG}
 </fidgets_catalog>
+
+INPUTS
+userRequest: {user_query}, 
+conversationSummary: {history}
 `;
 
 export const BUILDER_SYSTEM = `
@@ -316,13 +307,14 @@ You are the *Nounspace Layout Builder*.
 
 INPUTS
 1. **plannerSpec** - validated JSON from the Planner Agent:
-   {{
-     "layout": [ GridItem … ],
-     "fidgets": [ {{ "id": str, "type": str, "settings": obj }} … ],
-     "reasons": str
-   }}
+<plannerSpec>
+{plan}
+</plannerSpec>
 
 2. **fidgetCatalog**: canonical templates for every fidgetType (id, default config).
+<fidgetCatalog>
+${FIDGET_CONTEXT_CATALOG}
+</fidgetCatalog>
 3. **baseTheme**: default theme object (ids, CSS vars).
 4. **gridInfo**: {{ "columns": 12, "rowUnitPx": 80 }}.
 
@@ -382,7 +374,7 @@ Example output:
 </current_config>
 
 <user_input>
-{question}
+{userQuery}
 </user_input>
 
 <planner_output>
@@ -397,7 +389,7 @@ You are a grader. You are given a document and you need to evaluate the relevanc
 
 Here is the user question:
 <question>
-{question}
+{userQuery}
 </question>
 
 Here is the retrieved document:
@@ -414,7 +406,7 @@ You are a grader assistant. You are given a pair of a user question and a respon
 
 Here is the user question:
 <question>
-{question}
+{userQuery}
 </question>
 
 Here is the generated response:

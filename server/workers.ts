@@ -13,7 +13,7 @@ export interface GraphInterface {
     clientId: number;
     model: ChatOpenAI;
     jsonResponseModel: ChatOpenAI;
-    question: string;
+    userQuery: string;
     conversationHistory: string;
     plannerOutput?: string;
     builderOutput?: string;
@@ -37,7 +37,7 @@ export class WorkersSystem {
 
     private initializeGraph() {
         const graphState = {
-            question: null,
+            userQuery: null,
             clientId: null,
             conversationHistory: null,
             plannerOutput: null,
@@ -96,9 +96,12 @@ export class WorkersSystem {
             inputVariables: ["history", "user_query"]
         });
 
+
+        console.warn(prompt);
+
         const output = await prompt.pipe(state.model).pipe(new StringOutputParser()).invoke({
             history: state.conversationHistory,
-            user_query: state.question
+            user_query: state.userQuery
         });
 
         this.log.log("[PLANNER] Plan generated:", "PLANNER");
@@ -116,13 +119,13 @@ export class WorkersSystem {
     private async building(state: GraphInterface): Promise<Partial<GraphInterface>> {
         const prompt = new PromptTemplate({
             template: BUILDER_SYSTEM,
-            inputVariables: ["plan", "history", "question"]
+            inputVariables: ["plan", "history", "userQuery"]
         });
 
         const output = await prompt.pipe(state.jsonResponseModel).pipe(new StringOutputParser()).invoke({
             plan: state.plannerOutput,
             history: state.conversationHistory,
-            question: state.question
+            userQuery: state.userQuery
         });
 
         this.log.log("[BUILDER] JSON generated:", "BUILDER");
@@ -143,7 +146,7 @@ export class WorkersSystem {
             inputVariables: ["plan",
                 "current_space",
                 // "json", "history", 
-                "question"]
+                "userQuery"]
         });
 
         const output = await prompt.pipe(state.model).pipe(new StringOutputParser()).invoke({
@@ -151,7 +154,7 @@ export class WorkersSystem {
             current_space: state.current_space,
             // json: state.builderOutput,
             // history: state.conversationHistory,
-            question: state.question
+            userQuery: state.userQuery
         });
 
         this.log.log("[COMMUNICATOR] Final message:", "COMMUNICATOR");
@@ -213,7 +216,7 @@ const mock_current_space = `
 
         const graphResponse = await this.ragApp.invoke(
             {
-                user_query: inputQuery.message,
+                userQuery: inputQuery.message,
                 conversationHistory,
                 current_space: mock_current_space,
                 clientId: inputQuery.clientId
