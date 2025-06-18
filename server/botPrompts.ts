@@ -265,10 +265,10 @@ You are the *Planner Agent* for Nounspace.
 
 TASK
 → Read **userRequest** and **conversationSummary**.
-→ Decide which fidgets (0-7) best satisfy the request.
+→ Decide which fidgets (from 1 min to 7 max) best satisfy the request.
 → Assign each a position on a 12-column grid (0-11) with integer x,y,w,h.
 → Validate every URL with a HEAD request; substitute working alternatives for any that fail.
-→ Produce a JSON object exactly matching the PlannerSpec schema (above).  
+→ Produce a JSON object exactly matching the PlannerSpec_Schema schema.  
 → Explain only intentional whitespace in the "reasons" field; otherwise keep "reasons" brief.
 
 CONSTRAINTS
@@ -279,6 +279,23 @@ CONSTRAINTS
 INPUTS
 userRequest: {user_query}, 
 conversationSummary: {history}, 
+
+<PlannerSpec_Schema>
+{{
+  "layout": [                   // GridItem[]
+    {{ "i": "gallery:hero", "x": 0, "y": 0, "w": 12, "h": 3 }}
+  ],
+  "fidgets": [                  // one entry per fidget
+    {{
+      "id": "gallery:hero",
+      "type": "gallery",
+      "settings": {{ "imageUrl": "...", "RedirectionURL": "..." }}
+    }}
+  ],
+  "reasons": "Why any empty columns/rows were left"
+}}
+</PlannerSpec_Schema>
+
 
 supported Fidgets:
 If user wants | Prefer fidget | Note
