@@ -377,83 +377,11 @@ export class BotAvatar {
     // if using RAG system... include conversationContent + userQuery
     // const ragContext = await this.getRAGContext(userQuery, user, memoryConversationContent);
     const ragHisstory = conversation.length > 0 ? joinedConversation : memoryConversationContent;
-    const ragContext = await this.getRAGContext(inputMessage, ragHisstory);
-
-    // build user Prompt form user Query
-    // userPrompt = userQuery;
-
-    if (joinedConversation.length > 0) userPrompt = `Continue this conversation:
-<conversation_history>
-${joinedConversation}
-</conversation_history>
-
-${userPrompt}`;
-
-    // experimental vision
-    if (vision && vision !== "") userPrompt = `${vision}\n${userPrompt}`;
-
-    userPrompt += `@${inputMessage.name}: ${inputMessage.message}`;
-
-    // Debug
-    this.messagesLog.log(`-------Debug ${inputMessage.name} PROMPT:`, "PROMPT")
-    // this.messagesLog.log(`<user_input>\n${userQuery}\n</user_input>\n\n`, "PROMPT")
-    // this.messagesLog.log(`Prompt:`, "PROMPT")
-    this.messagesLog.log(userPrompt, "PROMPT")
-    this.messagesLog.log(`-------`, "PROMPT")
-    this.messagesLog.log(``, "PROMPT")
-
-    try {
-      // throw new Error('This is a TEST backup system error!');
-      var reply = await this.chatChain.invoke({
-        context: ragContext,
-        userquery: userPrompt,
-      }, config);
-    } catch (error) {
-      this.messagesLog.error("FALLBACK BACKUP LLM SYSTEM", "ERROR");
-      this.messagesLog.error(error, "ERROR");
-    }
-
-    // check reply size
-    var textSize = new TextEncoder().encode(encodeURI(reply.response)).byteLength;
-    var retryCounter = 0;
-    while ((textSize > 1024) || retryCounter > 3) {
-      let retryPrompt =
-        `Rewrite this text to make it concise and under 1024 bytes DO NOT INCLUDE "Here is the rewritten text:" Just RAW OUTPUT.
-
-<text>
-${reply.response}
-<text>
-
-Rewritten TEXT:`;
-
-      this.messagesLog.log(`------- RETRYPROMPT  #${retryCounter} (${textSize} bytes) --------`, LOG_ID);
-      // console.log(retryPrompt);
-      // console.log("----------------------------");
-
-      reply = await this.chatBotLLM.invoke(retryPrompt)
-
-      reply.response = reply.content
-      textSize = new TextEncoder().encode(encodeURI(reply.response)).byteLength;
-      retryCounter++;
-      this.messagesLog.log(`------- RETRY #${retryCounter} (${textSize} bytes) --------`, LOG_ID);
-      // console.log(reply.response);
-      // console.log("----------------------------");
-      const delay = 30000; // 30 seconds
-      await new Promise(resolve => setTimeout(resolve, delay));
-    }
-
-    // Remove Quotes
-    var finalMessage = reply.response;
-    if (/namespace/i.test(finalMessage))
-      console.warn("MISSPELL: namespace found in reply response");
-    finalMessage = finalMessage
-      .replace(/^"|"$/g, '')
-      .replace(/namespace/g, 'nounspace');
+    const finalMessage = await this.getRAGContext(inputMessage, ragHisstory);
 
     this.addtoBotMemory(inputMessage.name, inputMessage.message, finalMessage)
     await this.addtoUserMemory(inputMessage.name, inputMessage.message, finalMessage)
-    // await this.sumarizeUserHistoryMemory(user);
-    // return response to be published
+
     return {
       name: botConfig.BotName,
       message: finalMessage,
