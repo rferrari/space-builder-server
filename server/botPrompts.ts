@@ -6,7 +6,6 @@ export const SORRY_UNABLE_HELP = `No context for this question.`;
 
 export const SHOULDRESPOND_SYSTEM = `
 You are the Space Builder Agent.
-
 Your task is to determine whether the user's query is related to customizing their space. This includes changes to layout, design, content, settings, or any personalization aspects of their space.
 
 If the query is related to space customization, respond with:
