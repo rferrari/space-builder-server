@@ -89,7 +89,11 @@ class BotCustomServer {
 
         ws.on('message', (data: string) => {
           // Check if the message is a command
-          this.handleCommand(this.wss, ws, data);
+          const { name, message } = JSON.parse(data);
+          const commandObj = { name, message, clientId: ws.id, type: null };
+
+          //await
+          this.botAvatar.handleCommand(commandObj.message, commandObj);
 
           // send message to all connected clients
           // this.wss.clients.forEach((client: WebSocket) => {
@@ -135,14 +139,14 @@ class BotCustomServer {
   }
 
   // private async handleCommand(wss: WebSocket.Server, data: string) {
-  private async handleCommand(wss: WebSocket.Server, ws: WebSocket & { id?: number }, data: string) {
-    const { name, message } = JSON.parse(data);
-    // const commandObj = { name, message }
-    const commandObj = { name, message, clientId: ws.id, type: null };
+  // private async handleCommand(wss: WebSocket.Server, ws: WebSocket & { id?: number }, data: string) {
+  //   const { name, message } = JSON.parse(data);
+  //   // const commandObj = { name, message }
+  //   const commandObj = { name, message, clientId: ws.id, type: null };
 
-    //await
-    this.botAvatar.handleCommand(commandObj.message, commandObj);
-  }
+  //   //await
+  //   this.botAvatar.handleCommand(commandObj.message, commandObj);
+  // }
 
 }
 
