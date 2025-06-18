@@ -407,9 +407,11 @@ export class BotAvatar {
         // tomReply = await this.replyMessage(message.name, message.message, "", [], null);
         // console.log(agentReply.name, agentReply.message)
 
-        // break;
-        this.eventBus.publish("AGENT_LOGS", agentReply);
+        break;
+        
     }
+    
+    this.eventBus.publish("AGENT_LOGS", agentReply);
     // return agentReply;
   }
 
