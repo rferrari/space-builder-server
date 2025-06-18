@@ -11,13 +11,14 @@ import { BotChatMessage } from "./bot.types";
 
 export interface GraphInterface {
     clientId: number;
+    model: ChatOpenAI;
+    jsonResponseModel: ChatOpenAI;
     question: string;
     conversationHistory: string;
     plannerOutput?: string;
     builderOutput?: string;
     communicatorOutput?: string;
-    model: ChatOpenAI;
-    jsonResponseModel: ChatOpenAI;
+    current_space?: string;
 }
 
 export class WorkersSystem {
@@ -140,12 +141,14 @@ export class WorkersSystem {
         const prompt = new PromptTemplate({
             template: COMMUNICATING_SYSTEM,
             inputVariables: ["plan",
+                "current_space",
                 // "json", "history", 
                 "question"]
         });
 
         const output = await prompt.pipe(state.model).pipe(new StringOutputParser()).invoke({
             plan: state.plannerOutput,
+            current_space: state.current_space,
             // json: state.builderOutput,
             // history: state.conversationHistory,
             question: state.question
@@ -193,10 +196,26 @@ export class WorkersSystem {
         // console.log("----------------------------")
         // console.log("")
 
+const mock_current_space = `
+{
+  "layout": [                   // GridItem[]
+    { "i": "gallery:hero", "x": 0, "y": 0, "w": 12, "h": 3 }
+  ],
+  "fidgets": [                  // one entry per fidget
+    {
+      "id": "gallery:hero",
+      "type": "gallery",
+      "settings": { "imageUrl": "...", "RedirectionURL": "..." }
+    }
+  ]
+}
+`;
+
         const graphResponse = await this.ragApp.invoke(
             {
                 user_query: inputQuery.message,
                 conversationHistory,
+                current_space: mock_current_space,
                 clientId: inputQuery.clientId
             },
             // { configurable: { thread_id: crypto.randomUUID() } }
