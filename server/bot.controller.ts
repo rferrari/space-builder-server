@@ -254,7 +254,7 @@ export class BotAvatar {
   }
 
   async printMemorySummary() {
-    const intervalId = setInterval(async () => {
+    // const intervalId = setInterval(async () => {
       const memorySummary = await this.stringPromptMemory.loadMemoryVariables({});
       // console.warn("memorySummary");
       // console.warn(memorySummary);
@@ -262,7 +262,7 @@ export class BotAvatar {
       this.memoryLog.log("MEMORYSUMMARY:", "MemUsed")
       this.memoryLog.log(memorySummary, "MEMORYSUMMARY");
 
-    }, 5 * 60 * 1000); // 5 minutes
+    // }, 5 * 60 * 1000); // 5 minutes
   }
 
   private async generateShouldRespond(history: string, query: BotChatMessage): Promise<{ result: boolean; reason: string }> {
@@ -371,6 +371,8 @@ export class BotAvatar {
     this.addtoBotMemory(inputMessage.name, inputMessage.message, finalMessage)
     await this.addtoUserMemory(inputMessage.name, inputMessage.message, finalMessage)
 
+    this.printMemorySummary();
+
     return {
       name: botConfig.BotName,
       message: finalMessage,
@@ -410,7 +412,7 @@ export class BotAvatar {
         break;
         
     }
-    
+
     this.eventBus.publish("AGENT_LOGS", agentReply);
     // return agentReply;
   }
