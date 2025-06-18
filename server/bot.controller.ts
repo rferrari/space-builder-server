@@ -71,11 +71,11 @@ export class BotAvatar {
 
   constructor(eventBus: EventBus
     // , farcaster: Farcaster
-    ) {
+  ) {
     this.MEM_USED = process.memoryUsage();
     this.isStopped = false;
     this.eventBus = eventBus;
-    
+
     // this.farcaster = farcaster;
     this.messagesLog = new FileLogger({ folder: './logs', printconsole: true });
     this.memoryLog = new FileLogger({ folder: './logs', printconsole: false });
@@ -265,7 +265,7 @@ export class BotAvatar {
     }, 5 * 60 * 1000); // 5 minutes
   }
 
-  private async generateShouldRespond(history: string, query: BotChatMessage): Promise<boolean> {
+  private async generateShouldRespond(history: string, query: BotChatMessage): Promise<{ result: boolean; reason: string }> {
     const promptTemplate = PromptTemplate.fromTemplate(
       botPrompts.shouldRespondTemplate
     );
@@ -279,36 +279,26 @@ export class BotAvatar {
 
     const result = await this.chatBotLLM.invoke(messages);
 
-    // Convert complex message content to string
     const responseText = Array.isArray(result.content)
       ? result.content.map((c: any) => c.text || c.value || "").join(" ")
       : String(result.content || "");
 
-    // Try to parse JSON first
     try {
       const parsed = JSON.parse(responseText);
       const action = parsed?.action?.toUpperCase?.();
+      const reason = parsed?.reason || "No reason provided";
 
-      // this.eventBus.publish("AGENT_LOGS", {name: botConfig.BotName, message: action + " " + parsed?.reason?.()});
-      let agentReply: BotChatMessage = { 
-        name: botConfig.BotName, 
-        message: parsed?.reason, 
-        clientId: query.clientId,
-        type: "LOG", 
-      }
-      this.eventBus.publish("AGENT_LOGS", agentReply);
-
-      if (action === "RESPOND") return true;
-      if (action === "IGNORE") return false;
+      if (action === "RESPOND") return { result: true, reason };
+      if (action === "IGNORE") return { result: false, reason };
     } catch (e) {
-      // Fallback to text matching
       const lower = responseText.toLowerCase();
-      if (lower.includes("respond")) return true;
-      if (lower.includes("ignore")) return false;
+      if (lower.includes("respond")) return { result: true, reason: responseText };
+      if (lower.includes("ignore")) return { result: false, reason: responseText };
     }
 
-    return false;
+    return { result: false, reason: "Unable to parse model response." };
   }
+
 
 
 
@@ -337,8 +327,7 @@ export class BotAvatar {
   }
 
   private async replyMessage(inputMessage: BotChatMessage, vision: string = "",
-    conversation: BotChatMessage[] = [], userDataInfo: UserResponse = null)
-  {
+    conversation: BotChatMessage[] = [], userDataInfo: UserResponse = null) {
     const config = { configurable: { thread_id: inputMessage.name + "_thread" } };
     var joinedConversation: string = '';
     var userInfoAbout: string = '';
@@ -403,8 +392,8 @@ export class BotAvatar {
       default:
         // messages from discord dont have fid -1 set
         const shouldReply = await this.generateShouldRespond("", message)
-        if (!shouldReply ) {
-          agentReply.message = "Cant help with that!";
+        if (!shouldReply.result) {
+          agentReply.message = shouldReply.reason;
           break;
         }
 
@@ -416,12 +405,12 @@ export class BotAvatar {
           clientId: message.clientId, // ensure clientId is preserved
         };
         // tomReply = await this.replyMessage(message.name, message.message, "", [], null);
-        console.log(agentReply.name, agentReply.message)
-        break;
-    }
+        // console.log(agentReply.name, agentReply.message)
 
-    this.eventBus.publish("AGENT_LOGS", agentReply);
-    return agentReply;
+        // break;
+        this.eventBus.publish("AGENT_LOGS", agentReply);
+    }
+    // return agentReply;
   }
 
   // // Get Groq chat completion
