@@ -30,6 +30,236 @@ Determine if you should respond to the query
 `;
 
 
+
+export const FIDGET_CONTEXT_CATALOG = `
+/**
+ * FIDGET_CONFIG_GUIDE provides sample settings for each Fidget.
+ * Comments describe what the Fidget does and give example inputs.
+ */
+
+export interface ExampleFidgetConfig {
+  editable: boolean;
+  settings: Record<string, unknown>;
+  data: Record<string, unknown>;
+}
+
+export interface ExampleFidgetInstance {
+  config: ExampleFidgetConfig;
+  fidgetType: string;
+  id: string;
+}
+
+export const FIDGET_CONFIG_GUIDE: Record<string, ExampleFidgetInstance> = {
+  // Feed Fidget - displays casts from Farcaster or posts from X
+  "feed:example": {
+    config: {
+      editable: true,
+      settings: {
+        // feedType: Following, Trending, or Filter
+        // Example: "following"
+        feedType: "following",
+        // filterType: when feedType is "filter" choose how to filter
+        // Example: "keyword"
+        filterType: "keyword",
+        // keyword: term to search when filterType is "keyword"
+        // Example: "nouns"
+        keyword: "nouns",
+        showOnMobile: true,
+      },
+      data: {},
+    },
+    fidgetType: "feed",
+    id: "feed:example",
+  },
+
+  // Cast Fidget - pins a single Farcaster cast
+  "cast:example": {
+    config: {
+      editable: true,
+      settings: {
+        // castUrl: Warpcast share URL
+        // Example: "https://warpcast.com/~/post/0x123"
+        castUrl: "https://warpcast.com/~/post/0x123",
+        // casterFid: FID of the author
+        // Example: 1234
+        casterFid: 1234,
+      },
+      data: {},
+    },
+    fidgetType: "cast",
+    id: "cast:example",
+  },
+
+  // Gallery Fidget - displays an image or NFT
+  "gallery:example": {
+    config: {
+      editable: true,
+      settings: {
+        // imageUrl: direct link to an image
+        // Example: "https://example.com/image.png"
+        imageUrl: "https://example.com/image.png",
+        // selectMediaSource: URL, UPLOAD, WALLET, or EXTERNAL
+        // Example: { name: "URL" }
+        selectMediaSource: { name: "URL" },
+        // Scale: resize multiplier 0.5 - 2
+        // Example: 1
+        Scale: 1,
+      },
+      data: {},
+    },
+    fidgetType: "gallery",
+    id: "gallery:example",
+  },
+
+  // Text Fidget - renders Markdown text
+  "text:example": {
+    config: {
+      editable: true,
+      settings: {
+        // title displayed above the content
+        // Example: "Welcome"
+        title: "Welcome",
+        // text body in Markdown
+        // Example: "Hello **world**"
+        text: "Hello **world**",
+        // color for links in the text
+        // Example: "#0000FF"
+        urlColor: "#0000FF",
+      },
+      data: {},
+    },
+    fidgetType: "text",
+    id: "text:example",
+  },
+
+  // Links Fidget - list of external links
+  "links:example": {
+    config: {
+      editable: true,
+      settings: {
+        // title for the list of links
+        // Example: "Resources"
+        title: "Resources",
+        // array of links with text and url
+        // Example: [{ text: "Nounspace", url: "https://nounspace.com" }]
+        links: [{ text: "Nounspace", url: "https://nounspace.com" }],
+        // display mode: "list" or "grid"
+        // Example: "list"
+        viewMode: "list",
+      },
+      data: {},
+    },
+    fidgetType: "links",
+    id: "links:example",
+  },
+
+  // IFrame Fidget - embeds a webpage
+  "iframe:example": {
+    config: {
+      editable: true,
+      settings: {
+        // url of the site to embed
+        // Example: "https://example.com"
+        url: "https://example.com",
+        // size: scale factor 0.5 - 2
+        // Example: 1
+        size: 1,
+      },
+      data: {},
+    },
+    fidgetType: "iframe",
+    id: "iframe:example",
+  },
+
+  // Swap Fidget - token swap widget
+  "Swap:example": {
+    config: {
+      editable: true,
+      settings: {
+        // defaultSellToken: token address offered
+        // Example: "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+        defaultSellToken: "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+        // defaultBuyToken: token address requested
+        // Example: "0x48c6740bcf807d6c47c864faeea15ed4da3910ab"
+        defaultBuyToken: "0x48c6740bcf807d6c47c864faeea15ed4da3910ab",
+      },
+      data: {},
+    },
+    fidgetType: "Swap",
+    id: "Swap:example",
+  },
+
+  // Chat Fidget - realtime chat room
+  "Chat:example": {
+    config: {
+      editable: true,
+      settings: {
+        // roomName: chat room identifier or contract
+        // Example: "0x48C6740BcF807d6C47C864FaEEA15Ed4dA3910Ab"
+        roomName: "0x48C6740BcF807d6C47C864FaEEA15Ed4dA3910Ab",
+      },
+      data: {},
+    },
+    fidgetType: "Chat",
+    id: "Chat:example",
+  },
+
+  // SnapShot Fidget - shows Snapshot proposals
+  "SnapShot:example": {
+    config: {
+      editable: true,
+      settings: {
+        // snapshotEns: ENS name of the space
+        // Example: "gnars.eth"
+        snapshotEns: "gnars.eth",
+        // daoContractAddress: DAO contract used for proposals
+        // Example: "0x0000000000000000000000000000000000000000"
+        daoContractAddress: "0x0000000000000000000000000000000000000000",
+      },
+      data: {},
+    },
+    fidgetType: "SnapShot",
+    id: "SnapShot:example",
+  },
+
+  // Video Fidget - embeds a video player
+  "Video:example": {
+    config: {
+      editable: true,
+      settings: {
+        // url: YouTube or Vimeo link
+        // Example: "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+        url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+        // size: scale multiplier
+        // Example: 1
+        size: 1,
+      },
+      data: {},
+    },
+    fidgetType: "Video",
+    id: "Video:example",
+  },
+
+  // RSS Fidget - displays items from an RSS feed
+  "Rss:example": {
+    config: {
+      editable: true,
+      settings: {
+        // rssUrl: address of the RSS feed
+        // Example: "https://rss.nytimes.com/services/xml/rss/nyt/HomePage.xml"
+        rssUrl: "https://rss.nytimes.com/services/xml/rss/nyt/HomePage.xml",
+        // title shown above the feed
+        // Example: "News"
+        title: "News",
+      },
+      data: {},
+    },
+    fidgetType: "Rss",
+    id: "Rss:example",
+  },
+};
+`;
+
 export const PLANING_SYSTEM = `
 You are the *Planner Agent* for Nounspace.
 
@@ -50,7 +280,7 @@ INPUTS
 userRequest: {user_query}, 
 conversationSummary: {history}, 
 
-supportedFidgets:
+supported Fidgets:
 If user wants | Prefer fidget | Note
 Static image  | gallery       | Provide click-thru link
 Long markdown | text          | Split large blobs w/ headings
@@ -58,6 +288,10 @@ Social feed   | feed          | Add platform + filter
 Video URL     | video         | Size = 1 
 
 gridInfo: columns: 12, rowUnitPx: 80
+
+<fidgets_catalog>
+${FIDGET_CONTEXT_CATALOG}
+</fidgets_catalog>
 `;
 
 export const BUILDER_SYSTEM = `
@@ -149,3 +383,4 @@ Here is the generated response:
 
 If the response is relevant to the user's question, then return a json response with key "relevant" and value true; otherwise return false. The response json key should be a boolean value.
 `;
+
