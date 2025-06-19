@@ -125,12 +125,12 @@ Each fidget follows this structure:
 \`\`\`json
 "settings": {{
   "selectMediaSource": {{"name": "URL"}},  // "URL", "Upload", or "NFT"
-  "imageUrl": "https://example.com/image.jpg",
+  "imageUrl": "https://",
   "uploadedImage": "",                   // Set when using upload source
   "nftAddress": "0x...",                // NFT contract address
   "nftTokenId": "123",                  // NFT token ID
   "network": {{"id": "1", "name": "Ethereum"}}, // Blockchain network
-  "redirectionURL": "https://example.com",     // Click destination
+  "redirectionURL": "https://",     // Click destination
   "scale": 100,                         // Image scale percentage
   "badgeColor": "#00ff00",             // Verification badge color
   "showOnMobile": true
@@ -144,9 +144,9 @@ Each fidget follows this structure:
   "links": [
     {{
       "text": "Website",
-      "url": "https://example.com",
-      "avatar": "https://example.com/icon.png",
-      "description": "My personal website"
+      "url": "https://",
+      "avatar": "https://",
+      "description": "Website"
     }}
   ],
   "viewMode": "list",               // "list" or "grid"
@@ -203,7 +203,7 @@ Each fidget follows this structure:
 ### RSS Fidget Settings
 \`\`\`json
 "settings": {{
-  "rssUrl": "https://example.com/feed.xml",
+  "rssUrl": "https://",
   "fontFamily": "var(--user-theme-font)",
   "fontColor": "var(--user-theme-font-color)",
   "headingsFontFamily": "var(--user-theme-headings-font)",

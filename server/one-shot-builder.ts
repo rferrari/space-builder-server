@@ -125,12 +125,12 @@ Each fidget follows this structure:
 \`\`\`json
 "settings": {{
   "selectMediaSource": {{"name": "URL"}},  // "URL", "Upload", or "NFT"
-  "imageUrl": "https://example.com/image.jpg",
+  "imageUrl": "https://",
   "uploadedImage": "",                   // Set when using upload source
   "nftAddress": "0x...",                // NFT contract address
   "nftTokenId": "123",                  // NFT token ID
   "network": {{"id": "1", "name": "Ethereum"}}, // Blockchain network
-  "redirectionURL": "https://example.com",     // Click destination
+  "redirectionURL": "https://",     // Click destination
   "scale": 100,                         // Image scale percentage
   "badgeColor": "#00ff00",             // Verification badge color
   "showOnMobile": true
@@ -144,8 +144,8 @@ Each fidget follows this structure:
   "links": [
     {{
       "text": "Website",
-      "url": "https://example.com",
-      "avatar": "https://example.com/icon.png",
+      "url": "https://",
+      "avatar": "https://",
       "description": "My personal website"
     }}
   ],
@@ -183,7 +183,7 @@ Each fidget follows this structure:
 ### IFrame (Web Embed) Fidget Settings
 \`\`\`json
 "settings": {{
-  "url": "https://example.com",
+  "url": "https://",
   "size": 100,                     // Zoom level percentage
   "showOnMobile": true
 }}

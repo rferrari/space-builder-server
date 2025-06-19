@@ -243,11 +243,7 @@ export const FIDGET_CONFIG_GUIDE: Record<string, ExampleFidgetInstance> = {{
     config: {{
       editable: true,
       settings: {{
-        // imageUrl: direct link to an image
-        // Example: "https://example.com/image.png"
-        imageUrl: "https://example.com/image.png",
-        // selectMediaSource: URL, UPLOAD, WALLET, or EXTERNAL
-        // Example: {{ name: "URL" }}
+        imageUrl: "<URL>",
         selectMediaSource: {{ name: "URL" }},
         // Scale: resize multiplier 0.5 - 2
         // Example: 1
@@ -306,11 +302,8 @@ export const FIDGET_CONFIG_GUIDE: Record<string, ExampleFidgetInstance> = {{
     config: {{
       editable: true,
       settings: {{
-        // url of the site to embed
-        // Example: "https://example.com"
         url: "https://example.com",
         // size: scale factor 0.5 - 2
-        // Example: 1
         size: 1,
       }},
       data: {{}},
