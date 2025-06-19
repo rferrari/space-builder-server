@@ -205,26 +205,11 @@ export class WorkersSystem {
         // console.log("----------------------------")
         // console.log("")
 
-const mock_current_space = `
-{
-  "layout": [                   // GridItem[]
-    { "i": "gallery:hero", "x": 0, "y": 0, "w": 12, "h": 3 }
-  ],
-  "fidgets": [                  // one entry per fidget
-    {
-      "id": "gallery:hero",
-      "type": "gallery",
-      "settings": { "imageUrl": "...", "RedirectionURL": "..." }
-    }
-  ]
-}
-`;
-
         const graphResponse = await this.ragApp.invoke(
             {
                 userQuery: inputQuery.message,
                 conversationHistory,
-                current_space: mock_current_space,
+                current_space: inputQuery.spaceContext || "",
                 clientId: inputQuery.clientId
             },
             // { configurable: { thread_id: crypto.randomUUID() } }

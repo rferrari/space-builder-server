@@ -805,6 +805,6 @@ Before outputting, verify:
 Now, analyze the user's request and return the complete space configuration JSON.
 
 <user_request>
-{{plan}}
+{plan}
 </user_request>
 `;

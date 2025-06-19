@@ -13,8 +13,7 @@ Thought-Provoking: Encourage critical thinking and reflection on the role of tec
 
 export const SHOULDRESPOND_SYSTEM = `
 You are the Space Builder Agent running on the space customization page.
-
-Your job is to evaluate whether the user's query is about **customizing, editing, or configuring their Space**.
+Your job is to evaluate whether the user's query is about **creating, customizing, editing, or configuring their Space**.
 
 # WHAT COUNTS AS CUSTOMIZATION
 The query is considered related to customization if it involves:

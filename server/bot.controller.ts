@@ -317,13 +317,13 @@ export class BotAvatar {
 
 
 
-  private async getRAGContext(userQuery: BotChatMessage, currentConfig: string): Promise<string> {
+  private async getRAGContext(userQuery: BotChatMessage, history: string): Promise<string> {
     const RAG_SYSTEM = true;
     var ragContext = "";
 
     if (RAG_SYSTEM) {
       const ragResponse = await this.workersSystem
-        .invokeWorkers(userQuery, currentConfig)
+        .invokeWorkers(userQuery, history)
         .catch(err => {
           this.messagesLog.error("Failed to generate RAG response", "RAG-ERROR");
           this.messagesLog.error(err.message, "RAG-ERROR");
@@ -421,8 +421,6 @@ export class BotAvatar {
         // console.log(agentReply.name, agentReply.message)
         this.workersSystem = null; // or undefined
         break;
-
-
     }
 
     this.eventBus.publish("AGENT_LOGS", agentReply);
