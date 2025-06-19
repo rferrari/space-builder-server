@@ -90,9 +90,14 @@ class BotCustomServer {
 
         ws.on('message', (data: string) => {
           // Check if the message is a command
-          // const { name, message, spaceContext } = ;
-          const commandObj: BotChatMessage = JSON.parse(data)
-          // { name, message, clientId: ws.id, type: null, spaceContext };
+          const { name, message, spaceContext } = JSON.parse(data);
+          const commandObj: BotChatMessage = { 
+            name, 
+            message, 
+            clientId: ws.id, 
+            type: null, 
+            spaceContext
+          };
 
           //await
           this.botAvatar.handleCommand(commandObj.message, commandObj);

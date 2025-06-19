@@ -419,7 +419,7 @@ export class BotAvatar {
         };
         // tomReply = await this.replyMessage(message.name, message.message, "", [], null);
         // console.log(agentReply.name, agentReply.message)
-        this.workersSystem = null; // or undefined
+        // this.workersSystem = null; // or undefined
         break;
     }
 

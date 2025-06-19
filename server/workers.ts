@@ -175,22 +175,22 @@ export class WorkersSystem {
         return { communicatorOutput: output };
     }
 
-    private async returnResults(state: GraphInterface): Promise<Partial<GraphInterface>> {
-        this.log.log("[RESULT] Returning response:", "RESULT");
-        this.log.log(state.communicatorOutput || "No output", "RESULT");
-        const logPublish = {
-            name: "RESULT",
-            type: "PLANNER_LOGS",
-            clientId: state.clientId,
-            message: state.communicatorOutput
-        };
-        this.eventBus.publish("AGENT_LOGS", logPublish);
-        return { communicatorOutput: state.communicatorOutput };
-    }
+    // private async returnResults(state: GraphInterface): Promise<Partial<GraphInterface>> {
+    //     this.log.log("[RESULT] Returning response:", "RESULT");
+    //     this.log.log(state.communicatorOutput || "No output", "RESULT");
+    //     const logPublish = {
+    //         name: "RESULT",
+    //         type: "PLANNER_LOGS",
+    //         clientId: state.clientId,
+    //         message: state.communicatorOutput
+    //     };
+    //     this.eventBus.publish("AGENT_LOGS", logPublish);
+    //     return { communicatorOutput: state.communicatorOutput };
+    // }
 
-    public getGraph() {
-        return this.ragApp;
-    }
+    // public getGraph() {
+    //     return this.ragApp;
+    // }
 
 
     public async invokeWorkers(inputQuery: BotChatMessage, conversationHistory: string) {
