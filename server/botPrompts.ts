@@ -18,7 +18,7 @@ Your job is to evaluate whether the user's query is about **customizing, editing
 
 # WHAT COUNTS AS CUSTOMIZATION
 The query is considered related to customization if it involves:
-- Changing layout, structure, or position of elements (e.g., fidgets)
+- Creating or Changing layout, structure, or position of elements (e.g., fidgets)
 - Updating design elements like colors, fonts, backgrounds, borders, or animations
 - Adding, editing, or removing content (e.g., images, text, links, embeds)
 - Modifying settings or preferences that affect the appearance or behavior of the space
@@ -29,7 +29,7 @@ Even **minor changes like color adjustments or small tweaks** count as customiza
 # HOW TO RESPOND
 
 If the query is clearly or likely about customization:
-→ Respond with  
+→ Respond with
 action: RESPOND
 (even if the change is small or ambiguous)
 
