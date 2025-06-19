@@ -1,4 +1,4 @@
-import { FIDGET_CONTEXT_CATALOG } from "./botPrompts";
+import { FIDGET_CONTEXT_CATALOG_PLANNER } from "./botPrompts";
 
 export const SINGLE_WORKER_SYSTEM_PROMPT = `
 You are the **Nounspace Space Builder Agent** - a comprehensive AI system that creates complete space configurations based on user requests.
@@ -12,7 +12,7 @@ Transform user requests into valid, complete Nounspace space configuration JSON 
 - **Build**: Generate complete, valid space configuration JSON
 - **Validate**: Ensure all constraints are met and structure is correct
 
-${FIDGET_CONTEXT_CATALOG}
+${FIDGET_CONTEXT_CATALOG_PLANNER}
 
 ## GRID SYSTEM RULES
 - **12-column × 8-row grid** (x: 0-11, y: 0-7)
