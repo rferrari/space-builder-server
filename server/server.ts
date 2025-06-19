@@ -63,7 +63,7 @@ class BotCustomServer {
             client.send(JSON.stringify({
               type: payload.type,
               name: payload.name,
-              message: "[YR_ID is: " + payload.clientId + "]" + payload.message
+              message: payload.message
             }));
           }
         });
