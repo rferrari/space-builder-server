@@ -126,13 +126,13 @@ export class WorkersSystem {
         const prompt = new PromptTemplate({
             template: SINGLE_WORKER_SYSTEM_PROMPT,
             inputVariables: ["plan"
-                // , "current_config"
+                , "current_config"
             ]
         });
 
         const output = await prompt.pipe(state.jsonResponseModel).pipe(new StringOutputParser()).invoke({
             plan: state.plannerOutput,
-            // current_config: state.plannerOutput
+            current_config: state.currentConfig
             // userQuery: state.userQuery
         });
 

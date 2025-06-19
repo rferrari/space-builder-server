@@ -33,11 +33,11 @@ action: RESPOND
 (even if the change is small or ambiguous)
 
 If the query is clearly unrelated (e.g., asking about pricing, help commands, or external services):
-→ Respond with  
+→ Respond with
 action": IGNORE
 
 If you're uncertain:
-→ Default to  
+→ Default to
 action: RESPOND
 
 # RESPONSE FORMAT
@@ -64,21 +64,18 @@ export const FIDGET_CONTEXT_CATALOG_PLANNER = `
 **text** - Rich text content with markdown support
 - **Purpose**: Announcements, welcome messages, formatted content, documentation
 - **Key Settings**: title, text (markdown), fontFamily, fontColor, headingsFontFamily, headingsFontColor, urlColor
-- **Minimum Size**: 3w × 2h
 - **Common Use**: Hero sections, content blocks, instructions
 
 **gallery** (Image) - Display images from various sources
 - **Purpose**: Photo galleries, NFT showcases, image collections, visual content
 - **Key Settings**: selectMediaSource (URL/Upload/NFT), imageUrl, uploadedImage, nftSelector, scale, redirectionURL, badgeColor
 - **Sources**: Direct URL, file upload, or NFT from blockchain
-- **Minimum Size**: 2w × 2h
 - **Common Use**: Profile pictures, artwork displays, visual portfolios
 
 **Video** - YouTube, Vimeo, and video embeds
 - **Purpose**: Video content, tutorials, entertainment, presentations
 - **Key Settings**: url (auto-converts YouTube/Vimeo URLs), size (scale)
 - **Auto-conversion**: Automatically converts YouTube/Vimeo URLs to embeddable format
-- **Minimum Size**: 2w × 2h
 - **Common Use**: Educational content, entertainment, demos
 
 ### Social & Communication Fidgets
@@ -88,19 +85,16 @@ export const FIDGET_CONTEXT_CATALOG_PLANNER = `
 - **Feed Types**: Following (personalized), Filter (by criteria)
 - **Filter Options**: Channel feeds, user posts, keyword searches
 - **Platform Support**: Farcaster and X (Twitter)
-- **Minimum Size**: 4w × 2h
 - **Common Use**: Community feeds, social walls, content discovery
 
 **cast** - Pin individual Farcaster posts
 - **Purpose**: Highlight specific posts, feature announcements, showcase content
 - **Key Settings**: castUrl (easiest), castHash + casterFid (advanced)
 - **Input Methods**: Warpcast share URL or manual hash/FID
-- **Minimum Size**: 3w × 1h, Maximum Height: 4h
 - **Common Use**: Featured posts, announcements, pinned content
 
 **Chat** - Interactive messaging interfaces
 - **Purpose**: Real-time communication, community discussions
-- **Minimum Size**: 3w × 2h
 - **Common Use**: Live support, community chat, messaging
 
 ### Web Integration Fidgets
@@ -108,20 +102,17 @@ export const FIDGET_CONTEXT_CATALOG_PLANNER = `
 - **Purpose**: Integration with external tools, dashboards, web applications
 - **Key Settings**: url, size (zoom level)
 - **Security**: Automatically sanitizes URLs and blocks malicious content
-- **Minimum Size**: 2w × 2h
 - **Common Use**: External tools, dashboards, web apps, embedded services
 
 **frame** - Legacy Farcaster frames
 - **Purpose**: Interactive Farcaster applications, simple web experiences
 - **Key Settings**: url
-- **Minimum Size**: 2w × 2h
 - **Common Use**: Simple interactive content, legacy frame apps
 
 **FramesV2** (Farcaster Mini App) - Next-generation interactive frames
 - **Purpose**: Advanced interactive applications, mini-apps, rich experiences
 - **Key Settings**: url, collapsed/expanded (preview mode), title, headingFont
 - **Display Modes**: Full app or collapsed preview
-- **Minimum Size**: 2w × 2h
 - **Common Use**: Interactive apps, games, advanced tools
 
 ### Utility & Navigation Fidgets
@@ -130,14 +121,12 @@ export const FIDGET_CONTEXT_CATALOG_PLANNER = `
 - **Key Settings**: title, links (array with text/url/avatar/description), viewMode (list/grid), itemBackground, scale
 - **Display Options**: List or grid layout with avatars and descriptions
 - **Link Properties**: Text, URL, optional avatar image, optional description
-- **Minimum Size**: 2w × 2h
 - **Common Use**: Social links, resource lists, navigation menus
 
 **Rss** - RSS feed readers for external content
 - **Purpose**: News feeds, blog content, external content aggregation
 - **Key Settings**: rssUrl, fontFamily, fontColor, headingsFontFamily, headingsFontColor
 - **Content**: Automatically fetches and displays RSS feed items
-- **Minimum Size**: 3w × 2h
 - **Common Use**: News feeds, blog aggregation, content curation
 
 ### Financial & Governance Fidgets
@@ -145,29 +134,24 @@ export const FIDGET_CONTEXT_CATALOG_PLANNER = `
 - **Purpose**: Token swapping, DeFi interactions, trading
 - **Key Settings**: defaultSellToken, defaultBuyToken, fromChain, toChain, background, fontFamily, fontColor, swapScale, optionalFeeRecipient
 - **Chain Support**: Multi-chain token swapping
-- **Minimum Size**: 3w × 3h
 - **Common Use**: DEX interfaces, token trading, DeFi integration
 
 **Portfolio** - Cryptocurrency portfolio tracking
 - **Purpose**: Wallet tracking, portfolio analytics, asset monitoring
 - **Key Settings**: trackType (farcaster/address), farcasterUsername, walletAddresses
 - **Tracking Methods**: By Farcaster username or wallet addresses
-- **Minimum Size**: 3w × 3h
 - **Common Use**: Portfolio dashboards, asset tracking, wallet monitoring
 
 **Market** - Cryptocurrency market data and pricing
 - **Purpose**: Price displays, market information, trading data
-- **Minimum Size**: 3w × 2h
 - **Common Use**: Price tickers, market overviews, trading dashboards
 
 **governance** - DAO proposals and voting interfaces
 - **Purpose**: Governance participation, proposal viewing, voting
-- **Minimum Size**: 4w × 3h
 - **Common Use**: DAO dashboards, voting interfaces, governance oversight
 
 **SnapShot** - Snapshot governance integration
 - **Purpose**: Snapshot proposal viewing and voting
-- **Minimum Size**: 4w × 3h
 - **Common Use**: Decentralized governance, community voting
 
 ### Development & Testing
@@ -409,21 +393,18 @@ export const FIDGET_CONFIG_GUIDE: Record<string, ExampleFidgetInstance> = {{
 // **text** - Rich text content with markdown support
 // - **Purpose**: Announcements, welcome messages, formatted content, documentation
 // - **Key Settings**: title, text (markdown), fontFamily, fontColor, headingsFontFamily, headingsFontColor, urlColor
-// - **Minimum Size**: 3w × 2h
 // - **Common Use**: Hero sections, content blocks, instructions
 
 // **gallery** (Image) - Display images from various sources
 // - **Purpose**: Photo galleries, NFT showcases, image collections, visual content
 // - **Key Settings**: selectMediaSource (URL/Upload/NFT), imageUrl, uploadedImage, nftSelector, scale, redirectionURL, badgeColor
 // - **Sources**: Direct URL, file upload, or NFT from blockchain
-// - **Minimum Size**: 2w × 2h
 // - **Common Use**: Profile pictures, artwork displays, visual portfolios
 
 // **Video** - YouTube, Vimeo, and video embeds
 // - **Purpose**: Video content, tutorials, entertainment, presentations
 // - **Key Settings**: url (auto-converts YouTube/Vimeo URLs), size (scale)
 // - **Auto-conversion**: Automatically converts YouTube/Vimeo URLs to embeddable format
-// - **Minimum Size**: 2w × 2h
 // - **Common Use**: Educational content, entertainment, demos
 
 // ### Social & Communication Fidgets
@@ -433,19 +414,16 @@ export const FIDGET_CONFIG_GUIDE: Record<string, ExampleFidgetInstance> = {{
 // - **Feed Types**: Following (personalized), Filter (by criteria)
 // - **Filter Options**: Channel feeds, user posts, keyword searches
 // - **Platform Support**: Farcaster and X (Twitter)
-// - **Minimum Size**: 4w × 2h
 // - **Common Use**: Community feeds, social walls, content discovery
 
 // **cast** - Pin individual Farcaster posts
 // - **Purpose**: Highlight specific posts, feature announcements, showcase content
 // - **Key Settings**: castUrl (easiest), castHash + casterFid (advanced)
 // - **Input Methods**: Warpcast share URL or manual hash/FID
-// - **Minimum Size**: 3w × 1h, Maximum Height: 4h
 // - **Common Use**: Featured posts, announcements, pinned content
 
 // **Chat** - Interactive messaging interfaces
 // - **Purpose**: Real-time communication, community discussions
-// - **Minimum Size**: 3w × 2h
 // - **Common Use**: Live support, community chat, messaging
 
 // ### Web Integration Fidgets
@@ -453,20 +431,17 @@ export const FIDGET_CONFIG_GUIDE: Record<string, ExampleFidgetInstance> = {{
 // - **Purpose**: Integration with external tools, dashboards, web applications
 // - **Key Settings**: url, size (zoom level)
 // - **Security**: Automatically sanitizes URLs and blocks malicious content
-// - **Minimum Size**: 2w × 2h
 // - **Common Use**: External tools, dashboards, web apps, embedded services
 
 // **frame** - Legacy Farcaster frames
 // - **Purpose**: Interactive Farcaster applications, simple web experiences
 // - **Key Settings**: url
-// - **Minimum Size**: 2w × 2h
 // - **Common Use**: Simple interactive content, legacy frame apps
 
 // **FramesV2** (Farcaster Mini App) - Next-generation interactive frames
 // - **Purpose**: Advanced interactive applications, mini-apps, rich experiences
 // - **Key Settings**: url, collapsed (preview mode), title, headingFont
 // - **Display Modes**: Full app or collapsed preview
-// - **Minimum Size**: 2w × 2h
 // - **Common Use**: Interactive apps, games, advanced tools
 
 // ### Utility & Navigation Fidgets
@@ -475,14 +450,12 @@ export const FIDGET_CONFIG_GUIDE: Record<string, ExampleFidgetInstance> = {{
 // - **Key Settings**: title, links (array with text/url/avatar/description), viewMode (list/grid), itemBackground, scale
 // - **Display Options**: List or grid layout with avatars and descriptions
 // - **Link Properties**: Text, URL, optional avatar image, optional description
-// - **Minimum Size**: 2w × 2h
 // - **Common Use**: Social links, resource lists, navigation menus
 
 // **Rss** - RSS feed readers for external content
 // - **Purpose**: News feeds, blog content, external content aggregation
 // - **Key Settings**: rssUrl, fontFamily, fontColor, headingsFontFamily, headingsFontColor
 // - **Content**: Automatically fetches and displays RSS feed items
-// - **Minimum Size**: 3w × 2h
 // - **Common Use**: News feeds, blog aggregation, content curation
 
 // ### Financial & Governance Fidgets
@@ -490,29 +463,24 @@ export const FIDGET_CONFIG_GUIDE: Record<string, ExampleFidgetInstance> = {{
 // - **Purpose**: Token swapping, DeFi interactions, trading
 // - **Key Settings**: defaultSellToken, defaultBuyToken, fromChain, toChain, background, fontFamily, fontColor, swapScale, optionalFeeRecipient
 // - **Chain Support**: Multi-chain token swapping
-// - **Minimum Size**: 3w × 3h
 // - **Common Use**: DEX interfaces, token trading, DeFi integration
 
 // **Portfolio** - Cryptocurrency portfolio tracking
 // - **Purpose**: Wallet tracking, portfolio analytics, asset monitoring
 // - **Key Settings**: trackType (farcaster/address), farcasterUsername, walletAddresses
 // - **Tracking Methods**: By Farcaster username or wallet addresses
-// - **Minimum Size**: 3w × 3h
 // - **Common Use**: Portfolio dashboards, asset tracking, wallet monitoring
 
 // **Market** - Cryptocurrency market data and pricing
 // - **Purpose**: Price displays, market information, trading data
-// - **Minimum Size**: 3w × 2h
 // - **Common Use**: Price tickers, market overviews, trading dashboards
 
 // **governance** - DAO proposals and voting interfaces
 // - **Purpose**: Governance participation, proposal viewing, voting
-// - **Minimum Size**: 4w × 3h
 // - **Common Use**: DAO dashboards, voting interfaces, governance oversight
 
 // **SnapShot** - Snapshot governance integration
 // - **Purpose**: Snapshot proposal viewing and voting
-// - **Minimum Size**: 4w × 3h
 // - **Common Use**: Decentralized governance, community voting
 
 // ### Development & Testing
@@ -528,27 +496,24 @@ Your job is to interpret a user's natural-language customization request and con
 
 # OBJECTIVE
 Analyze the user’s intent and current configuration to:
-→ Select and describe fidgets from the catalog that best fulfill the request  
-→ Determine whether to apply changes on top of the current config or generate a new config from scratch  
-→ Ensure changes are undoable  
+→ Select and describe fidgets from the catalog that best fulfill the request
+→ Determine whether to apply changes on top of the current config or generate a new config from scratch
+→ Ensure changes are undoable
 → Output a descriptive, build-ready plan that the Builder Agent can follow
+→ You should never output a JSON object, only a descriptive text block.
 
 # RULES
 1. **Fidget Selection**
-- Select **1 to 7** unique fidgets from the catalog.
-- Avoid using the same fidget more than once unless explicitly requested.
-- Ensure URLs (e.g., image or video sources) are valid using a simulated HEAD check.
-- If a URL is broken, replace it with a similar valid resource.
+- Make sure that the URLs are accessible and appropriate for the context.
 
 2. **Change Scope**
-- If the request implies **minor changes**, retain most of the currentConfig.
+- If the request implies **minor changes**, use the currentConfig.
 - If it implies a **major redesign**, start from scratch using only the fidgets you select.
 
 3. **Builder-Focused Output**
 - Output a descriptive block explaining:
   - The **intent** behind the user request
-  - The **fidgets** selected and why
-  - Configuration details for each fidget
+  - The **fidgets** selected and it's configurations
   - Whether this is a **small modification** or a **full replacement**
 - Use clear language the Builder Agent can act on without guesswork.
 
@@ -565,6 +530,8 @@ ${FIDGET_CONTEXT_CATALOG_PLANNER}
 <userRequest>
 {userQuery}
 </userRequest>
+
+IMPORTANT: Do not output JSON, only a descriptive text block that the Builder Agent can use to generate the new layout.
 `;
 
 // export const BUILDER_SYSTEM = `
@@ -601,15 +568,15 @@ ${FIDGET_CONTEXT_CATALOG_PLANNER}
 // }}
 
 // ### Rules
-// 1. **No overlaps or out-of-bounds**: "x ≥ 0", "w ≥ 1", "x + w ≤ 12". If a violation exists, shrink "w" until it fits and note the fix in an internal comment field "_autoFix": "...". Remove that field **before** final output.  
-// 2. **Inject fidget configs**:  
-//    • Start with the template for "type" from fidgetCatalog.  
-//    • Overwrite only the keys present in "plannerSpec.fidgets[*].settings".  
-// 3. **URL re-check**:  
-//    • For every URL in any settings value, issue an HTTP HEAD (metadata only) and confirm status 200.  
-//    • If a URL fails, replace it with a working fallback that matches intent (e.g., same domain’s /logo.png).  
-// 4. **Preserve plannerSpec IDs**; if duplicates exist, append "-1", "-2" … (and fix layout "i" refs).  
-// 5. **Key order & casing** must match the schema verbatim.  
+// 1. **No overlaps or out-of-bounds**: "x ≥ 0", "w ≥ 1", "x + w ≤ 12". If a violation exists, shrink "w" until it fits and note the fix in an internal comment field "_autoFix": "...". Remove that field **before** final output.
+// 2. **Inject fidget configs**:
+//    • Start with the template for "type" from fidgetCatalog.
+//    • Overwrite only the keys present in "plannerSpec.fidgets[*].settings".
+// 3. **URL re-check**:
+//    • For every URL in any settings value, issue an HTTP HEAD (metadata only) and confirm status 200.
+//    • If a URL fails, replace it with a working fallback that matches intent (e.g., same domain’s /logo.png).
+// 4. **Preserve plannerSpec IDs**; if duplicates exist, append "-1", "-2" … (and fix layout "i" refs).
+// 5. **Key order & casing** must match the schema verbatim.
 // 6. Output **only** the JSON - no markdown, no comments.
 
 // OUTPUT:
@@ -617,7 +584,7 @@ ${FIDGET_CONTEXT_CATALOG_PLANNER}
 // `;
 
 export const COMMUNICATING_SYSTEM = `
-You are a clear and friendly communicator. 
+You are a clear and friendly communicator.
 Your job is to explain to the user — in simple, non-technical language — what has changed in the configuration of their space based on their request and the planner's decisions.
 
 You will receive:
