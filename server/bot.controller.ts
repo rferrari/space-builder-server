@@ -300,6 +300,9 @@ export class BotAvatar {
   }
 
   private async generateFinalRespond(communicatorOutput: string): Promise<MessageContent> {
+    if (communicatorOutput === '') {
+      return "We had some trouble building the space. Please try another prompt.";
+    }
     const promptTemplate = PromptTemplate.fromTemplate(
       botPrompts.FINAL_RESPONSE_PROMPT
     );
