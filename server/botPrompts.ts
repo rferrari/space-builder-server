@@ -39,8 +39,6 @@ Determine if you should respond to the query
 {query}
 `;
 
-
-
 export const FIDGET_CONTEXT_CATALOG_PLANNER = `
 ## AVAILABLE FIDGET TYPES & DETAILED CONFIGURATIONS
 
@@ -396,7 +394,8 @@ export const PLANING_SYSTEM = `
 You are the *Planner Agent* for Nounspace.
 
 # TASK
-→ Read **userRequest** and **conversationSummary** and 
+→ Read **userRequest** and **conversationSummary** 
+→ If necessary, perform a web search to gather more information about the user's request.
 → Decide which fidgets from fidgets_catalog best satisfy the request (from 1 min to 7 max).
 → Validate every URL with a HEAD request; substitute working alternatives for any that fail.
 → Output a clear instruction to the builder what user wants and the fidgets you choose.
