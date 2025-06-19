@@ -11,6 +11,7 @@ import { BotChatMessage } from "./bot.types";
 import { SINGLE_WORKER_SYSTEM_PROMPT } from "./one-shot-builder";
 
 export interface GraphInterface {
+    currentConfig: any;
     clientId: number;
     model: ChatOpenAI;
     jsonResponseModel: ChatOpenAI;
@@ -45,24 +46,25 @@ export class WorkersSystem {
             builderOutput: null,
             communicatorOutput: null,
             model: null,
-            jsonResponseModel: null
+            jsonResponseModel: null,
+            currentConfig: null
         };
 
         this.graph = new StateGraph<GraphInterface>({ channels: graphState })
             .addNode("create_model", this.createModel.bind(this))
             .addNode("create_json_response_model", this.createJsonResponseModel.bind(this))
             .addNode("planning", this.planning.bind(this))
-            // .addNode("building", this.building.bind(this))
+            .addNode("building", this.building.bind(this))
             .addNode("communicating", this.communicating.bind(this))
             // .addNode("return_results", this.returnResults.bind(this))
             .addEdge(START, "create_model")
             .addEdge("create_model", "create_json_response_model")
             .addEdge("create_json_response_model", "planning")
-            // .addEdge("planning", "building")
-            // .addEdge("building", "communicating")
+            .addEdge("planning", "building")
+            .addEdge("building", "communicating")
             // .addEdge("communicating", "return_results")
             // .addEdge("return_results", END) as StateGraph<GraphInterface>;
-            .addEdge("planning", "communicating")
+            // .addEdge("planning", "communicating")
             .addEdge("communicating", END) as StateGraph<GraphInterface>;
 
 
@@ -72,7 +74,7 @@ export class WorkersSystem {
     private async createModel(): Promise<Partial<GraphInterface>> {
         const model = new ChatOpenAI({
             model: RAGLLMModel,
-            temperature: 0.1,
+            temperature: 0.2,
             apiKey: process.env.OPENAI_API_KEY as string
         });
         return { model };
@@ -88,6 +90,9 @@ export class WorkersSystem {
             }
         });
 
+
+        // jsonModel.bindTools()
+
         return {
             jsonResponseModel: jsonModel
         };
@@ -95,15 +100,14 @@ export class WorkersSystem {
 
     private async planning(state: GraphInterface): Promise<Partial<GraphInterface>> {
         const prompt = new PromptTemplate({
-            // template: PLANING_SYSTEM,
-            template: SINGLE_WORKER_SYSTEM_PROMPT,
-            inputVariables: ["history", "user_query"]
+            template: PLANING_SYSTEM,
+            inputVariables: ["currentConfig", "userQuery"]
         });
 
-      //const output = await prompt.pipe(state.model).pipe(new StringOutputParser()).invoke({
-        const output = await prompt.pipe(state.jsonResponseModel).pipe(new StringOutputParser()).invoke({
-            history: state.conversationHistory,
-            user_query: state.userQuery
+      const output = await prompt.pipe(state.model).pipe(new StringOutputParser()).invoke({
+        // const output = await prompt.pipe(state.jsonResponseModel).pipe(new StringOutputParser()).invoke({
+            currentConfig: state.currentConfig,
+            userQuery: state.userQuery
         });
 
         this.log.log("[PLANNER] Plan generated:", "PLANNER");
@@ -120,14 +124,16 @@ export class WorkersSystem {
 
     private async building(state: GraphInterface): Promise<Partial<GraphInterface>> {
         const prompt = new PromptTemplate({
-            template: BUILDER_SYSTEM,
-            inputVariables: ["plan", "history", "userQuery"]
+            template: SINGLE_WORKER_SYSTEM_PROMPT,
+            inputVariables: ["plan"
+                // , "current_config"
+            ]
         });
 
         const output = await prompt.pipe(state.jsonResponseModel).pipe(new StringOutputParser()).invoke({
             plan: state.plannerOutput,
-            history: state.conversationHistory,
-            userQuery: state.userQuery
+            // current_config: state.plannerOutput
+            // userQuery: state.userQuery
         });
 
         this.log.log("[BUILDER] JSON generated:", "BUILDER");

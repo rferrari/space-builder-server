@@ -255,12 +255,12 @@ export class BotAvatar {
 
   async printMemorySummary() {
     // const intervalId = setInterval(async () => {
-      const memorySummary = await this.stringPromptMemory.loadMemoryVariables({});
-      // console.warn("memorySummary");
-      // console.warn(memorySummary);
+    const memorySummary = await this.stringPromptMemory.loadMemoryVariables({});
+    // console.warn("memorySummary");
+    // console.warn(memorySummary);
 
-      this.memoryLog.log("MEMORYSUMMARY:", "MemUsed")
-      this.memoryLog.log(memorySummary, "MEMORYSUMMARY");
+    this.memoryLog.log("MEMORYSUMMARY:", "MemUsed")
+    this.memoryLog.log(memorySummary, "MEMORYSUMMARY");
 
     // }, 5 * 60 * 1000); // 5 minutes
   }
@@ -299,20 +299,31 @@ export class BotAvatar {
     return { result: false, reason: "Unable to parse model response." };
   }
 
+  private async generateFinalRespond(communicatorOutput: string): Promise<MessageContent> {
+    const promptTemplate = PromptTemplate.fromTemplate(
+      botPrompts.FINAL_RESPONSE_PROMPT
+    );
+
+    const filledPrompt = await promptTemplate.format({ communicatorOutput });
+
+    const messages = [
+      { role: "system", content: botPrompts.MAIN_SYSTEM_PROMPT },
+      { role: "user", content: filledPrompt },
+    ];
+
+    const result = await this.chatBotLLM.invoke(messages);
+    return result.content
+  }
 
 
 
-  private async getRAGContext(userQuery: BotChatMessage, history): Promise<string> {
+  private async getRAGContext(userQuery: BotChatMessage, currentConfig: string): Promise<string> {
     const RAG_SYSTEM = true;
     var ragContext = "";
 
     if (RAG_SYSTEM) {
-      // experimental send more context from user to RAG
-      const ragResponse = await this.workersSystem.invokeWorkers(
-        userQuery,
-        // `@${user}: ${userQuery}`,
-        history)
-        // const ragResponse = await ragSystem.invokeRAG(user, `${userQuery}`)
+      const ragResponse = await this.workersSystem
+        .invokeWorkers(userQuery, currentConfig)
         .catch(err => {
           this.messagesLog.error("Failed to generate RAG response", "RAG-ERROR");
           this.messagesLog.error(err.message, "RAG-ERROR");
@@ -323,7 +334,8 @@ export class BotAvatar {
       }
     }
 
-    return ragContext;
+    const finalResponse = await this.generateFinalRespond(ragContext);
+    return finalResponse.toString();
   }
 
   private async replyMessage(inputMessage: BotChatMessage, vision: string = "",
@@ -363,8 +375,7 @@ export class BotAvatar {
     }
 
 
-    // if using RAG system... include conversationContent + userQuery
-    // const ragContext = await this.getRAGContext(userQuery, user, memoryConversationContent);
+    // if using Workers system... include conversationContent + userQuery
     const ragHisstory = conversation.length > 0 ? joinedConversation : memoryConversationContent;
     const finalMessage = await this.getRAGContext(inputMessage, ragHisstory);
 
@@ -410,7 +421,7 @@ export class BotAvatar {
         // console.log(agentReply.name, agentReply.message)
 
         break;
-        
+
     }
 
     this.eventBus.publish("AGENT_LOGS", agentReply);
