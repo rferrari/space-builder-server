@@ -8,7 +8,7 @@ import { PLANING_SYSTEM, BUILDER_SYSTEM, COMMUNICATING_SYSTEM } from "./botPromp
 import FileLogger from "./lib/FileLogger";
 import { EventBus } from "./eventBus.interface";
 import { BotChatMessage } from "./bot.types";
-import { SINGLE_WORKER_SYSTEM_PROMPT } from "./one-shot-builder";
+import { SINGLE_WORKER_SYSTEM_PROMPT } from "./one-shot-builder-v2";
 
 export interface GraphInterface {
     currentConfig: any;
