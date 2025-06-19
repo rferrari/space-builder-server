@@ -16,7 +16,7 @@ import {
 import { HumanMessage, AIMessage, filterMessages, MessageContent } from "@langchain/core/messages";
 import { EventBus } from './eventBus.interface'
 // import { Farcaster } from './farcaster.controller';
-import { BotCastObj, BotChatMessage, CastIdJson } from './bot.types';
+import { BotChatMessage } from './bot.types'; // Ensure this is correct
 import * as botConfig from "./config";
 import * as botPrompts from "./botPrompts";
 // import { getLatestEvent } from './api/event'
