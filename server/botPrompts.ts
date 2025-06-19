@@ -58,16 +58,15 @@ export const shouldRespondTemplate =
 `;
 
 export const FIDGET_CONTEXT_CATALOG_PLANNER = `
-## AVAILABLE FIDGET TYPES & DETAILED CONFIGURATIONS
+## AVAILABLE FIDGET TYPES
 
-### Content & Media Fidgets
 **text** - Rich text content with markdown support
 - **Purpose**: Announcements, welcome messages, formatted content, documentation
 - **Key Settings**: title, text (markdown), fontFamily, fontColor, headingsFontFamily, headingsFontColor, urlColor
 - **Minimum Size**: 3w × 2h
 - **Common Use**: Hero sections, content blocks, instructions
 
-**gallery** (Image) - Display images from various sources
+**gallery** - Display images from various sources
 - **Purpose**: Photo galleries, NFT showcases, image collections, visual content
 - **Key Settings**: selectMediaSource (URL/Upload/NFT), imageUrl, uploadedImage, nftSelector, scale, redirectionURL, badgeColor
 - **Sources**: Direct URL, file upload, or NFT from blockchain
@@ -103,7 +102,6 @@ export const FIDGET_CONTEXT_CATALOG_PLANNER = `
 - **Minimum Size**: 3w × 2h
 - **Common Use**: Live support, community chat, messaging
 
-### Web Integration Fidgets
 **iframe** (Web Embed) - Embed external websites and tools
 - **Purpose**: Integration with external tools, dashboards, web applications
 - **Key Settings**: url, size (zoom level)
@@ -124,7 +122,6 @@ export const FIDGET_CONTEXT_CATALOG_PLANNER = `
 - **Minimum Size**: 2w × 2h
 - **Common Use**: Interactive apps, games, advanced tools
 
-### Utility & Navigation Fidgets
 **links** - Organized link collections with rich display options
 - **Purpose**: Navigation, resource collections, social media links, quick access
 - **Key Settings**: title, links (array with text/url/avatar/description), viewMode (list/grid), itemBackground, scale
@@ -140,7 +137,6 @@ export const FIDGET_CONTEXT_CATALOG_PLANNER = `
 - **Minimum Size**: 3w × 2h
 - **Common Use**: News feeds, blog aggregation, content curation
 
-### Financial & Governance Fidgets
 **Swap** - Cryptocurrency trading interfaces
 - **Purpose**: Token swapping, DeFi interactions, trading
 - **Key Settings**: defaultSellToken, defaultBuyToken, fromChain, toChain, background, fontFamily, fontColor, swapScale, optionalFeeRecipient
@@ -170,7 +166,6 @@ export const FIDGET_CONTEXT_CATALOG_PLANNER = `
 - **Minimum Size**: 4w × 3h
 - **Common Use**: Decentralized governance, community voting
 
-### Development & Testing
 **profile** - User profile displays (development only)
 - **Purpose**: User information, profile cards, identity display
 - **Availability**: Development environment only
@@ -527,7 +522,7 @@ You are the *Planner Agent* for Nounspace.
 Your job is to interpret a user's natural-language customization request and convert it into a clear, structured plan for the Builder Agent to generate or modify a fidget-based JSON layout.
 
 # OBJECTIVE
-Analyze the user’s intent and current configuration to:
+Analyze the user's intent and current configuration to:
 → Select and describe fidgets from the catalog that best fulfill the request  
 → Determine whether to apply changes on top of the current config or generate a new config from scratch  
 → Ensure changes are undoable  
@@ -540,16 +535,12 @@ Analyze the user’s intent and current configuration to:
 - Ensure URLs (e.g., image or video sources) are valid using a simulated HEAD check.
 - If a URL is broken, replace it with a similar valid resource.
 
-2. **Change Scope**
-- If the request implies **minor changes**, retain most of the currentConfig.
-- If it implies a **major redesign**, start from scratch using only the fidgets you select.
-
 3. **Builder-Focused Output**
 - Output a descriptive block explaining:
   - The **intent** behind the user request
   - The **fidgets** selected and why
   - Configuration details for each fidget
-  - Whether this is a **small modification** or a **full replacement**
+
 - Use clear language the Builder Agent can act on without guesswork.
 
 # INPUTS
