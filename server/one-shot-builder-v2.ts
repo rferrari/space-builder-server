@@ -804,6 +804,10 @@ Before outputting, verify:
 
 Now, analyze the user's request and return the complete space configuration JSON.
 
+<current_config>
+{current_config}
+</current_config>
+
 <user_request>
 {plan}
 </user_request>
