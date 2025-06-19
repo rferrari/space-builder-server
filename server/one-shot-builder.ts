@@ -142,10 +142,10 @@ Transform user requests into valid, complete Nounspace space configuration JSON 
 ## THEME SYSTEM
 All configurations must include a complete theme object with these properties:
 \`\`\`
-theme: {
+theme: {{
   id: string,
   name: string,
-  properties: {
+  properties: {{
     font: string,                // Font family (Inter, Poppins, Roboto, etc.)
     fontColor: string,           // Main text color (hex, rgb, etc.)
     headingsFont: string,        // Headings font family
@@ -159,55 +159,55 @@ theme: {
     fidgetShadow: string,       // CSS shadow property
     fidgetBorderRadius: string, // Border radius
     gridSpacing: string         // Grid gap spacing
-  }
-}
+  }}
+}}
 \`\`\`
 
 ## OUTPUT FORMAT
 **CRITICAL**: Return ONLY a valid JSON object. No markdown, no code blocks, no explanations, no additional text.
 
 The JSON must follow this exact structure:
-{
-  "fidgetInstanceDatums": {
+{{
+  "fidgetInstanceDatums": {{
     // Fidget instances with unique IDs
-  },
+  }},
   "layoutID": "unique-layout-identifier",
-  "layoutDetails": {
+  "layoutDetails": {{
     "layoutFidget": "grid",
-    "layoutConfig": {
+    "layoutConfig": {{
       "layout": [
         // Grid items array
       ]
-    }
-  },
+    }}
+  }},
   "isEditable": true,
   "fidgetTrayContents": [],
-  "theme": {
+  "theme": {{
     // Complete theme object
-  }
-}
+  }}
+}}
 
 ## FIDGET CONFIGURATION PATTERN
 Each fidget follows this structure:
 \`\`\`json
-"fidgetType:unique-id": {
-  "config": {
+"fidgetType:unique-id": {{
+  "config": {{
     "editable": true,
-    "settings": {
+    "settings": {{
       // Fidget-specific settings
-    },
-    "data": {}
-  },
+    }},
+    "data": {{}}
+  }},
   "fidgetType": "fidgetType",
   "id": "fidgetType:unique-id"
-}
+}}
 \`\`\`
 
 ## COMPREHENSIVE FIDGET SETTINGS REFERENCE
 
 ### Text Fidget Settings
 \`\`\`json
-"settings": {
+"settings": {{
   "title": "Optional title text",
   "text": "Rich content with **markdown** support, [links](https://example.com), and embedded media",
   "fontFamily": "var(--user-theme-font)",
@@ -217,51 +217,51 @@ Each fidget follows this structure:
   "urlColor": "#0066cc",
   "background": "var(--user-theme-fidget-background)",
   "showOnMobile": true
-}
+}}
 \`\`\`
 
 ### Feed Fidget Settings
 \`\`\`json
-"settings": {
+"settings": {{
   "feedType": "filter",          // "following" or "filter"
   "filterType": "channel_id",    // "channel_id", "fids", or "keyword"
   "channel": "nouns",           // Channel name (when filterType is "channel_id")
   "username": "nounspace",      // Farcaster username (when filterType is "fids")
   "keyword": "blockchain",      // Search keyword (when filterType is "keyword")
-  "selectPlatform": {"name": "Farcaster", "icon": "/images/farcaster.jpeg"},
+  "selectPlatform": {{"name": "Farcaster", "icon": "/images/farcaster.jpeg"}},
   "Xhandle": "nounspace",       // X/Twitter username (when platform is X)
   "membersOnly": false,         // Channel members only filter
   "showOnMobile": true
-}
+}}
 \`\`\`
 
 ### Gallery (Image) Fidget Settings
 \`\`\`json
-"settings": {
-  "selectMediaSource": {"name": "URL"},  // "URL", "Upload", or "NFT"
+"settings": {{
+  "selectMediaSource": {{"name": "URL"}},  // "URL", "Upload", or "NFT"
   "imageUrl": "https://example.com/image.jpg",
   "uploadedImage": "",                   // Set when using upload source
   "nftAddress": "0x...",                // NFT contract address
   "nftTokenId": "123",                  // NFT token ID
-  "network": {"id": "1", "name": "Ethereum"}, // Blockchain network
+  "network": {{"id": "1", "name": "Ethereum"}}, // Blockchain network
   "redirectionURL": "https://example.com",     // Click destination
   "scale": 100,                         // Image scale percentage
   "badgeColor": "#00ff00",             // Verification badge color
   "showOnMobile": true
-}
+}}
 \`\`\`
 
 ### Links Fidget Settings
 \`\`\`json
-"settings": {
+"settings": {{
   "title": "My Links",
   "links": [
-    {
+    {{
       "text": "Website",
       "url": "https://example.com",
       "avatar": "https://example.com/icon.png",
       "description": "My personal website"
-    }
+    }}
   ],
   "viewMode": "list",               // "list" or "grid"
   "itemBackground": "#ffffff",
@@ -271,91 +271,91 @@ Each fidget follows this structure:
   "HeaderColor": "var(--user-theme-headings-font-color)",
   "DescriptionColor": "var(--user-theme-font-color)",
   "showOnMobile": true
-}
+}}
 \`\`\`
 
 ### Video Fidget Settings
 \`\`\`json
-"settings": {
+"settings": {{
   "url": "https://www.youtube.com/watch?v=dQw4w9WgXcQ",  // Auto-converts YouTube/Vimeo
   "size": 100,                      // Scale percentage
   "showOnMobile": true
-}
+}}
 \`\`\`
 
 ### Cast (Pinned Cast) Fidget Settings
 \`\`\`json
-"settings": {
+"settings": {{
   "castUrl": "https://warpcast.com/user/cast-hash",  // Easiest method
   "castHash": "0x...",              // Alternative: manual hash
   "casterFid": 12345,              // Alternative: manual FID
   "useDefaultColors": true,
   "showOnMobile": true
-}
+}}
 \`\`\`
 
 ### IFrame (Web Embed) Fidget Settings
 \`\`\`json
-"settings": {
+"settings": {{
   "url": "https://example.com",
   "size": 100,                     // Zoom level percentage
   "showOnMobile": true
-}
+}}
 \`\`\`
 
 ### FramesV2 (Farcaster Mini App) Settings
 \`\`\`json
-"settings": {
+"settings": {{
   "url": "https://frame.example.com",
   "collapsed": false,              // true for preview mode
   "title": "My Mini App",
   "headingFont": "var(--user-theme-headings-font)",
   "showOnMobile": true
-}
+}}
 \`\`\`
 
 ### RSS Fidget Settings
 \`\`\`json
-"settings": {
+"settings": {{
   "rssUrl": "https://example.com/feed.xml",
   "fontFamily": "var(--user-theme-font)",
   "fontColor": "var(--user-theme-font-color)",
   "headingsFontFamily": "var(--user-theme-headings-font)",
   "headingsFontColor": "var(--user-theme-headings-font-color)",
   "showOnMobile": true
-}
+}}
 \`\`\`
 
 ### Swap Fidget Settings
 \`\`\`json
-"settings": {
+"settings": {{
   "defaultSellToken": "ETH",
   "defaultBuyToken": "USDC",
-  "fromChain": {"id": "1", "name": "Ethereum"},
-  "toChain": {"id": "1", "name": "Ethereum"},
+  "fromChain": {{"id": "1", "name": "Ethereum"}},
+  "toChain": {{"id": "1", "name": "Ethereum"}},
   "background": "#ffffff",
   "fontFamily": "var(--user-theme-font)",
   "fontColor": "var(--user-theme-font-color)",
   "swapScale": 100,
   "optionalFeeRecipient": "0x...",  // Optional fee recipient address
   "showOnMobile": true
-}
+}}
 \`\`\`
 
 ### Portfolio Fidget Settings
 \`\`\`json
-"settings": {
+"settings": {{
   "trackType": "farcaster",        // "farcaster" or "address"
   "farcasterUsername": "nounspace", // When trackType is "farcaster"
   "walletAddresses": "0x...",      // When trackType is "address"
   "showOnMobile": true
-}
+}}
 \`\`\`
 
 ## UNIVERSAL STYLE SETTINGS
 All fidgets support these additional style properties:
 \`\`\`json
-"settings": {
+"settings": {{
   // Content settings above...
   
   // Universal style properties
@@ -366,7 +366,7 @@ All fidgets support these additional style properties:
   "useDefaultColors": true,         // Use theme colors instead of custom
   "showOnMobile": true,            // Display on mobile devices
   "customMobileDisplayName": "Custom Tab Name"  // Custom mobile tab name
-}
+}}
 \`\`\`
 
 ## CRITICAL COLOR CONTRAST GUIDELINES
@@ -440,10 +440,10 @@ All fidgets support these additional style properties:
 ## THEME PRESETS
 ### Vibrant Sunset (RECOMMENDED - HIGH CONTRAST)
 \`\`\`json
-{
+{{
   "id": "vibrant-sunset",
   "name": "Vibrant Sunset",
-  "properties": {
+  "properties": {{
     "font": "Inter",
     "fontColor": "#ffffff",
     "headingsFont": "Poppins",
@@ -457,16 +457,16 @@ All fidgets support these additional style properties:
     "fidgetShadow": "0 8px 32px rgba(0, 0, 0, 0.4)",
     "fidgetBorderRadius": "16px",
     "gridSpacing": "12"
-  }
-}
+  }}
+}}
 \`\`\`
 
 ### Electric Neon (RECOMMENDED - HIGH CONTRAST)
 \`\`\`json
-{
+{{
   "id": "electric-neon",
   "name": "Electric Neon",
-  "properties": {
+  "properties": {{
     "font": "Inter",
     "fontColor": "#ffffff",
     "headingsFont": "Roboto",
@@ -480,16 +480,16 @@ All fidgets support these additional style properties:
     "fidgetShadow": "0 0 20px rgba(0, 255, 255, 0.5)",
     "fidgetBorderRadius": "12px",
     "gridSpacing": "16"
-  }
-}
+  }}
+}}
 \`\`\`
 
 ### Ocean Breeze (RECOMMENDED - HIGH CONTRAST)
 \`\`\`json
-{
+{{
   "id": "ocean-breeze",
   "name": "Ocean Breeze",
-  "properties": {
+  "properties": {{
     "font": "Poppins",
     "fontColor": "#ffffff",
     "headingsFont": "Poppins",
@@ -503,16 +503,16 @@ All fidgets support these additional style properties:
     "fidgetShadow": "0 4px 20px rgba(0, 0, 0, 0.2)",
     "fidgetBorderRadius": "20px",
     "gridSpacing": "14"
-  }
-}
+  }}
+}}
 \`\`\`
 
 ### Warm Gradient (RECOMMENDED - HIGH CONTRAST)
 \`\`\`json
-{
+{{
   "id": "warm-gradient",
   "name": "Warm Gradient",
-  "properties": {
+  "properties": {{
     "font": "Inter",
     "fontColor": "#ffffff",
     "headingsFont": "Poppins",
@@ -526,16 +526,16 @@ All fidgets support these additional style properties:
     "fidgetShadow": "0 6px 24px rgba(0, 0, 0, 0.25)",
     "fidgetBorderRadius": "18px",
     "gridSpacing": "14"
-  }
-}
+  }}
+}}
 \`\`\`
 
 ### Cyber Purple (RECOMMENDED - HIGH CONTRAST)
 \`\`\`json
-{
+{{
   "id": "cyber-purple",
   "name": "Cyber Purple",
-  "properties": {
+  "properties": {{
     "font": "Roboto",
     "fontColor": "#ffffff",
     "headingsFont": "Roboto",
@@ -549,16 +549,16 @@ All fidgets support these additional style properties:
     "fidgetShadow": "0 0 25px rgba(255, 0, 255, 0.4)",
     "fidgetBorderRadius": "15px",
     "gridSpacing": "16"
-  }
-}
+  }}
+}}
 \`\`\`
 
 ### Modern Clean
 \`\`\`json
-{
+{{
   "id": "modern-clean",
   "name": "Modern Clean",
-  "properties": {
+  "properties": {{
     "font": "Inter",
     "fontColor": "#1a202c",
     "headingsFont": "Poppins",
@@ -572,16 +572,16 @@ All fidgets support these additional style properties:
     "fidgetShadow": "0 1px 3px rgba(0,0,0,0.12)",
     "fidgetBorderRadius": "8px",
     "gridSpacing": "16"
-  }
-}
+  }}
+}}
 \`\`\`
 
 ### Dark Mode
 \`\`\`json
-{
+{{
   "id": "dark-theme",
   "name": "Dark Theme",
-  "properties": {
+  "properties": {{
     "font": "Inter",
     "fontColor": "#ffffff",
     "headingsFont": "Inter",
@@ -595,16 +595,16 @@ All fidgets support these additional style properties:
     "fidgetShadow": "0 2px 8px rgba(0,0,0,0.4)",
     "fidgetBorderRadius": "12px",
     "gridSpacing": "16"
-  }
-}
+  }}
+}}
 \`\`\`
 
 ### Colorful Gradient
 \`\`\`json
-{
+{{
   "id": "colorful-gradient",
   "name": "Colorful Gradient",
-  "properties": {
+  "properties": {{
     "font": "Poppins",
     "fontColor": "#2d3748",
     "headingsFont": "Poppins",
@@ -618,8 +618,8 @@ All fidgets support these additional style properties:
     "fidgetShadow": "0 4px 6px rgba(0, 0, 0, 0.1)",
     "fidgetBorderRadius": "12px",
     "gridSpacing": "16"
-  }
-}
+  }}
+}}
 \`\`\`
 
 ## PROCESSING STEPS
@@ -641,12 +641,12 @@ All fidgets support these additional style properties:
 **Request**: "I want a simple welcome page with some text and links to my social media"
 
 **Response**:
-{
-  "fidgetInstanceDatums": {
-    "text:welcome-hero": {
-      "config": {
+{{
+  "fidgetInstanceDatums": {{
+    "text:welcome-hero": {{
+      "config": {{
         "editable": true,
-        "settings": {
+        "settings": {{
           "title": "Welcome to My Space",
           "text": "# 🚀 Welcome to My Digital Universe\\n\\nThanks for visiting! Explore my content, connect with me, and discover what I'm working on. This space is designed to showcase the best of what I do.",
           "fontFamily": "Poppins",
@@ -655,21 +655,21 @@ All fidgets support these additional style properties:
           "headingsFontColor": "#ffffff",
           "background": "rgba(8, 8, 18, 0.95)",
           "showOnMobile": true
-        },
-        "data": {}
-      },
+        }},
+        "data": {{}}
+      }},
       "fidgetType": "text",
       "id": "text:welcome-hero"
-    },
-    "links:social-main": {
-      "config": {
+    }},
+    "links:social-main": {{
+      "config": {{
         "editable": true,
-        "settings": {
+        "settings": {{
           "title": "🌐 Connect With Me",
           "links": [
-            {"text": "Twitter", "url": "https://twitter.com/username", "avatar": "https://abs.twimg.com/favicons/twitter.ico", "description": "Follow my thoughts"},
-            {"text": "GitHub", "url": "https://github.com/username", "avatar": "https://github.com/favicon.ico", "description": "Check my code"},
-            {"text": "LinkedIn", "url": "https://linkedin.com/in/username", "avatar": "https://static.licdn.com/favicon.ico", "description": "Professional network"}
+            {{"text": "Twitter", "url": "https://twitter.com/username", "avatar": "https://abs.twimg.com/favicons/twitter.ico", "description": "Follow my thoughts"}},
+            {{"text": "GitHub", "url": "https://github.com/username", "avatar": "https://github.com/favicon.ico", "description": "Check my code"}},
+            {{"text": "LinkedIn", "url": "https://linkedin.com/in/username", "avatar": "https://static.licdn.com/favicon.ico", "description": "Professional network"}}
           ],
           "viewMode": "grid",
           "itemBackground": "rgba(10, 10, 20, 0.9)",
@@ -677,78 +677,78 @@ All fidgets support these additional style properties:
           "DescriptionColor": "#ffffff",
           "background": "rgba(8, 8, 18, 0.95)",
           "showOnMobile": true
-        },
-        "data": {}
-      },
+        }},
+        "data": {{}}
+      }},
       "fidgetType": "links",
       "id": "links:social-main"
-    },
-    "feed:community": {
-      "config": {
+    }},
+    "feed:community": {{
+      "config": {{
         "editable": true,
-        "settings": {
+        "settings": {{
           "feedType": "filter",
           "filterType": "channel_id",
           "channel": "nounspace",
-          "selectPlatform": {"name": "Farcaster", "icon": "/images/farcaster.jpeg"},
+          "selectPlatform": {{"name": "Farcaster", "icon": "/images/farcaster.jpeg"}},
           "background": "rgba(8, 8, 18, 0.95)",
           "showOnMobile": true
-        },
-        "data": {}
-      },
+        }},
+        "data": {{}}
+      }},
       "fidgetType": "feed",
       "id": "feed:community"
-    },
-    "gallery:showcase": {
-      "config": {
+    }},
+    "gallery:showcase": {{
+      "config": {{
         "editable": true,
-        "settings": {
-          "selectMediaSource": {"name": "URL"},
+        "settings": {{
+          "selectMediaSource": {{"name": "URL"}},
           "imageUrl": "https://images.unsplash.com/photo-1557804506-669a67965ba0",
           "scale": 100,
           "redirectionURL": "https://myportfolio.com",
           "background": "rgba(8, 8, 18, 0.95)",
           "showOnMobile": true
-        },
-        "data": {}
-      },
+        }},
+        "data": {{}}
+      }},
       "fidgetType": "gallery",
       "id": "gallery:showcase"
-    },
-    "text:about": {
-      "config": {
+    }},
+    "text:about": {{
+      "config": {{
         "editable": true,
-        "settings": {
+        "settings": {{
           "title": "About Me",
           "text": "**Creative Developer** building the future of web3\\n\\n✨ Passionate about design\\n🚀 Love cutting-edge tech\\n🎨 Creating digital experiences",
           "fontColor": "#ffffff",
           "headingsFontColor": "#ffffff",
           "background": "rgba(8, 8, 18, 0.95)",
           "showOnMobile": true
-        },
-        "data": {}
-      },
+        }},
+        "data": {{}}
+      }},
       "fidgetType": "text",
       "id": "text:about"
-    },
-    "Video:demo": {
-      "config": {
+    }},
+    "Video:demo": {{
+      "config": {{
         "editable": true,
-        "settings": {
+        "settings": {{
           "url": "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
           "size": 100,
           "background": "rgba(8, 8, 18, 0.95)",
           "showOnMobile": true
-        },
-        "data": {}
-      },
+        }},
+        "data": {{}}
+      }},
       "fidgetType": "Video",
       "id": "Video:demo"
-    },
-    "Rss:news": {
-      "config": {
+    }},
+    "Rss:news": {{
+      "config": {{
         "editable": true,
-        "settings": {
+        "settings": {{
           "rssUrl": "https://rss.nytimes.com/services/xml/rss/nyt/Technology.xml",
           "fontFamily": "Inter",
           "fontColor": "#ffffff",
@@ -756,19 +756,19 @@ All fidgets support these additional style properties:
           "headingsFontColor": "#ffffff",
           "background": "rgba(8, 8, 18, 0.95)",
           "showOnMobile": true
-        },
-        "data": {}
-      },
+        }},
+        "data": {{}}
+      }},
       "fidgetType": "Rss",
       "id": "Rss:news"
-    }
-  },
+    }}
+  }},
   "layoutID": "vertical-column-space",
-  "layoutDetails": {
+  "layoutDetails": {{
     "layoutFidget": "grid",
-    "layoutConfig": {
+    "layoutConfig": {{
       "layout": [
-        {
+        {{
           "i": "text:welcome-hero",
           "x": 0,
           "y": 0,
@@ -780,8 +780,8 @@ All fidgets support these additional style properties:
           "maxH": 36,
           "moved": false,
           "static": false
-        },
-        {
+        }},
+        {{
           "i": "links:social-main",
           "x": 3,
           "y": 0,
@@ -793,8 +793,8 @@ All fidgets support these additional style properties:
           "maxH": 36,
           "moved": false,
           "static": false
-        },
-        {
+        }},
+        {{
           "i": "gallery:showcase",
           "x": 5,
           "y": 0,
@@ -806,8 +806,8 @@ All fidgets support these additional style properties:
           "maxH": 36,
           "moved": false,
           "static": false
-        },
-        {
+        }},
+        {{
           "i": "Video:demo",
           "x": 7,
           "y": 0,
@@ -819,8 +819,8 @@ All fidgets support these additional style properties:
           "maxH": 36,
           "moved": false,
           "static": false
-        },
-        {
+        }},
+        {{
           "i": "text:about",
           "x": 9,
           "y": 0,
@@ -832,8 +832,8 @@ All fidgets support these additional style properties:
           "maxH": 36,
           "moved": false,
           "static": false
-        },
-        {
+        }},
+        {{
           "i": "feed:community",
           "x": 0,
           "y": 5,
@@ -845,8 +845,8 @@ All fidgets support these additional style properties:
           "maxH": 36,
           "moved": false,
           "static": false
-        },
-        {
+        }},
+        {{
           "i": "Rss:news",
           "x": 4,
           "y": 4,
@@ -858,16 +858,16 @@ All fidgets support these additional style properties:
           "maxH": 36,
           "moved": false,
           "static": false
-        }
+        }}
       ]
-    }
-  },
+    }}
+  }},
   "isEditable": true,
   "fidgetTrayContents": [],
-  "theme": {
+  "theme": {{
     "id": "electric-neon",
     "name": "Electric Neon",
-    "properties": {
+    "properties": {{
       "font": "Inter",
       "fontColor": "#ffffff",
       "headingsFont": "Roboto",
@@ -881,9 +881,9 @@ All fidgets support these additional style properties:
       "fidgetShadow": "0 0 20px rgba(0, 255, 255, 0.5)",
       "fidgetBorderRadius": "12px",
       "gridSpacing": "16"
-    }
-  }
-}
+    }}
+  }}
+}}
 
 ## VALIDATION CHECKLIST
 Before outputting, verify:
@@ -923,5 +923,9 @@ Before outputting, verify:
 - **Complete configurations** - never output partial or incomplete configs
 - **Overlapping preferred over gaps** - Better to have slight overlaps than empty grid space
 
-Now, analyze the user's request and return the complete space configuration JSON.
+Now, analyze the user_request and return the complete space configuration JSON:
+
+<user_request>
+{user_query}
+</user_request>
 `;

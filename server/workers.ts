@@ -8,6 +8,7 @@ import { PLANING_SYSTEM, BUILDER_SYSTEM, COMMUNICATING_SYSTEM } from "./botPromp
 import FileLogger from "./lib/FileLogger";
 import { EventBus } from "./eventBus.interface";
 import { BotChatMessage } from "./bot.types";
+import { SINGLE_WORKER_SYSTEM_PROMPT } from "./one-shot-builder";
 
 export interface GraphInterface {
     clientId: number;
@@ -51,16 +52,18 @@ export class WorkersSystem {
             .addNode("create_model", this.createModel.bind(this))
             .addNode("create_json_response_model", this.createJsonResponseModel.bind(this))
             .addNode("planning", this.planning.bind(this))
-            .addNode("building", this.building.bind(this))
+            // .addNode("building", this.building.bind(this))
             .addNode("communicating", this.communicating.bind(this))
-            .addNode("return_results", this.returnResults.bind(this))
+            // .addNode("return_results", this.returnResults.bind(this))
             .addEdge(START, "create_model")
             .addEdge("create_model", "create_json_response_model")
             .addEdge("create_json_response_model", "planning")
-            .addEdge("planning", "building")
-            .addEdge("building", "communicating")
-            .addEdge("communicating", "return_results")
-            .addEdge("return_results", END) as StateGraph<GraphInterface>;
+            // .addEdge("planning", "building")
+            // .addEdge("building", "communicating")
+            // .addEdge("communicating", "return_results")
+            // .addEdge("return_results", END) as StateGraph<GraphInterface>;
+            .addEdge("planning", "communicating")
+            .addEdge("communicating", END) as StateGraph<GraphInterface>;
 
 
         this.ragApp = this.graph.compile({ checkpointer: new MemorySaver() });
@@ -92,14 +95,13 @@ export class WorkersSystem {
 
     private async planning(state: GraphInterface): Promise<Partial<GraphInterface>> {
         const prompt = new PromptTemplate({
-            template: PLANING_SYSTEM,
+            // template: PLANING_SYSTEM,
+            template: SINGLE_WORKER_SYSTEM_PROMPT,
             inputVariables: ["history", "user_query"]
         });
 
-
-        console.warn(prompt);
-
-        const output = await prompt.pipe(state.model).pipe(new StringOutputParser()).invoke({
+      //const output = await prompt.pipe(state.model).pipe(new StringOutputParser()).invoke({
+        const output = await prompt.pipe(state.jsonResponseModel).pipe(new StringOutputParser()).invoke({
             history: state.conversationHistory,
             user_query: state.userQuery
         });
@@ -143,21 +145,19 @@ export class WorkersSystem {
     private async communicating(state: GraphInterface): Promise<Partial<GraphInterface>> {
         const prompt = new PromptTemplate({
             template: COMMUNICATING_SYSTEM,
-            inputVariables: ["plan",
+            inputVariables: [
                 "current_space",
-                // "json", "history", 
+                "new_space",
                 "userQuery"]
         });
 
         const output = await prompt.pipe(state.model).pipe(new StringOutputParser()).invoke({
-            plan: state.plannerOutput,
             current_space: state.current_space,
-            // json: state.builderOutput,
-            // history: state.conversationHistory,
+            new_space: state.plannerOutput,
             userQuery: state.userQuery
         });
 
-        this.log.log("[COMMUNICATOR] Final message:", "COMMUNICATOR");
+        this.log.log("[COMMUNICATOR] Final message:\n", "COMMUNICATOR");
         this.log.log(output, "COMMUNICATOR");
         const logPublish = {
             name: "COMMUNICATOR",
