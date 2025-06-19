@@ -395,7 +395,7 @@ export class BotAvatar {
       name: botConfig.BotName,
       message: "",
       clientId: message.clientId,
-      type: "REPLY"
+      type: "REPLY",
     }
 
     switch (command) {
@@ -419,8 +419,9 @@ export class BotAvatar {
         };
         // tomReply = await this.replyMessage(message.name, message.message, "", [], null);
         // console.log(agentReply.name, agentReply.message)
-
+        this.workersSystem = null; // or undefined
         break;
+
 
     }
 
