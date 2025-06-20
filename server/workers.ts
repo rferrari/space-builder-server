@@ -8,7 +8,7 @@ import FileLogger from "./lib/FileLogger";
 import { EventBus } from "./eventBus.interface";
 import { BotChatMessage } from "./bot.types";
 import { PLANING_SYSTEM, COMMUNICATING_SYSTEM } from "./botPrompts";
-import { SINGLE_WORKER_SYSTEM_PROMPT } from "./one-shot-builder-v2";
+import { SINGLE_WORKER_SYSTEM_PROMPT, SPACE_DESIGNER_SYSTEM_PROMPT } from "./one-shot-builder-v2";
 
 export interface GraphInterface {
     currentConfig: any;
@@ -18,10 +18,16 @@ export interface GraphInterface {
     userQuery: string;
     conversationHistory: string;
     plannerOutput?: string;
+    designerOutput?: string;
     builderOutput?: string;
     communicatorOutput?: string;
     // current_space?: string;
 }
+
+function escapeBraces(str: string): string {
+  return str.replace(/{{/g, '{{{{').replace(/}}/g, '}}}}');
+}
+
 
 export class WorkersSystem {
     private graph: StateGraph<GraphInterface> | null = null;
@@ -54,13 +60,15 @@ export class WorkersSystem {
             .addNode("create_model", this.createModel.bind(this))
             .addNode("create_json_response_model", this.createJsonResponseModel.bind(this))
             .addNode("planning", this.planning.bind(this))
+            .addNode("designing", this.designing.bind(this))
             .addNode("building", this.building.bind(this))
             .addNode("communicating", this.communicating.bind(this))
             // .addNode("return_results", this.returnResults.bind(this))
             .addEdge(START, "create_model")
             .addEdge("create_model", "create_json_response_model")
             .addEdge("create_json_response_model", "planning")
-            .addEdge("planning", "building")
+            .addEdge("planning", "designing")
+            .addEdge("designing", "building")
             .addEdge("building", "communicating")
             // .addEdge("communicating", "return_results")
             // .addEdge("return_results", END) as StateGraph<GraphInterface>;
@@ -104,39 +112,91 @@ export class WorkersSystem {
             inputVariables: ["currentConfig", "userQuery"]
         });
 
-      const output = await prompt.pipe(state.model).pipe(new StringOutputParser()).invoke({
-        // const output = await prompt.pipe(state.jsonResponseModel).pipe(new StringOutputParser()).invoke({
+        const filledPrompt = await prompt.format({
             currentConfig: state.currentConfig,
             userQuery: state.userQuery
         });
 
+        // const messages = [
+        //     { role: "system", content: botPrompts.SHOULDRESPOND_SYSTEM },
+        //     { role: "user", content: filledPrompt },
+        // ];
+
+        // const result = await this.chatBotLLM.invoke(messages);
+
+        console.warn("\n\nPLANNER:");
+        // console.log(filledPrompt);
+        
+        const output = await state.model.invoke(filledPrompt);
+        // prompt.pipe(state.model).pipe(new StringOutputParser()).invoke({
+        //     // const output = await prompt.pipe(state.jsonResponseModel).pipe(new StringOutputParser()).invoke({
+        //     currentConfig: state.currentConfig,
+        //     userQuery: state.userQuery
+        // });
+
+        const result = output.content.toString()
+
         this.log.log("[PLANNER] Plan generated:", "PLANNER");
-        this.log.log(output, "PLANNER");
+        this.log.log(result, "PLANNER");
         const logPublish = {
             name: "Planner",
             type: "PLANNER_LOGS",
             clientId: state.clientId, // ensure clientId is preserved
-            message: output
+            message: result
         };
+        this.eventBus.publish("PLANNER_LOGS", logPublish);
+        logPublish.message = "🎨 Designer doodling something radical..."
         this.eventBus.publish("AGENT_LOGS", logPublish);
-        return { plannerOutput: output };
+        return { plannerOutput: escapeBraces(result) };
     }
 
+    private async designing(state: GraphInterface): Promise<Partial<GraphInterface>> {
+        const prompt = new PromptTemplate({
+            template: SPACE_DESIGNER_SYSTEM_PROMPT,
+            inputVariables: ["plan"]
+        });
+
+        const output = await prompt.pipe(state.model).pipe(new StringOutputParser()).invoke({
+            plan: state.plannerOutput
+        });
+
+        console.warn("\n\nDesigner:");
+        
+        this.log.log("[DESIGN] Plan generated:", "PLANNER");
+        this.log.log(output, "DESIGN");
+        const logPublish = {
+            name: "DESIGNER",
+            type: "DESIGNER_LOGS",
+            clientId: state.clientId, // ensure clientId is preserved
+            message: output
+        };
+        this.eventBus.publish("DESIGN_LOGS", logPublish);
+        logPublish.message = "🔧 Builder hammering pixels into place..."
+        this.eventBus.publish("AGENT_LOGS", logPublish);
+        return { designerOutput: escapeBraces(output) };
+    }
+
+
+
+    
     private async building(state: GraphInterface): Promise<Partial<GraphInterface>> {
         const prompt = new PromptTemplate({
             template: SINGLE_WORKER_SYSTEM_PROMPT,
             inputVariables: [
                 "plan",
-                "current_config"
+                "designer",
             ]
         });
 
         const output = await prompt.pipe(state.jsonResponseModel).pipe(new StringOutputParser()).invoke({
             plan: state.plannerOutput,
-            current_config: state.currentConfig
+            designer: state.designerOutput,
+            // current_config: state.currentConfig
             // userQuery: state.userQuery
         });
 
+        console.warn("\n\nBuilder working...");
+        
         this.log.log("[BUILDER] JSON generated:", "BUILDER");
         this.log.log(output, "BUILDER");
         const logPublish = {
@@ -145,6 +205,8 @@ export class WorkersSystem {
             clientId: state.clientId, // ensure clientId is preserved
             message: output
         };
+        this.eventBus.publish("AGENT_LOGS", logPublish);
+        logPublish.message = "🕵️ Checking what changed behind the curtains..."
         this.eventBus.publish("AGENT_LOGS", logPublish);
         return { builderOutput: output };
     }
@@ -164,6 +226,8 @@ export class WorkersSystem {
             userQuery: state.userQuery
         });
 
+        console.warn("\n\nCommunicator typing...");
+        
         this.log.log("[COMMUNICATOR] Final message:\n", "COMMUNICATOR");
         this.log.log(output, "COMMUNICATOR");
         const logPublish = {
@@ -172,7 +236,7 @@ export class WorkersSystem {
             clientId: state.clientId, // ensure clientId is preserved
             message: output
         };
-        this.eventBus.publish("AGENT_LOGS", logPublish);
+        this.eventBus.publish("COMM_LOGS", logPublish);
         return { communicatorOutput: output };
     }
 
