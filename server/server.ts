@@ -24,7 +24,7 @@ class BotCustomServer {
 
   constructor() {
     this.MEM_USED = process.memoryUsage();
-    this.logger = new FileLogger({ folder: './logs', printconsole: true, logtofile: false });
+    this.logger = new FileLogger({ folder: './logs', printconsole: true, logtofile: true });
     this.eventBus = new EventBusImpl();
     this.init();
   }
@@ -88,13 +88,13 @@ class BotCustomServer {
       this.wss.on('connection', (ws: WebSocket & { id?: number }) => {
         ws.id = clientId++;
 
-        const logPublish = {
-          name: botConfig.BotName,
-          type: "REPLY",
-          clientId: ws.id, // ensure clientId is preserved
-          message: "Here to help. best day ever. Make a awesome prompt. send me some links, images and what you want customize."
-        };
-        this.eventBus.publish("AGENT_LOGS", logPublish);
+        // const logPublish = {
+        //   name: botConfig.BotName,
+        //   type: "REPLY",
+        //   clientId: ws.id, // ensure clientId is preserved
+        //   message: "Here to help. best day ever. Make a awesome prompt. send me some links, images and what you want customize."
+        // };
+        // this.eventBus.publish("AGENT_LOGS", logPublish);
 
         ws.on('message', (data: string) => {
           // Check if the message is a command
