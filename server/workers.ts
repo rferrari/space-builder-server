@@ -20,7 +20,7 @@ export interface GraphInterface {
     plannerOutput?: string;
     builderOutput?: string;
     communicatorOutput?: string;
-    current_space?: string;
+    // current_space?: string;
 }
 
 export class WorkersSystem {
@@ -125,14 +125,15 @@ export class WorkersSystem {
     private async building(state: GraphInterface): Promise<Partial<GraphInterface>> {
         const prompt = new PromptTemplate({
             template: SINGLE_WORKER_SYSTEM_PROMPT,
-            inputVariables: ["plan"
-                // , "current_config"
+            inputVariables: [
+                "plan",
+                "current_config"
             ]
         });
 
         const output = await prompt.pipe(state.jsonResponseModel).pipe(new StringOutputParser()).invoke({
             plan: state.plannerOutput,
-            // current_config: state.plannerOutput
+            current_config: state.currentConfig
             // userQuery: state.userQuery
         });
 
@@ -158,7 +159,7 @@ export class WorkersSystem {
         });
 
         const output = await prompt.pipe(state.model).pipe(new StringOutputParser()).invoke({
-            current_space: state.current_space,
+            current_space: state.currentConfig,
             new_space: state.plannerOutput,
             userQuery: state.userQuery
         });

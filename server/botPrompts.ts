@@ -1,3 +1,24 @@
+const test=`
+
+Create a vibrant and skatepunk-themed space for http://skatehive.app. Use these:
+
+1. **text** – A bold hero banner with the message: _"SKATEBOARD FOR LIFE"_ in all caps. Use a strong graffiti-style font and dark background with neon green text.
+
+2. **gallery** – Showcase the SkateHive logo from this image URL: https://www.skatehive.app/SKATE_HIVE_VECTOR_FIN.svg. Use scale to highlight it prominently at the top.
+
+3. **feed** – Embed a Farcaster feed filtered to user 'https://farcaster.xyz/skateboard' 
+
+4. **video** – https://ipfs.skatehive.app/ipfs/QmaCDbVZwu3BG81pnu88U7sQWP4nWVmN3ANFVyTMrD8BM4
+
+5. **cast** – Pin a featured Farcaster post https://farcaster.xyz/skateboard/0xc3615bc8
+
+6. **links** – Create a grid of links to SkateHive's Discord, Twitter, GitHub, and blog. Include icons and a brief description for each.
+
+7. **chat** – Add a chat fidget at the bottom for real-time interaction among skate community members.
+
+
+`;
+
 export const MAIN_SYSTEM_PROMPT = `
 You are @nounspaceTom, a passionate advocate for community-driven social networks. Formerly the CEO of Nounspace, you now guide others in building meaningful connections and celebrating diversity in the digital sphere.
 
@@ -41,7 +62,6 @@ If you're uncertain:
 action: RESPOND
 
 # RESPONSE FORMAT
-
 Always respond using **this JSON structure**:
 
 {
@@ -52,7 +72,6 @@ Always respond using **this JSON structure**:
 
 export const shouldRespondTemplate =
   `Determine if you should respond to the query
-
 {history}
 {query}
 `;
@@ -198,14 +217,8 @@ export const FIDGET_CONFIG_GUIDE: Record<string, ExampleFidgetInstance> = {{
     config: {{
       editable: true,
       settings: {{
-        // feedType: Following, Trending, or Filter
-        // Example: "following"
         feedType: "following",
-        // filterType: when feedType is "filter" choose how to filter
-        // Example: "keyword"
         filterType: "keyword",
-        // keyword: term to search when filterType is "keyword"
-        // Example: "nouns"
         keyword: "nouns",
         showOnMobile: true,
       }},
@@ -220,11 +233,7 @@ export const FIDGET_CONFIG_GUIDE: Record<string, ExampleFidgetInstance> = {{
     config: {{
       editable: true,
       settings: {{
-        // castUrl: Warpcast share URL
-        // Example: "https://warpcast.com/~/post/0x123"
-        castUrl: "https://warpcast.com/~/post/0x123",
-        // casterFid: FID of the author
-        // Example: 1234
+        castUrl: "https://farcaster.xyz/~/post/0x123",
         casterFid: 1234,
       }},
       data: {{}},
@@ -241,7 +250,6 @@ export const FIDGET_CONFIG_GUIDE: Record<string, ExampleFidgetInstance> = {{
         imageUrl: "<URL>",
         selectMediaSource: {{ name: "URL" }},
         // Scale: resize multiplier 0.5 - 2
-        // Example: 1
         Scale: 1,
       }},
       data: {{}},
@@ -255,14 +263,8 @@ export const FIDGET_CONFIG_GUIDE: Record<string, ExampleFidgetInstance> = {{
     config: {{
       editable: true,
       settings: {{
-        // title displayed above the content
-        // Example: "Welcome"
         title: "Welcome",
-        // text body in Markdown
-        // Example: "Hello **world**"
-        text: "Hello **world**",
-        // color for links in the text
-        // Example: "#0000FF"
+        text: "Hello **nounspace**",
         urlColor: "#0000FF",
       }},
       data: {{}},
@@ -276,14 +278,8 @@ export const FIDGET_CONFIG_GUIDE: Record<string, ExampleFidgetInstance> = {{
     config: {{
       editable: true,
       settings: {{
-        // title for the list of links
-        // Example: "Resources"
         title: "Resources",
-        // array of links with text and url
-        // Example: [{{ text: "Nounspace", url: "https://nounspace.com" }}]
         links: [{{ text: "Nounspace", url: "https://nounspace.com" }}],
-        // display mode: "list" or "grid"
-        // Example: "list"
         viewMode: "list",
       }},
       data: {{}},
@@ -312,11 +308,7 @@ export const FIDGET_CONFIG_GUIDE: Record<string, ExampleFidgetInstance> = {{
     config: {{
       editable: true,
       settings: {{
-        // defaultSellToken: token address offered
-        // Example: "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
         defaultSellToken: "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
-        // defaultBuyToken: token address requested
-        // Example: "0x48c6740bcf807d6c47c864faeea15ed4da3910ab"
         defaultBuyToken: "0x48c6740bcf807d6c47c864faeea15ed4da3910ab",
       }},
       data: {{}},
@@ -330,8 +322,6 @@ export const FIDGET_CONFIG_GUIDE: Record<string, ExampleFidgetInstance> = {{
     config: {{
       editable: true,
       settings: {{
-        // roomName: chat room identifier or contract
-        // Example: "0x48C6740BcF807d6C47C864FaEEA15Ed4dA3910Ab"
         roomName: "0x48C6740BcF807d6C47C864FaEEA15Ed4dA3910Ab",
       }},
       data: {{}},
@@ -345,11 +335,7 @@ export const FIDGET_CONFIG_GUIDE: Record<string, ExampleFidgetInstance> = {{
     config: {{
       editable: true,
       settings: {{
-        // snapshotEns: ENS name of the space
-        // Example: "gnars.eth"
         snapshotEns: "gnars.eth",
-        // daoContractAddress: DAO contract used for proposals
-        // Example: "0x0000000000000000000000000000000000000000"
         daoContractAddress: "0x0000000000000000000000000000000000000000",
       }},
       data: {{}},
@@ -363,11 +349,7 @@ export const FIDGET_CONFIG_GUIDE: Record<string, ExampleFidgetInstance> = {{
     config: {{
       editable: true,
       settings: {{
-        // url: YouTube or Vimeo link
-        // Example: "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
         url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
-        // size: scale multiplier
-        // Example: 1
         size: 1,
       }},
       data: {{}},
@@ -381,12 +363,8 @@ export const FIDGET_CONFIG_GUIDE: Record<string, ExampleFidgetInstance> = {{
     config: {{
       editable: true,
       settings: {{
-        // rssUrl: address of the RSS feed
-        // Example: "https://rss.nytimes.com/services/xml/rss/nyt/HomePage.xml"
-        rssUrl: "https://rss.nytimes.com/services/xml/rss/nyt/HomePage.xml",
-        // title shown above the feed
-        // Example: "News"
         title: "News",
+        rssUrl: "https://rss.nytimes.com/services/xml/rss/nyt/HomePage.xml",
       }},
       data: {{}},
     }},
@@ -397,161 +375,26 @@ export const FIDGET_CONFIG_GUIDE: Record<string, ExampleFidgetInstance> = {{
 `;
 
 
-// export const FIDGET_CONTEXT_CATALOG = `
-// ## AVAILABLE FIDGET TYPES & DETAILED CONFIGURATIONS
-
-// ### Content & Media Fidgets
-// **text** - Rich text content with markdown support
-// - **Purpose**: Announcements, welcome messages, formatted content, documentation
-// - **Key Settings**: title, text (markdown), fontFamily, fontColor, headingsFontFamily, headingsFontColor, urlColor
-// - **Minimum Size**: 3w × 2h
-// - **Common Use**: Hero sections, content blocks, instructions
-
-// **gallery** (Image) - Display images from various sources
-// - **Purpose**: Photo galleries, NFT showcases, image collections, visual content
-// - **Key Settings**: selectMediaSource (URL/Upload/NFT), imageUrl, uploadedImage, nftSelector, scale, redirectionURL, badgeColor
-// - **Sources**: Direct URL, file upload, or NFT from blockchain
-// - **Minimum Size**: 2w × 2h
-// - **Common Use**: Profile pictures, artwork displays, visual portfolios
-
-// **Video** - YouTube, Vimeo, and video embeds
-// - **Purpose**: Video content, tutorials, entertainment, presentations
-// - **Key Settings**: url (auto-converts YouTube/Vimeo URLs), size (scale)
-// - **Auto-conversion**: Automatically converts YouTube/Vimeo URLs to embeddable format
-// - **Minimum Size**: 2w × 2h
-// - **Common Use**: Educational content, entertainment, demos
-
-// ### Social & Communication Fidgets
-// **feed** - Farcaster social feeds with advanced filtering
-// - **Purpose**: Social media streams, community content, trending posts
-// - **Key Settings**: feedType (Following/Filter), filterType (Channel/Users/Keyword), channel, username, keyword, selectPlatform (Farcaster/X), Xhandle, membersOnly
-// - **Feed Types**: Following (personalized), Filter (by criteria)
-// - **Filter Options**: Channel feeds, user posts, keyword searches
-// - **Platform Support**: Farcaster and X (Twitter)
-// - **Minimum Size**: 4w × 2h
-// - **Common Use**: Community feeds, social walls, content discovery
-
-// **cast** - Pin individual Farcaster posts
-// - **Purpose**: Highlight specific posts, feature announcements, showcase content
-// - **Key Settings**: castUrl (easiest), castHash + casterFid (advanced)
-// - **Input Methods**: Warpcast share URL or manual hash/FID
-// - **Minimum Size**: 3w × 1h, Maximum Height: 4h
-// - **Common Use**: Featured posts, announcements, pinned content
-
-// **Chat** - Interactive messaging interfaces
-// - **Purpose**: Real-time communication, community discussions
-// - **Minimum Size**: 3w × 2h
-// - **Common Use**: Live support, community chat, messaging
-
-// ### Web Integration Fidgets
-// **iframe** (Web Embed) - Embed external websites and tools
-// - **Purpose**: Integration with external tools, dashboards, web applications
-// - **Key Settings**: url, size (zoom level)
-// - **Security**: Automatically sanitizes URLs and blocks malicious content
-// - **Minimum Size**: 2w × 2h
-// - **Common Use**: External tools, dashboards, web apps, embedded services
-
-// **frame** - Legacy Farcaster frames
-// - **Purpose**: Interactive Farcaster applications, simple web experiences
-// - **Key Settings**: url
-// - **Minimum Size**: 2w × 2h
-// - **Common Use**: Simple interactive content, legacy frame apps
-
-// **FramesV2** (Farcaster Mini App) - Next-generation interactive frames
-// - **Purpose**: Advanced interactive applications, mini-apps, rich experiences
-// - **Key Settings**: url, collapsed (preview mode), title, headingFont
-// - **Display Modes**: Full app or collapsed preview
-// - **Minimum Size**: 2w × 2h
-// - **Common Use**: Interactive apps, games, advanced tools
-
-// ### Utility & Navigation Fidgets
-// **links** - Organized link collections with rich display options
-// - **Purpose**: Navigation, resource collections, social media links, quick access
-// - **Key Settings**: title, links (array with text/url/avatar/description), viewMode (list/grid), itemBackground, scale
-// - **Display Options**: List or grid layout with avatars and descriptions
-// - **Link Properties**: Text, URL, optional avatar image, optional description
-// - **Minimum Size**: 2w × 2h
-// - **Common Use**: Social links, resource lists, navigation menus
-
-// **Rss** - RSS feed readers for external content
-// - **Purpose**: News feeds, blog content, external content aggregation
-// - **Key Settings**: rssUrl, fontFamily, fontColor, headingsFontFamily, headingsFontColor
-// - **Content**: Automatically fetches and displays RSS feed items
-// - **Minimum Size**: 3w × 2h
-// - **Common Use**: News feeds, blog aggregation, content curation
-
-// ### Financial & Governance Fidgets
-// **Swap** - Cryptocurrency trading interfaces
-// - **Purpose**: Token swapping, DeFi interactions, trading
-// - **Key Settings**: defaultSellToken, defaultBuyToken, fromChain, toChain, background, fontFamily, fontColor, swapScale, optionalFeeRecipient
-// - **Chain Support**: Multi-chain token swapping
-// - **Minimum Size**: 3w × 3h
-// - **Common Use**: DEX interfaces, token trading, DeFi integration
-
-// **Portfolio** - Cryptocurrency portfolio tracking
-// - **Purpose**: Wallet tracking, portfolio analytics, asset monitoring
-// - **Key Settings**: trackType (farcaster/address), farcasterUsername, walletAddresses
-// - **Tracking Methods**: By Farcaster username or wallet addresses
-// - **Minimum Size**: 3w × 3h
-// - **Common Use**: Portfolio dashboards, asset tracking, wallet monitoring
-
-// **Market** - Cryptocurrency market data and pricing
-// - **Purpose**: Price displays, market information, trading data
-// - **Minimum Size**: 3w × 2h
-// - **Common Use**: Price tickers, market overviews, trading dashboards
-
-// **governance** - DAO proposals and voting interfaces
-// - **Purpose**: Governance participation, proposal viewing, voting
-// - **Minimum Size**: 4w × 3h
-// - **Common Use**: DAO dashboards, voting interfaces, governance oversight
-
-// **SnapShot** - Snapshot governance integration
-// - **Purpose**: Snapshot proposal viewing and voting
-// - **Minimum Size**: 4w × 3h
-// - **Common Use**: Decentralized governance, community voting
-
-// ### Development & Testing
-// **profile** - User profile displays (development only)
-// - **Purpose**: User information, profile cards, identity display
-// - **Availability**: Development environment only
-// - **Common Use**: Profile showcases, user cards, identity verification
-// `;
 
 export const PLANING_SYSTEM = `
 You are the *Planner Agent* for Nounspace.
 Your job is to interpret a user's natural-language customization request and convert it into a clear, structured plan for the Builder Agent to generate or modify a fidget-based JSON layout.
 
-# OBJECTIVE
-Analyze the user's intent and current configuration to:
-→ Select and describe fidgets from the catalog that best fulfill the request  
-→ Determine whether to apply changes on top of the current config or generate a new config from scratch  
-→ Ensure changes are undoable  
-→ Output a descriptive, build-ready plan that the Builder Agent can follow
-
-# RULES
-1. **Fidget Selection**
-- Select **1 to 7** unique fidgets from the catalog.
-- Avoid using the same fidget more than once unless explicitly requested.
-- Ensure URLs (e.g., image or video sources) are valid using a simulated HEAD check.
-- If a URL is broken, replace it with a similar valid resource.
-
-3. **Builder-Focused Output**
-- Output a descriptive block explaining:
-  - The **intent** behind the user request
-  - The **fidgets** selected and why
-  - Configuration details for each fidget
-
-- Use clear language the Builder Agent can act on without guesswork.
+# TASK
+→ Analyse current_config 
+→ Analyse userRequest  
+→ Select fidgets from the catalog that best fulfill the request
+→ Apply changes on top of the current config OR create new config from scratch if necessary
+→ Output a descriptive plan that the Builder Agent can follow
 
 # INPUTS
+<current_config>
+{currentConfig}
+</current_config>
 
 <fidgets_catalog>
 ${FIDGET_CONTEXT_CATALOG_PLANNER}
 </fidgets_catalog>
-
-<current_config>
-{currentConfig}
-</current_config>
 
 <userRequest>
 {userQuery}

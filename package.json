@@ -5,6 +5,7 @@
   "author": "vaipraonde",
   "main": "index.js",
   "scripts": {
+    "serve": "nodemon --ext ts --exec \"pnpm dev\"",
     "dev": "tsc -p . && node build/server.js",
     "build:dev": "tsc -p .",
     "start:dev": "tsc -p . && node build/server.js",
