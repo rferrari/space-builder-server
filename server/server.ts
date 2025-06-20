@@ -108,7 +108,7 @@ class BotCustomServer {
           };
 
           //await
-          this.botAvatar.handleCommand(commandObj.message, commandObj);
+          this.botAvatar.processCommand(commandObj.message, commandObj);
 
           // send message to all connected clients
           // this.wss.clients.forEach((client: WebSocket) => {

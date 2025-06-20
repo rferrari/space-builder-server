@@ -42,21 +42,21 @@ interface UserMemory {
 }
 
 export class BotAvatar {
-  public MEM_USED: NodeJS.MemoryUsage;
+  public memoryUsage: NodeJS.MemoryUsage;
   private eventBus: EventBus;
   private openai: OpenAI;
   private chatPrompt: ChatPromptTemplate;
   private chatBotLLM: ChatOpenAI;
-  private isStopped: boolean;
-  private userAskToStart: string;
-  private userAskToStop: string;
-  private stringPromptMemory: BufferMemory;
+  private isBotStopped: boolean;
+  private userRequestToStart: string;
+  private userRequestToStop: string;
+  private bufferMemoryForPrompts: BufferMemory;
   private chatChain: ConversationChain;
-  private MESSAGES_HISTORY_SIZE: number;
-  private MEMORY_EXPIRATION_MIN: number;
+  private maxMessageHistorySize: number;
+  private memoryExpirationDuration: number;
   private messagesLog: FileLogger;
   private memoryLog: FileLogger;
-  private newCasts: FileLogger;
+  private newCastsLogger: FileLogger;
   private userMemories: Map<string, UserMemory> = new Map();
   private lastTrendingSummary: MessageContent;
   private workersSystem: WorkersSystem;
@@ -72,17 +72,17 @@ export class BotAvatar {
   constructor(eventBus: EventBus
     // , farcaster: Farcaster
   ) {
-    this.MEM_USED = process.memoryUsage();
-    this.isStopped = false;
+    this.memoryUsage = process.memoryUsage();
+    this.isBotStopped = false;
     this.eventBus = eventBus;
 
     // this.farcaster = farcaster;
     this.messagesLog = new FileLogger({ folder: './logs', printconsole: true });
     this.memoryLog = new FileLogger({ folder: './logs', printconsole: false });
-    // this.newCasts = new FileLogger({ folder: './logs', printconsole: false });
+    // this.newCastsLogger = new FileLogger({ folder: './logs', printconsole: false });
     this.userMemories = new Map();
-    this.MESSAGES_HISTORY_SIZE = botConfig.MESSAGES_HISTORY_SIZE; // Set the maximum history limit
-    this.MEMORY_EXPIRATION_MIN = botConfig.MEMORY_EXPIRATION_MIN * 60 * 1000; // 24 hours
+    this.maxMessageHistorySize = botConfig.maxMessageHistorySize; // Set the maximum history limit
+    this.memoryExpirationDuration = botConfig.memoryExpirationDuration * 60 * 1000; // 24 hours
 
     this.updateInternalClockTime();
 
@@ -103,7 +103,7 @@ export class BotAvatar {
       llm: this.chatBotLLM,
     });
 
-    this.stringPromptMemory = new BufferMemory({
+    this.bufferMemoryForPrompts = new BufferMemory({
       returnMessages: true,
       memoryKey: "history",
       inputKey: "userquery",
@@ -120,14 +120,14 @@ export class BotAvatar {
   private cleanupOldMemories() {
     const currentTime = Date.now();
     for (const [userId, userMemory] of this.userMemories.entries()) {
-      if (currentTime - userMemory.lastInteraction > this.MEMORY_EXPIRATION_MIN) {
+      if (currentTime - userMemory.lastInteraction > this.memoryExpirationDuration) {
         this.userMemories.delete(userId); // Remove outdated memory
         this.memoryLog.log(`Memory for user ${userId} removed due to inactivity.`, "MEM_CLEAN_UP")
       }
     }
   }
 
-  private async addtoUserMemory(userId: string, userQuery: string, aiResponse: string) {
+  private async addToUserMemory(userId: string, userQuery: string, aiResponse: string) {
     // Retrieve the existing memory object
     let userMem = this.userMemories.get(userId);
 
@@ -139,12 +139,12 @@ export class BotAvatar {
     await userMem.memory.chatHistory.addAIChatMessage(aiResponse);
   }
 
-  private async addtoBotMemory(userId: string, userQuery: string, aiResponse: string) {
-    this.stringPromptMemory.chatHistory.addMessage(new HumanMessage({ content: userQuery, id: "user", name: userId }));
-    this.stringPromptMemory.chatHistory.addAIChatMessage(aiResponse);
+  private async addToBotMemory(userId: string, userQuery: string, aiResponse: string) {
+    this.bufferMemoryForPrompts.chatHistory.addMessage(new HumanMessage({ content: userQuery, id: "user", name: userId }));
+    this.bufferMemoryForPrompts.chatHistory.addAIChatMessage(aiResponse);
   }
 
-  private async getCombinedMemory(userId: String, userQuery: string) {
+  private async createCombinedMemory(userId: String, userQuery: string) {
     // buffer memory
     const bufferMemory = new BufferMemory({
       memoryKey: "chat_history_lines",
@@ -168,7 +168,7 @@ export class BotAvatar {
 
   // Return the relevant Yser Memory entries based on keywords
   // create a new one if do not exist
-  private async getRelevantUserMemory(userId: string, userQuery: string): Promise<BufferMemory> {
+  private async fetchRelevantUserMemory(userId: string, userQuery: string): Promise<BufferMemory> {
     // Check if the BufferMemory for the user already exists
     if (!this.userMemories.has(userId)) {
       const userMemory: UserMemory = {
@@ -212,7 +212,7 @@ export class BotAvatar {
   }
 
   // Function to initialize memory for a specific user
-  private getCurrentUserMemory(userId: string): BufferMemory {
+  private retrieveCurrentUserMemory(userId: string): BufferMemory {
     // Check if the BufferMemory for the user already exists
     if (this.userMemories.has(userId)) {
       // Return the existing BufferMemory
@@ -239,23 +239,23 @@ export class BotAvatar {
   }
 
   // Experimental
-  private async trimMemoryHistory(resumoConversa: MessageContent) {
+  private async trimMemoryHistoryIfExceedsLimit(resumoConversa: MessageContent) {
     // Load current memory variables
-    const memoryVariables = await this.stringPromptMemory.loadMemoryVariables({});
+    const memoryVariables = await this.bufferMemoryForPrompts.loadMemoryVariables({});
 
     // Check if the number of messages exceeds the limit
-    if (memoryVariables.length > this.MESSAGES_HISTORY_SIZE) {
+    if (memoryVariables.length > this.maxMessageHistorySize) {
       // Trim the oldest messages
-      // const trimmedMemory = memoryVariables.slice(-this.MESSAGES_HISTORY_SIZE); // Keep the latest messages
+      // const trimmedMemory = memoryVariables.slice(-this.maxMessageHistorySize); // Keep the latest messages
       // Clear the current memory and save the trimmed memory
-      await this.stringPromptMemory.clear(); // Clear existing memory
-      await this.stringPromptMemory.chatHistory.addAIChatMessage(resumoConversa.toString());
+      await this.bufferMemoryForPrompts.clear(); // Clear existing memory
+      await this.bufferMemoryForPrompts.chatHistory.addAIChatMessage(resumoConversa.toString());
     }
   }
 
   async printMemorySummary() {
     // const intervalId = setInterval(async () => {
-    const memorySummary = await this.stringPromptMemory.loadMemoryVariables({});
+    const memorySummary = await this.bufferMemoryForPrompts.loadMemoryVariables({});
     // console.warn("memorySummary");
     // console.warn(memorySummary);
 
@@ -265,7 +265,7 @@ export class BotAvatar {
     // }, 5 * 60 * 1000); // 5 minutes
   }
 
-  private async generateShouldRespond(history: string, query: BotChatMessage): Promise<{ result: boolean; reason: string }> {
+  private async determineShouldRespond(history: string, query: BotChatMessage): Promise<{ result: boolean; reason: string }> {
     const promptTemplate = PromptTemplate.fromTemplate(
       botPrompts.shouldRespondTemplate
     );
@@ -299,7 +299,7 @@ export class BotAvatar {
     return { result: false, reason: "Unable to parse model response." };
   }
 
-  private async generateFinalRespond(communicatorOutput: string): Promise<MessageContent> {
+  private async createFinalResponse(communicatorOutput: string): Promise<MessageContent> {
     if (communicatorOutput === '') {
       return "We had some trouble building the space. Please try another prompt.";
     }
@@ -334,25 +334,25 @@ export class BotAvatar {
       workersResponseContext = workersResponse.communicatorOutput;
     }
 
-    const finalResponse = await this.generateFinalRespond(workersResponseContext);
+    const finalResponse = await this.createFinalResponse(workersResponseContext);
     return finalResponse.toString();
   }
 
-  private async replyMessage(inputMessage: BotChatMessage, vision: string = "",
+  private async sendReplyMessage(inputMessage: BotChatMessage, vision: string = "",
     conversation: BotChatMessage[] = [], userDataInfo: UserResponse = null) {
     const config = { configurable: { thread_id: inputMessage.name + "_thread" } };
-    var joinedConversation: string = '';
-    var userInfoAbout: string = '';
-    var userPrompt: string = '';
+    var combinedConversationHistory: string = '';
+    var userInformationText: string = '';
+    var userInputPrompt: string = '';
     const LOG_ID = "REPLY" + inputMessage.name
 
     // set userInfo
     if (userDataInfo) {
-      userInfoAbout = this.userDataInfo2Text(userDataInfo)
+      userInformationText = this.userDataInfo2Text(userDataInfo)
     }
 
     // Swap Memories retrieving the relevant messages based on keywords
-    const relevantMemory = await this.getRelevantUserMemory(inputMessage.name, inputMessage.message);
+    const relevantMemory = await this.fetchRelevantUserMemory(inputMessage.name, inputMessage.message);
     this.chatChain.memory = relevantMemory;
 
     // set conversationContent
@@ -369,18 +369,18 @@ export class BotAvatar {
 
     if (conversation.length > 0) {
       conversation.forEach((message) => {
-        joinedConversation += `User @${message.name} said: "${message.message.replace(/\n+/g, '\n')}"\n`;
+        combinedConversationHistory += `User @${message.name} said: "${message.message.replace(/\n+/g, '\n')}"\n`;
       });
-      // joinedConversation += `\n`;
+      // combinedConversationHistory += `\n`;
     }
 
 
     // if using Workers system... include conversationContent + userQuery
-    const ragHisstory = conversation.length > 0 ? joinedConversation : memoryConversationContent;
+    const ragHisstory = conversation.length > 0 ? combinedConversationHistory : memoryConversationContent;
     const finalMessage = await this.getRAGContext(inputMessage, ragHisstory);
 
-    this.addtoBotMemory(inputMessage.name, inputMessage.message, finalMessage)
-    await this.addtoUserMemory(inputMessage.name, inputMessage.message, finalMessage)
+    this.addToBotMemory(inputMessage.name, inputMessage.message, finalMessage)
+    await this.addToUserMemory(inputMessage.name, inputMessage.message, finalMessage)
 
     this.printMemorySummary();
 
@@ -390,7 +390,7 @@ export class BotAvatar {
     };
   }
 
-  public async handleCommand(command: string, message: BotChatMessage) {
+  public async processCommand(command: string, message: BotChatMessage) {
     let agentReply: BotChatMessage = {
       name: botConfig.BotName,
       message: "",
@@ -404,20 +404,20 @@ export class BotAvatar {
         break;
       default:
         // messages from discord dont have fid -1 set
-        const shouldReply = await this.generateShouldRespond("", message)
+        const shouldReply = await this.determineShouldRespond("", message)
         if (!shouldReply.result) {
           agentReply.message = shouldReply.reason;
           break;
         }
 
         this.workersSystem = new WorkersSystem(this.eventBus, message.clientId);
-        const reply = await this.replyMessage(message, "", [], null);
+        const reply = await this.sendReplyMessage(message, "", [], null);
         agentReply = {
           ...reply,
           type: "REPLY",
           clientId: message.clientId, // ensure clientId is preserved
         };
-        // tomReply = await this.replyMessage(message.name, message.message, "", [], null);
+        // tomReply = await this.sendReplyMessage(message.name, message.message, "", [], null);
         // console.log(agentReply.name, agentReply.message)
         // this.workersSystem = null; // or undefined
         break;
@@ -527,7 +527,7 @@ export class BotAvatar {
   }
 
   // async castNewMessagetoChannel(): Promise<BotChatMessage> {
-  //   if (this.isStopped) return { name: botConfig.BotName, message: "Zzzzzzzzzz" };
+  //   if (this.isBotStopped) return { name: botConfig.BotName, message: "Zzzzzzzzzz" };
 
   //   // update Space Time Awereness
   //   this.updateInternalClockTime();
@@ -551,7 +551,7 @@ export class BotAvatar {
   //   var designerImage: any;
 
   //   if (reply !== "") {
-  //     this.stringPromptMemory.chatHistory.addMessage(new AIMessage({
+  //     this.bufferMemoryForPrompts.chatHistory.addMessage(new AIMessage({
   //       content: reply,
   //       id: botConfig.BotName,
   //       name: botConfig.BotName
@@ -565,12 +565,12 @@ export class BotAvatar {
 
   //     if (botConfig.LOG_MESSAGES) {
   //       let logid = this.weekday;
-  //       this.newCasts.log("", logid);
-  //       this.newCasts.log("", logid);
-  //       this.newCasts.log("CAST_NEW_MESSAGE " + this.weekday + " " + this.dayPeriod, logid);
-  //       this.newCasts.log("", logid);
-  //       this.newCasts.log(`${tomReply.name}: ${tomReply.message}`, logid);
-  //       this.newCasts.log("", logid);
+  //       this.newCastsLogger.log("", logid);
+  //       this.newCastsLogger.log("", logid);
+  //       this.newCastsLogger.log("CAST_NEW_MESSAGE " + this.weekday + " " + this.dayPeriod, logid);
+  //       this.newCastsLogger.log("", logid);
+  //       this.newCastsLogger.log(`${tomReply.name}: ${tomReply.message}`, logid);
+  //       this.newCastsLogger.log("", logid);
   //     }
 
   //     return tomReply;
@@ -581,7 +581,7 @@ export class BotAvatar {
 
   public getMemUsed() {
     return undefined;
-    // const memRag = this.workersSystem.MEM_USED.rss;
+    // const memRag = this.workersSystem.memoryUsage.rss;
     // return {
     //   memRag,
     // }

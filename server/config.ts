@@ -49,8 +49,8 @@ export const USE_WS = process.env.USE_WS === 'true';
 export const WS_PORT = process.env.WS_PORT || "3040";
 
 // in memory messages history size and expiration after X minutes with no interaction
-export const MESSAGES_HISTORY_SIZE = parseInt(process.env.MEMORY_EXPIRATION_MIN) || 20;
-export const MEMORY_EXPIRATION_MIN = parseInt(process.env.MEMORY_EXPIRATION_MIN) || 30;
+export const maxMessageHistorySize = parseInt(process.env.MEMORY_EXPIRATION_MIN) || 20;
+export const memoryExpirationDuration = parseInt(process.env.MEMORY_EXPIRATION_MIN) || 30;
 
 // timer to check and clean up old memories
 export const MEMORY_CLEANUP_MIN = parseInt(process.env.MEMORY_CLEANUP_MIN) || 60;
