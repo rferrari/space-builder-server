@@ -2,20 +2,21 @@ const test=`
 
 Create a vibrant and skatepunk-themed space for http://skatehive.app. Use these:
 
-1. **text** – A bold hero banner with the message: _"SKATEBOARD FOR LIFE"_ in all caps. Use a strong graffiti-style font and dark background with neon green text.
+A bold hero banner with the message: _"SKATEBOARD FOR LIFE"_ in all caps. 
+Use a strong graffiti-style font and dark background with neon green text and cool text about skateboaring. 
 
-2. **gallery** – Showcase the SkateHive logo from this image URL: https://www.skatehive.app/SKATE_HIVE_VECTOR_FIN.svg. Use scale to highlight it prominently at the top.
+Showcase the SkateHive logo: https://www.skatehive.app/SKATE_HIVE_VECTOR_FIN.svg. 
 
-3. **feed** – Embed a Farcaster feed filtered to user 'https://farcaster.xyz/skateboard' 
+Embed a Farcaster feed user skateboard. 
 
-4. **video** – https://ipfs.skatehive.app/ipfs/QmaCDbVZwu3BG81pnu88U7sQWP4nWVmN3ANFVyTMrD8BM4
+video https://ipfs.skatehive.app/ipfs/QmaCDbVZwu3BG81pnu88U7sQWP4nWVmN3ANFVyTMrD8BM4
 
-5. **cast** – Pin a featured Farcaster post https://farcaster.xyz/skateboard/0xc3615bc8
+Pin a featured Farcaster post https://farcaster.xyz/skateboard/0xc3615bc8
 
-6. **links** – Create a grid of links to SkateHive's Discord, Twitter, GitHub, and blog. Include icons and a brief description for each.
+6Create a group of links to SkateHive's Discord, Twitter, GitHub, and blog. 
+Include icons and a brief description for each.
 
-7. **chat** – Add a chat fidget at the bottom for real-time interaction among skate community members.
-
+Add a chat fidget at the bottom for real-time interaction among skate community members.
 
 `;
 
@@ -102,10 +103,10 @@ export const FIDGET_CONTEXT_CATALOG_PLANNER = `
 ### Social & Communication Fidgets
 **feed** - Farcaster social feeds with advanced filtering
 - **Purpose**: Social media streams, community content, trending posts
-- **Key Settings**: feedType (Following/Filter), filterType (Channel/Users/Keyword), channel, username, keyword, selectPlatform (Farcaster/X), Xhandle, membersOnly
+- **Key Settings**: feedType (Following), selectPlatform (Farcaster/X)
 - **Feed Types**: Following (personalized), Filter (by criteria)
 - **Filter Options**: Channel feeds, user posts, keyword searches
-- **Platform Support**: Farcaster and X (Twitter)
+- **Platform Support**: Farcaster and X
 - **Minimum Size**: 4w × 2h
 - **Common Use**: Community feeds, social walls, content discovery
 
@@ -516,7 +517,10 @@ If the response is relevant to the user's question, then return a json response 
 `;
 
 export const FINAL_RESPONSE_PROMPT = `
-This is the output from what was changed at users Space. Use your own voice tone to reply the user
+This is the output from what was changed at users Space.
+Use your own voice tone to reply the user.
+Do not end message signing your name. you are in private chat.
 
 {communicatorOutput}
-`
+`;
+
