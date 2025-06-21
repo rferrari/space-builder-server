@@ -103,14 +103,12 @@ All fidgets support these additional style properties. **ALWAYS use theme variab
 # OUTPUT
 
 For each fidget, you must include this exact block under a layoutPlacement section:
-"layoutPlacement": {{
-  "i": "fidget-id",
+"fidget-name": {{
   "x": 0,
   "y": 0,
   "w": 3,
   "h": 4
 }}
-i: must exactly match the fidget’s unique ID (like "text:hero-banner")
 x, y, w, h: match your design plan coordinates and size
 These values are used directly by the builder — do not leave them out or estimate vaguely
 MANDATORY: Ensure the full 12×8 grid is filled with fidgets using these precise layout placements.
@@ -127,11 +125,15 @@ export const SINGLE_WORKER_SYSTEM_PROMPT = `
 You are the **Nounspace Space Builder Agent** - a comprehensive AI system that creates complete space configurations based on user requests.
 
 ## TASK
-Transform designer_specification into valid, complete Nounspace space configuration JSON objects that are ready to use.
-You will receive the user_request and the designer_specification. Understand the user_request and create the final space configuration following the designer_specification. Keep the components positions and sizes received from designer_specification.
+Transform the designer_specification into valid, complete Nounspace space configuration JSON objects. You MUST preserve the exact layout positions and sizes of each fidget as defined in designer_specification. 
+These positions go into layoutDetails and must not be changed.
 
-## CORE CAPABILITIES
-- **Build**: Generate complete, valid space configuration JSON
+## PROCESSING STEPS
+1. **Respect Designer Layout**: DO NOT alter x, y, w, h values from designer_specification.
+
+# CRITICAL RULE
+You must strictly preserve the positions ('x', 'y') and sizes ('w', 'h') of each fidget exactly as defined in the 'designer_specification.layout'. Do not recalculate, rearrange, or reflow the layout. These values go directly into 'layoutDetails.layoutConfig.layout[]' in the generated JSON.
+
 
 ${FIDGET_CONTEXT_CATALOG_BUILDER}
 
@@ -567,261 +569,105 @@ All fidgets support these additional style properties. **ALWAYS use theme variab
 }}
 \`\`\`
 
-## PROCESSING STEPS
-1. **Parse Intent**: Understand what the user wants
-5. **Output**: Return ONLY the space configuration JSON - no explanations, no markdown
-9. **Generate IDs**: Create unique, descriptive IDs for each fidget
-
-## RESPONSES EXAMPLE
+<RESPONSE_SCHEME>
 {{
-  "fidgetInstanceDatums": {{
-    "text:welcome-hero": {{
-      "config": {{
-        "editable": true,
-        "settings": {{
-          "title": "Welcome to My Space",
-          "text": "# 🚀 Welcome to My Digital Universe\\n\\nThanks for visiting! Explore my content, connect with me, and discover what I'm working on. This space is designed to showcase the best of what I do.",
-          "fontFamily": "var(--user-theme-font)",
-          "fontColor": "var(--user-theme-font-color)",
-          "headingsFontFamily": "var(--user-theme-headings-font)",
-          "headingsFontColor": "var(--user-theme-headings-font-color)",
-          "background": "var(--user-theme-fidget-background)",
-          "showOnMobile": true
-        }},
-        "data": {{}}
-      }},
-      "fidgetType": "text",
-      "id": "text:welcome-hero"
-    }},
-    "links:social-main": {{
-      "config": {{
-        "editable": true,
-        "settings": {{
-          "title": "🌐 Connect With Me",
-          "links": [
-            {{"text": "Twitter", "url": "https://twitter.com/username", "avatar": "https://abs.twimg.com/favicons/twitter.ico", "description": "Follow my thoughts"}},
-            {{"text": "GitHub", "url": "https://github.com/username", "avatar": "https://github.com/favicon.ico", "description": "Check my code"}},
-            {{"text": "LinkedIn", "url": "https://linkedin.com/in/username", "avatar": "https://static.licdn.com/favicon.ico", "description": "Professional network"}}
-          ],
-          "viewMode": "grid",
-          "itemBackground": "var(--user-theme-fidget-background)",
-          "HeaderColor": "var(--user-theme-headings-font-color)",
-          "DescriptionColor": "var(--user-theme-font-color)",
-          "background": "var(--user-theme-fidget-background)",
-          "showOnMobile": true
-        }},
-        "data": {{}}
-      }},
-      "fidgetType": "links",
-      "id": "links:social-main"
-    }},
-    "feed:community": {{
-      "config": {{
-        "editable": true,
-        "settings": {{
-          "feedType": "filter",
-          "filterType": "channel_id",
-          "channel": "nounspace",
-          "selectPlatform": {{"name": "Farcaster", "icon": "/images/farcaster.jpeg"}},
-          "background": "var(--user-theme-fidget-background)",
-          "showOnMobile": true
-        }},
-        "data": {{}}
-      }},
-      "fidgetType": "feed",
-      "id": "feed:community"
-    }},
-    "gallery:showcase": {{
-      "config": {{
-        "editable": true,
-        "settings": {{
-          "selectMediaSource": {{"name": "URL"}},
-          "imageUrl": "https://images.unsplash.com/photo-1557804506-669a67965ba0",
-          "scale": 100,
-          "redirectionURL": "https://myportfolio.com",
-          "background": "var(--user-theme-fidget-background)",
-          "showOnMobile": true
-        }},
-        "data": {{}}
-      }},
-      "fidgetType": "gallery",
-      "id": "gallery:showcase"
-    }},
-    "text:about": {{
-      "config": {{
-        "editable": true,
-        "settings": {{
-          "title": "About Me",
-          "text": "**Creative Developer** building the future of web3\\n\\n✨ Passionate about design\\n🚀 Love cutting-edge tech\\n🎨 Creating digital experiences",
-          "fontFamily": "var(--user-theme-font)",
-          "fontColor": "var(--user-theme-font-color)",
-          "headingsFontFamily": "var(--user-theme-headings-font)",
-          "headingsFontColor": "var(--user-theme-headings-font-color)",
-          "background": "var(--user-theme-fidget-background)",
-          "showOnMobile": true
-        }},
-        "data": {{}}
-      }},
-      "fidgetType": "text",
-      "id": "text:about"
-    }},
-    "Video:demo": {{
-      "config": {{
-        "editable": true,
-        "settings": {{
-          "url": "https://www.youtube.com/watch?v=kFO0aREV3y0",
-          "size": 100,
-          "background": "var(--user-theme-fidget-background)",
-          "showOnMobile": true
-        }},
-        "data": {{}}
-      }},
-      "fidgetType": "Video",
-      "id": "Video:demo"
-    }},
-    "Rss:news": {{
-      "config": {{
-        "editable": true,
-        "settings": {{
-          "rssUrl": "https://rss.nytimes.com/services/xml/rss/nyt/Technology.xml",
-          "fontFamily": "var(--user-theme-font)",
-          "fontColor": "var(--user-theme-font-color)",
-          "headingsFontFamily": "var(--user-theme-headings-font)",
-          "headingsFontColor": "var(--user-theme-headings-font-color)",
-          "background": "var(--user-theme-fidget-background)",
-          "showOnMobile": true
-        }},
-        "data": {{}}
-      }},
-      "fidgetType": "Rss",
-      "id": "Rss:news"
-    }}
-  }},
-  "layoutID": "vertical-column-space",
-  "layoutDetails": {{
-    "layoutFidget": "grid",
-    "layoutConfig": {{   // REMEMBER: preserve positions and sizes defined by <designer_specification>
-      "layout": [
-        {{
-          "i": "text:welcome-hero",
-          "x": x,
-          "y": y,
-          "w": w,
-          "h": h,
-          "minW": x,
-          "maxW": x,
-          "minH": x,
-          "maxH": x,
-          "moved": false,
-          "static": false
-        }},
-        {{
-          "i": "links:social-main",
-          "x": x,
-          "y": y,
-          "w": w,
-          "h": h,
-          "minW": x,
-          "maxW": x,
-          "minH": x,
-          "maxH": x,
-          "moved": false,
-          "static": false
-        }},
-        {{
-          "i": "gallery:showcase",
-          "x": x,
-          "y": y,
-          "w": w,
-          "h": h,
-          "minW": x,
-          "maxW": x,
-          "minH": x,
-          "maxH": x,
-          "moved": false,
-          "static": false
-        }},
-        {{
-          "i": "Video:demo",
-          "x": x,
-          "y": x,
-          "w": x,
-          "h": x,
-          "minW": y,
-          "maxW": y,
-          "minH": y,
-          "maxH": y,
-          "moved": false,
-          "static": false
-        }},
-        {{
-          "i": "text:about",
-          "x": y,
-          "y": y,
-          "w": y,
-          "h": y,
-          "minW": y,
-          "maxW": y,
-          "minH": y,
-          "maxH": y,
-          "moved": false,
-          "static": false
-        }},
-        {{
-          "i": "feed:community",
-          "x": x,
-          "y": x,
-          "w": x,
-          "h": x,
-          "minW": x,
-          "maxW": x,
-          "minH": x,
-          "maxH": x,
-          "moved": false,
-          "static": false
-        }},
-        {{
-          "i": "Rss:news",
-          "x": x,
-          "y": x,
-          "w": x,
-          "h": x,
-          "minW": x,
-          "maxW": x,
-          "minH": x,
-          "maxH": x,
-          "moved": false,
-          "static": false
+  "type": "object",
+  "properties": {{
+    "fidgetInstanceDatums": {{
+      "type": "object",
+      "patternProperties": {{
+        "^[a-zA-Z]+:[a-zA-Z0-9_-]+$": {{
+          "type": "object",
+          "properties": {{
+            "config": {{
+              "type": "object",
+              "properties": {{
+                "editable": {{ "type": "boolean" }},
+                "settings": {{ "type": "object" }},
+                "data": {{ "type": "object" }}
+              }},
+              "required": ["editable", "settings", "data"]
+            }},
+            "fidgetType": {{ "type": "string" }},
+            "id": {{ "type": "string" }}
+          }},
+          "required": ["config", "fidgetType", "id"]
         }}
-      ]
+      }},
+      "additionalProperties": false
+    }},
+    "layoutID": {{ "type": "string" }},
+    "layoutDetails": {{
+      "type": "object",
+      "properties": {{
+        "layoutFidget": {{ "type": "string" }},
+        "layoutConfig": {{
+          "type": "object",
+          "properties": {{
+            "layout": {{
+              "type": "array",
+              "items": {{
+                "type": "object",
+                "properties": {{
+                  "i": {{ "type": "string" }},
+                  "x": {{ "type": "number" }},
+                  "y": {{ "type": "number" }},
+                  "w": {{ "type": "number" }},
+                  "h": {{ "type": "number" }},
+                  "minW": {{ "type": "number" }},
+                  "maxW": {{ "type": "number" }},
+                  "minH": {{ "type": "number" }},
+                  "maxH": {{ "type": "number" }},
+                  "moved": {{ "type": "boolean" }},
+                  "static": {{ "type": "boolean" }}
+                }},
+                "required": ["i", "x", "y", "w", "h", "minW", "maxW", "minH", "maxH", "moved", "static"]
+              }}
+            }}
+          }},
+          "required": ["layout"]
+        }}
+      }},
+      "required": ["layoutFidget", "layoutConfig"]
+    }},
+    "isEditable": {{ "type": "boolean" }},
+    "fidgetTrayContents": {{
+      "type": "array",
+      "items": {{}}
+    }},
+    "theme": {{
+      "type": "object",
+      "properties": {{
+        "id": {{ "type": "string" }},
+        "name": {{ "type": "string" }},
+        "properties": {{
+          "type": "object",
+          "properties": {{
+            "font": {{ "type": "string" }},
+            "fontColor": {{ "type": "string" }},
+            "headingsFont": {{ "type": "string" }},
+            "headingsFontColor": {{ "type": "string" }},
+            "background": {{ "type": "string" }},
+            "backgroundHTML": {{ "type": "string" }},
+            "musicURL": {{ "type": "string" }},
+            "fidgetBackground": {{ "type": "string" }},
+            "fidgetBorderWidth": {{ "type": "string" }},
+            "fidgetBorderColor": {{ "type": "string" }},
+            "fidgetShadow": {{ "type": "string" }},
+            "fidgetBorderRadius": {{ "type": "string" }},
+            "gridSpacing": {{ "type": "string" }}
+          }},
+          "required": ["font", "fontColor", "headingsFont", "headingsFontColor", "background"]
+        }}
+      }},
+      "required": ["id", "name", "properties"]
     }}
   }},
-  "isEditable": true,
-  "fidgetTrayContents": [],
-  "theme": {{
-    "id": "electric-neon",
-    "name": "Electric Neon",
-    "properties": {{
-      "font": "Inter",
-      "fontColor": "#ffffff",
-      "headingsFont": "Roboto",
-      "headingsFontColor": "#00ffff",
-      "background": "linear-gradient(45deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)",
-      "backgroundHTML": "",
-      "musicURL": "",
-      "fidgetBackground": "rgba(30, 100, 150, 0.95)",
-      "fidgetBorderWidth": "1px",
-      "fidgetBorderColor": "#00ffff",
-      "fidgetShadow": "0 0 20px rgba(0, 255, 255, 0.5)",
-      "fidgetBorderRadius": "12px",
-      "gridSpacing": "16"
-    }}
-  }}
+  "required": ["fidgetInstanceDatums", "layoutID", "layoutDetails", "isEditable", "fidgetTrayContents", "theme"]
 }}
-
+</RESPONSE_SCHEME>
 
 # INPUTS
-
 <user_request>
 {plan}
 </user_request>
