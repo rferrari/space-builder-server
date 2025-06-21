@@ -17,15 +17,15 @@ export interface GraphInterface {
     jsonResponseModel: ChatOpenAI;
     userQuery: string;
     conversationHistory: string;
-    plannerOutput?: string;
-    designerOutput?: string;
-    builderOutput?: string;
-    communicatorOutput?: string;
+    plannerOutput: string;
+    designerOutput: string;
+    builderOutput: string;
+    communicatorOutput: string;
     // current_space?: string;
 }
 
 function escapeBraces(str: string): string {
-  return str.replace(/{{/g, '{{{{').replace(/}}/g, '}}}}');
+    return str.replace(/{{/g, '{{{{').replace(/}}/g, '}}}}');
 }
 
 
@@ -37,7 +37,7 @@ export class WorkersSystem {
     // private wsClientId: number;
 
     constructor(eventBus: EventBus, clientId: number) {
-        this.log = new FileLogger({ folder: './logs', printconsole: true });
+        this.log = new FileLogger({ folder: './logs', printconsole: true, logtofile: true });
         this.eventBus = eventBus;
         // this.wsClientId = clientId;
         this.initializeGraph();
@@ -49,6 +49,7 @@ export class WorkersSystem {
             clientId: null,
             conversationHistory: null,
             plannerOutput: null,
+            designerOutput: null,
             builderOutput: null,
             communicatorOutput: null,
             model: null,
@@ -98,7 +99,6 @@ export class WorkersSystem {
             }
         });
 
-
         // jsonModel.bindTools()
 
         return {
@@ -107,6 +107,7 @@ export class WorkersSystem {
     }
 
     private async planning(state: GraphInterface): Promise<Partial<GraphInterface>> {
+        console.warn("\n\nPLANNER:");
         const prompt = new PromptTemplate({
             template: PLANING_SYSTEM,
             inputVariables: ["currentConfig", "userQuery"]
@@ -124,9 +125,8 @@ export class WorkersSystem {
 
         // const result = await this.chatBotLLM.invoke(messages);
 
-        console.warn("\n\nPLANNER:");
         // console.log(filledPrompt);
-        
+
         const output = await state.model.invoke(filledPrompt);
         // prompt.pipe(state.model).pipe(new StringOutputParser()).invoke({
         //     // const output = await prompt.pipe(state.jsonResponseModel).pipe(new StringOutputParser()).invoke({
@@ -151,17 +151,26 @@ export class WorkersSystem {
     }
 
     private async designing(state: GraphInterface): Promise<Partial<GraphInterface>> {
+        console.warn("\n\nDesigner:");
+
         const prompt = new PromptTemplate({
             template: SPACE_DESIGNER_SYSTEM_PROMPT,
             inputVariables: ["plan"]
         });
 
-        const output = await prompt.pipe(state.model).pipe(new StringOutputParser()).invoke({
-            plan: state.plannerOutput
+        const filledPrompt = await prompt.format({
+            plan: state.plannerOutput,
         });
 
-        console.warn("\n\nDesigner:");
-        
+        console.log(filledPrompt);
+
+        const result = await state.model.invoke(filledPrompt);
+        const output = result.content.toString()
+
+        // const output = await prompt.pipe(state.model).pipe(new StringOutputParser()).invoke({
+        //     plan: state.plannerOutput
+        // });
+
         this.log.log("[DESIGN] Plan generated:", "PLANNER");
         this.log.log(output, "DESIGN");
         const logPublish = {
@@ -171,15 +180,17 @@ export class WorkersSystem {
             message: output
         };
         this.eventBus.publish("DESIGN_LOGS", logPublish);
+
         logPublish.message = "🔧 Builder hammering pixels into place..."
         this.eventBus.publish("AGENT_LOGS", logPublish);
+
         return { designerOutput: escapeBraces(output) };
     }
 
 
-
-    
     private async building(state: GraphInterface): Promise<Partial<GraphInterface>> {
+        console.warn("\n\nBuilder working...");
+
         const prompt = new PromptTemplate({
             template: SINGLE_WORKER_SYSTEM_PROMPT,
             inputVariables: [
@@ -188,15 +199,27 @@ export class WorkersSystem {
             ]
         });
 
-        const output = await prompt.pipe(state.jsonResponseModel).pipe(new StringOutputParser()).invoke({
+        const filledPrompt = await prompt.format({
             plan: state.plannerOutput,
             designer: state.designerOutput,
-            // current_config: state.currentConfig
-            // userQuery: state.userQuery
         });
 
-        console.warn("\n\nBuilder working...");
-        
+        console.log(filledPrompt);
+        let result;
+        try {
+            result = await state.jsonResponseModel.invoke(filledPrompt);
+        } catch (error) {
+            this.log.log(`[BUILDER] Error during building: ${error.message}`, "BUILDER");
+            throw error; // Re-throw the error after logging
+        }
+        const output = result.content.toString()
+
+        // const output = await prompt.pipe(state.jsonResponseModel).pipe(new StringOutputParser()).invoke({
+        //     plan: state.plannerOutput,
+        //     designer: state.designerOutput,
+        // });
+
+
         this.log.log("[BUILDER] JSON generated:", "BUILDER");
         this.log.log(output, "BUILDER");
         const logPublish = {
@@ -206,12 +229,16 @@ export class WorkersSystem {
             message: output
         };
         this.eventBus.publish("AGENT_LOGS", logPublish);
+
         logPublish.message = "🕵️ Checking what changed behind the curtains..."
         this.eventBus.publish("AGENT_LOGS", logPublish);
+
         return { builderOutput: output };
     }
 
     private async communicating(state: GraphInterface): Promise<Partial<GraphInterface>> {
+        console.warn("\n\nCommunicator typing...");
+
         const prompt = new PromptTemplate({
             template: COMMUNICATING_SYSTEM,
             inputVariables: [
@@ -220,14 +247,15 @@ export class WorkersSystem {
                 "userQuery"]
         });
 
+        // Enhanced logging
+        console.log(`[COMMUNICATOR] Input: Current Space: ${state.currentConfig}, New Space: ${state.plannerOutput}, User Query: ${state.userQuery}`);
+
         const output = await prompt.pipe(state.model).pipe(new StringOutputParser()).invoke({
             current_space: state.currentConfig,
             new_space: state.plannerOutput,
             userQuery: state.userQuery
         });
 
-        console.warn("\n\nCommunicator typing...");
-        
         this.log.log("[COMMUNICATOR] Final message:\n", "COMMUNICATOR");
         this.log.log(output, "COMMUNICATOR");
         const logPublish = {
@@ -237,25 +265,9 @@ export class WorkersSystem {
             message: output
         };
         this.eventBus.publish("COMM_LOGS", logPublish);
+
         return { communicatorOutput: output };
     }
-
-    // private async returnResults(state: GraphInterface): Promise<Partial<GraphInterface>> {
-    //     this.log.log("[RESULT] Returning response:", "RESULT");
-    //     this.log.log(state.communicatorOutput || "No output", "RESULT");
-    //     const logPublish = {
-    //         name: "RESULT",
-    //         type: "PLANNER_LOGS",
-    //         clientId: state.clientId,
-    //         message: state.communicatorOutput
-    //     };
-    //     this.eventBus.publish("AGENT_LOGS", logPublish);
-    //     return { communicatorOutput: state.communicatorOutput };
-    // }
-
-    // public getGraph() {
-    //     return this.ragApp;
-    // }
 
 
     public async invokeWorkers(inputQuery: BotChatMessage, conversationHistory: string) {
@@ -264,28 +276,16 @@ export class WorkersSystem {
             return "";
         }
 
-        // console.log("")
-        // console.log("----- INVOKERAG ------")
-        // console.log("question: " + question)
-        // console.log("----------------------------")
-        // console.log("")
-
-        const graphResponse = await this.ragApp.invoke(
-            {
-                userQuery: inputQuery.message,
-                conversationHistory,
-                current_space: inputQuery.spaceContext || "",
-                clientId: inputQuery.clientId
+        const graphResponse = await this.ragApp.invoke({
+            userQuery: inputQuery.message,
+            conversationHistory,
+            current_space: inputQuery.spaceContext || "",
+            clientId: inputQuery.clientId
             },
-            // { configurable: { thread_id: crypto.randomUUID() } }
-
-            // TODO 
-            // understand and debug user_thread id
             { configurable: { thread_id: inputQuery.name + "_thread" } }
         );
 
         // this.tokenRateLimiter.printTokensUsedPerMinute();
-
         return graphResponse;
     }
 }
