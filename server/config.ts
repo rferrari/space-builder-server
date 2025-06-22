@@ -75,13 +75,13 @@ const gpt_41 = "gpt-4-1";                // Full GPT-4.1 model (API only, not in
 // export const BotLLMModel = llama3_70b_8192;
 export const BotLLMModel = process.env.BOT_LLM_MODEL || gpt_4o_mini;//gpt_4_turbo;//gpt_4o;//llama3_8b_8192;
 export const BotLLMModel_TEMP = parseFloat(process.env.BOT_LLM_MODEL_TEMP) || 0.7;
-export const ChatBackupLLMModel = gpt_4o_mini;
-export const ChatClankersMModel = gpt_4o_mini;
+export const ChatBackupLLMModel = 'claude-3-7-sonnet-20250219';//gpt_4o_mini;
+export const ChatClankersMModel = 'claude-3-7-sonnet-20250219';//gpt_4o_mini;
 
-export const RAGLLMModel = gpt_4o_mini;
-export const JSONLLMModel = gpt_4o_mini;
-export const AssistentModel = gpt_4o_mini;
-export const VisionModel = gpt_4o_mini;
+export const RAGLLMModel = 'claude-3-7-sonnet-20250219';//gpt_4o_mini;
+export const JSONLLMModel = 'claude-3-7-sonnet-20250219';//gpt_4o_mini;
+export const AssistentModel = 'claude-3-7-sonnet-20250219';//gpt_4o_mini;
+export const VisionModel = 'claude-3-7-sonnet-20250219';//gpt_4o_mini;
 
 // export const GROQ_API_KEY = process.env.GROQ_API_KEY!;
 export const OPENAI_API_KEY = process.env.OPENAI_API_KEY!;

@@ -384,7 +384,7 @@ Your job is to interpret a user's natural-language customization request and con
 # TASK
 → Analyse current_config 
 → Analyse userRequest  
-→ Select fidgets from the catalog that best fulfill the request
+→ Select 2-7 max fidgets from the catalog that best fulfill the request
 → Apply changes on top of the current config OR create new config from scratch if necessary
 → Output a descriptive plan that the Builder Agent can follow
 
@@ -524,3 +524,36 @@ Do not end message signing your name. you are in private chat.
 {communicatorOutput}
 `;
 
+
+
+export const VERIFY_SYSTEM = `
+You are a layout validator.
+Your task is to verify if the 'builder output' matches the 'designer specification' for **fidget sizes and positions only**.
+* Compare each fidget's 'id', 'x', 'y', 'w', and 'h'.
+* Ignore all other fields (like styles, settings, etc).
+* If all match, respond with:
+
+{{
+  "match": "YES",
+  "jsonfixed": null
+}}
+
+* If any mismatch is found, respond with:
+
+{{
+  "match": "NO",
+  "jsonfixed": [full builder.layout fixed with designer specification]
+}}
+
+### Input:
+
+<designer.layout>
+{designerOutput}
+</designer.layout>
+
+<builder.layout>
+{builderOutput}
+</builder.layout>
+
+Match by 'i' (fidget id) and compare 'x', 'y', 'w', 'h' for each.
+`;

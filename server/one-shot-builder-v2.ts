@@ -23,39 +23,6 @@ for each component maximazing it to use all grid. no empty spaces.
   - Minimum sizes per fidget type (text: 3w×2h, feed: 4w×2h, etc.)
   - **CRITICAL**: All fidgets must fit within the 8-row limit
 
-  ## COLOR SCHEME & CONTRAST GUIDELINES
-**CRITICAL COLOR REQUIREMENTS:**
-- **Always use theme variables** for colors instead of hardcoded values:
-  - \`var(--user-theme-font-color)\` for text colors
-  - \`var(--user-theme-headings-font-color)\` for heading colors  
-  - \`var(--user-theme-fidget-background)\` for fidget backgrounds
-  - \`var(--user-theme-font)\` and \`var(--user-theme-headings-font)\` for fonts
-- **Perfect Contrast**: Ensure 4.5:1 minimum contrast ratio for accessibility
-- **Avoid Black Backgrounds**: Use colorful, vibrant backgrounds that match the theme
-- **Theme Harmony**: All fidgets should use coordinated colors from the selected theme
-- **Readability First**: Text must be clearly readable against any background color
-
-## UNIVERSAL STYLE SETTINGS
-All fidgets support these additional style properties. **ALWAYS use theme variables for colors:**
-\`\`\`json
-"settings": {{
-  // Content settings above...
-  
-  // Universal style properties - USE THEME VARIABLES
-  "background": "var(--user-theme-fidget-background)",
-  "fontFamily": "var(--user-theme-font)",
-  "fontColor": "var(--user-theme-font-color)",
-  "headingsFontFamily": "var(--user-theme-headings-font)",
-  "headingsFontColor": "var(--user-theme-headings-font-color)",
-  "fidgetBorderWidth": "var(--user-theme-fidget-border-width)", 
-  "fidgetBorderColor": "var(--user-theme-fidget-border-color)",
-  "fidgetShadow": "var(--user-theme-fidget-shadow)",
-  "useDefaultColors": true,         // Use theme colors instead of custom
-  "showOnMobile": true,            // Display on mobile devices
-  "customMobileDisplayName": "Custom Tab Name"  // Custom mobile tab name
-}}
-\`\`\`
-
 ## VERTICAL FIDGET SIZE PREFERENCES
 **STRONGLY PRIORITIZE THESE TALL ASPECT RATIOS:**
 
@@ -102,13 +69,42 @@ All fidgets support these additional style properties. **ALWAYS use theme variab
 
 # OUTPUT
 
-For each fidget, you must include this exact block under a layoutPlacement section:
-"fidget-name": {{
-  "x": 0,
-  "y": 0,
-  "w": 3,
-  "h": 4
-}}
+JUST OUTPUT each fidget settings size and position to fill up the grid.
+<LAYOUT.SCHEME>
+"layoutDetails": {{
+      "type": "object",
+      "properties": {{
+        "layoutFidget": {{ "type": "string" }},
+        "layoutConfig": {{
+          "type": "object",
+          "properties": {{
+            "layout": {{
+              "type": "array",
+              "items": {{
+                "type": "object",
+                "properties": {{
+                  "i": {{ "type": "string" }},
+                  "x": {{ "type": "number" }},
+                  "y": {{ "type": "number" }},
+                  "w": {{ "type": "number" }},
+                  "h": {{ "type": "number" }},
+                  "minW": {{ "type": "number" }},
+                  "maxW": {{ "type": "number" }},
+                  "minH": {{ "type": "number" }},
+                  "maxH": {{ "type": "number" }},
+                  "moved": {{ "type": "boolean" }},
+                  "static": {{ "type": "boolean" }}
+                }},
+                "required": ["i", "x", "y", "w", "h", "minW", "maxW", "minH", "maxH", "moved", "static"]
+              }}
+            }}
+          }},
+          "required": ["layout"]
+        }}
+      }},
+      "required": ["layoutFidget", "layoutConfig"]
+    }},
+</LAYOUT.SCHEME>
 x, y, w, h: match your design plan coordinates and size
 These values are used directly by the builder — do not leave them out or estimate vaguely
 MANDATORY: Ensure the full 12×8 grid is filled with fidgets using these precise layout placements.
@@ -119,6 +115,8 @@ Never leave gaps or let the builder guess sizes or positions.
 <user_request>
 {plan}
 </user_request>
+
+OUTPUT:
 `;
 
 export const SINGLE_WORKER_SYSTEM_PROMPT = `
