@@ -16,6 +16,17 @@ import {
 } from "./botPrompts";
 // import {  } from "./one-shot-builder-v2";
 
+// import OpenAI from "openai";
+// const client = new OpenAI();
+
+// const response = await client.responses.create({
+//     model: "gpt-4.1",
+//     tools: [ { type: "web_search_preview" } ],
+//     input: "What was a positive news story from today?",
+// });
+
+// console.log(response.output_text);
+
 export interface GraphInterface {
     currentConfig: any;
     clientId: number;
@@ -332,9 +343,8 @@ export class WorkersSystem {
         // log the inputs
         console.log('-'.repeat(50));
         console.log(`[COMMUNICATOR] Inputs:
-            Current Space: ${state.currentConfig}, 
-            New Space: ${state.plannerOutput}, 
-            User Query: ${state.userQuery}`);
+            User Query: ${state.userQuery}`
+        );
 
         // const prompt = new PromptTemplate({
         //     template: COMMUNICATING_PROMPT,
@@ -349,8 +359,8 @@ export class WorkersSystem {
         );
 
         const filledPrompt = await promptTemplate.format({
-            current_space: state.currentConfig,
-            new_space: state.plannerOutput,
+            // current_space: state.currentConfig,
+            // new_space: state.plannerOutput,
             userQuery: state.userQuery
         });
 
@@ -360,11 +370,8 @@ export class WorkersSystem {
         ];
 
         // const result = await this.chatBotLLM.invoke(messages);
-
-
         const result = await state.model.invoke(messages);
         const output = result.content.toString();
-
 
         this.log.log("[COMMUNICATOR] Final message:\n", "COMMUNICATOR");
         this.log.log(output, "COMMUNICATOR");

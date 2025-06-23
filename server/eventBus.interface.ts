@@ -1,7 +1,3 @@
-import {
-    MessageType,
-} from '@farcaster/hub-nodejs'
-
 export interface EventBus {
     publish(eventName: string, data: any): void;
     subscribe(eventName: string, handler: (data: any) => void): void;
