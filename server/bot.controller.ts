@@ -88,8 +88,8 @@ export class BotAvatar {
 
     this.chatBotLLM = new ChatOpenAI({
       openAIApiKey: botConfig.OPENAI_API_KEY,
-      temperature: botConfig.BotLLMModel_TEMP,
-      modelName: botConfig.BotLLMModel,
+      temperature: botConfig.CHAT_BOT_TEMP,
+      modelName: botConfig.CHAT_BOT_MODEL,
     });
 
     this.chatPrompt = ChatPromptTemplate.fromMessages([

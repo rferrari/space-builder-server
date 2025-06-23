@@ -3,12 +3,18 @@ import { ChatOpenAI } from "@langchain/openai";
 import { PromptTemplate } from "@langchain/core/prompts";
 import { StringOutputParser } from "@langchain/core/output_parsers";
 import { CompiledStateGraph, END, MemorySaver, START, StateDefinition, StateGraph } from "@langchain/langgraph";
-import { RAGLLMModel, JSONLLMModel } from "./config";
+import { WORKERS_MODEL, JSON_MODEL, WORKERS_TEMP, JSON_TEMP, ANTHROPIC_BASE_URL, ANTHROPIC_API_KEY } from "./config";
 import FileLogger from "./lib/FileLogger";
 import { EventBus } from "./eventBus.interface";
 import { BotChatMessage } from "./bot.types";
-import { PLANING_SYSTEM, COMMUNICATING_SYSTEM, VERIFY_SYSTEM } from "./botPrompts";
-import { SINGLE_WORKER_SYSTEM_PROMPT, SPACE_DESIGNER_SYSTEM_PROMPT } from "./one-shot-builder-v2";
+import {
+    PLANING_SYSTEM,
+    COMMUNICATING_PROMPT,
+    SINGLE_WORKER_SYSTEM_PROMPT,
+    SPACE_DESIGNER_SYSTEM_PROMPT,
+    MAIN_SYSTEM_PROMPT
+} from "./botPrompts";
+// import {  } from "./one-shot-builder-v2";
 
 export interface GraphInterface {
     currentConfig: any;
@@ -63,20 +69,13 @@ export class WorkersSystem {
             .addNode("planning", this.planning.bind(this))
             .addNode("designing", this.designing.bind(this))
             .addNode("building", this.building.bind(this))
-            // .addNode("verify", this.verify.bind(this))
             .addNode("communicating", this.communicating.bind(this))
-            // .addNode("return_results", this.returnResults.bind(this))
             .addEdge(START, "create_model")
             .addEdge("create_model", "create_json_response_model")
             .addEdge("create_json_response_model", "planning")
             .addEdge("planning", "designing")
             .addEdge("designing", "building")
             .addEdge("building", "communicating")
-            // .addEdge("building", "verify")
-            // .addEdge("verify", "communicating")
-            // .addEdge("communicating", "return_results")
-            // .addEdge("return_results", END) as StateGraph<GraphInterface>;
-            // .addEdge("planning", "communicating")
             .addEdge("communicating", END) as StateGraph<GraphInterface>;
 
 
@@ -85,8 +84,8 @@ export class WorkersSystem {
 
     private async createModel(): Promise<Partial<GraphInterface>> {
         const model = new ChatOpenAI({
-            model: RAGLLMModel,
-            temperature: 0.2,
+            model: WORKERS_MODEL,
+            temperature: WORKERS_TEMP,
             apiKey: process.env.OPENAI_API_KEY as string
         });
         return { model };
@@ -94,15 +93,16 @@ export class WorkersSystem {
 
     private async createJsonResponseModel(state: GraphInterface) {
         const jsonModel = new ChatOpenAI({
-            model: JSONLLMModel,
-            temperature: 0,
-            apiKey: process.env.OPENAI_API_KEY as string,
+            model: JSON_MODEL,
+            temperature: JSON_TEMP,
+            apiKey: ANTHROPIC_API_KEY as string,
+            configuration: {
+                baseURL: ANTHROPIC_BASE_URL
+            },
             modelKwargs: {
                 response_format: { type: "json_object" }
             }
         });
-
-        // jsonModel.bindTools()
 
         return {
             jsonResponseModel: jsonModel
@@ -111,7 +111,7 @@ export class WorkersSystem {
 
     private async planning(state: GraphInterface): Promise<Partial<GraphInterface>> {
         // log the inputs
-        console.log('-'.repeat(50));
+        console.log(`\n`+'=--'.repeat(250)+`\n`);
         console.log(`[PLANNER] Inputs: 
             currentConfig: ${state.currentConfig}
             userQuery: ${state.userQuery}
@@ -253,6 +253,19 @@ export class WorkersSystem {
         // });
 
 
+        this.log.log("[BUILDER] JSON generated:", "BUILDER");
+        this.log.log(output, "BUILDER");
+        let logPublish = {
+            name: "BUILDER",
+            type: "BUILDER_LOGS",
+            clientId: state.clientId, // ensure clientId is preserved
+            message: output
+        };
+        this.eventBus.publish("AGENT_LOGS", logPublish);
+
+        // logPublish.message = "🕵️ Checking what changed behind the curtains..."
+        // this.eventBus.publish("AGENT_LOGS", logPublish);
+
         // this.log.log("[BUILDER] JSON generated:", "BUILDER");
         // this.log.log(output, "BUILDER");
         // const logPublish = {
@@ -269,51 +282,51 @@ export class WorkersSystem {
         return { builderOutput: output };
     }
 
-    private async verify(state: GraphInterface): Promise<Partial<GraphInterface>> {
-        // log the inputs
-        console.log('-'.repeat(50));
-        console.log(`[VERIFY] Inputs:
-            designerOutput: ${state.designerOutput}, 
-            builderOutput: ${state.builderOutput}`);
+    // private async verify(state: GraphInterface): Promise<Partial<GraphInterface>> {
+    //     // log the inputs
+    //     console.log('-'.repeat(50));
+    //     console.log(`[VERIFY] Inputs:
+    //         designerOutput: ${state.designerOutput}, 
+    //         builderOutput: ${state.builderOutput}`);
 
-        const prompt = new PromptTemplate({
-            template: VERIFY_SYSTEM,
-            inputVariables: [
-                // "current_space",
-                "designerOutput",
-                "builderOutput"]
-        });
-
-
-        const output = await prompt.pipe(state.jsonResponseModel).pipe(new StringOutputParser()).invoke({
-            builderOutput: state.builderOutput,
-            designerOutput: state.designerOutput
-        });
-
-        try {
-            const parsed = JSON.parse(output);
-            const match = parsed?.match?.toUpperCase?.();
-            const jsonfixed = parsed?.jsonfixed || null;
-
-            if (match === "YES") return { builderOutput: state.builderOutput };
-            if (match === "NO") return { builderOutput: jsonfixed };
-        } catch (e) {
-            return {builderOutput: state.builderOutput}
-        }
+    //     const prompt = new PromptTemplate({
+    //         template: VERIFY_SYSTEM,
+    //         inputVariables: [
+    //             // "current_space",
+    //             "designerOutput",
+    //             "builderOutput"]
+    //     });
 
 
-        // this.log.log("[VERIFY] Final message:\n", "VERIFY");
-        // this.log.log(output, "VERIFY");
-        // const logPublish = {
-        //     name: "VERIFY",
-        //     type: "COMM_LOGS",
-        //     clientId: state.clientId, // ensure clientId is preserved
-        //     message: output
-        // };
-        // this.eventBus.publish("COMM_LOGS", logPublish);
+    //     const output = await prompt.pipe(state.jsonResponseModel).pipe(new StringOutputParser()).invoke({
+    //         builderOutput: state.builderOutput,
+    //         designerOutput: state.designerOutput
+    //     });
 
-        // return { builderOutput: output };
-    }
+    //     try {
+    //         const parsed = JSON.parse(output);
+    //         const match = parsed?.match?.toUpperCase?.();
+    //         const jsonfixed = parsed?.jsonfixed || null;
+
+    //         if (match === "YES") return { builderOutput: state.builderOutput };
+    //         if (match === "NO") return { builderOutput: jsonfixed };
+    //     } catch (e) {
+    //         return {builderOutput: state.builderOutput}
+    //     }
+
+
+    //     // this.log.log("[VERIFY] Final message:\n", "VERIFY");
+    //     // this.log.log(output, "VERIFY");
+    //     // const logPublish = {
+    //     //     name: "VERIFY",
+    //     //     type: "COMM_LOGS",
+    //     //     clientId: state.clientId, // ensure clientId is preserved
+    //     //     message: output
+    //     // };
+    //     // this.eventBus.publish("COMM_LOGS", logPublish);
+
+    //     // return { builderOutput: output };
+    // }
 
     private async communicating(state: GraphInterface): Promise<Partial<GraphInterface>> {
         // log the inputs
@@ -323,40 +336,39 @@ export class WorkersSystem {
             New Space: ${state.plannerOutput}, 
             User Query: ${state.userQuery}`);
 
-        const prompt = new PromptTemplate({
-            template: COMMUNICATING_SYSTEM,
-            inputVariables: [
-                "current_space",
-                "new_space",
-                "userQuery"]
-        });
+        // const prompt = new PromptTemplate({
+        //     template: COMMUNICATING_PROMPT,
+        //     inputVariables: [
+        //         "current_space",
+        //         "new_space",
+        //         "userQuery"]
+        // });
 
+        const promptTemplate = PromptTemplate.fromTemplate(
+            COMMUNICATING_PROMPT
+        );
 
-        //senbd builder/verify output
-        this.log.log("[BUILDER] JSON generated:", "BUILDER");
-        this.log.log(state.builderOutput, "BUILDER");
-        let logPublish = {
-            name: "BUILDER",
-            type: "BUILDER_LOGS",
-            clientId: state.clientId, // ensure clientId is preserved
-            message: state.builderOutput
-        };
-        this.eventBus.publish("AGENT_LOGS", logPublish);
-
-        logPublish.message = "🕵️ Checking what changed behind the curtains..."
-        this.eventBus.publish("AGENT_LOGS", logPublish);
-
-
-
-        const output = await prompt.pipe(state.model).pipe(new StringOutputParser()).invoke({
+        const filledPrompt = await promptTemplate.format({
             current_space: state.currentConfig,
             new_space: state.plannerOutput,
             userQuery: state.userQuery
         });
 
+        const messages = [
+            { role: "system", content: MAIN_SYSTEM_PROMPT },
+            { role: "user", content: filledPrompt },
+        ];
+
+        // const result = await this.chatBotLLM.invoke(messages);
+
+
+        const result = await state.model.invoke(messages);
+        const output = result.content.toString();
+
+
         this.log.log("[COMMUNICATOR] Final message:\n", "COMMUNICATOR");
         this.log.log(output, "COMMUNICATOR");
-        logPublish = {
+        const logPublish = {
             name: "COMMUNICATOR",
             type: "COMM_LOGS",
             clientId: state.clientId, // ensure clientId is preserved

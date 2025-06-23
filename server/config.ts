@@ -4,7 +4,7 @@ dotenv.config();
 export const ENV = process.env.ENV || "production";
 
 export const BotName = "space-builder";
-export const BotFID = 527313;
+// export const BotFID = 527313;
 export const BotIcon = " ⌐◨-◨  ";
 export const TIMEZONE = process.env.TIMEZONE || "America/Chicago";
 
@@ -69,23 +69,42 @@ export const MEMORY_CLEANUP_MIN = parseInt(process.env.MEMORY_CLEANUP_MIN) || 60
 // const gpt_4_turbo = "gpt-4-turbo";
 
 const gpt_4o_mini = "gpt-4o-mini";       // Smaller, cheaper, faster version of GPT-4o
-const gpt_41 = "gpt-4-1";                // Full GPT-4.1 model (API only, not in ChatGPT UI)
+// const gpt_41 = "gpt-4-1";                // Full GPT-4.1 model (API only, not in ChatGPT UI)
+const gpt_41 = "gpt-4.1-2025-04-14";                // Full GPT-4.1 model (API only, not in ChatGPT UI)
+
+const claude_37 = "claude-3-7-sonnet-20250219"
+const claude_4 = "claude-sonnet-4-20250514"
+
+
+export const CHAT_BOT_MODEL = gpt_4o_mini;
+export const CHAT_BOT_TEMP = 0.2
+
+export const WORKERS_MODEL = gpt_41;
+export const WORKERS_TEMP = 0.1
+
+export const JSON_MODEL = claude_4;
+export const JSON_TEMP = 0;
+
+
 
 
 // export const BotLLMModel = llama3_70b_8192;
-export const BotLLMModel = process.env.BOT_LLM_MODEL || gpt_4o_mini;//gpt_4_turbo;//gpt_4o;//llama3_8b_8192;
-export const BotLLMModel_TEMP = parseFloat(process.env.BOT_LLM_MODEL_TEMP) || 0.7;
-export const ChatBackupLLMModel = 'claude-3-7-sonnet-20250219';//gpt_4o_mini;
-export const ChatClankersMModel = 'claude-3-7-sonnet-20250219';//gpt_4o_mini;
+// export const BotLLMModel = process.env.BOT_LLM_MODEL || gpt_4o_mini;//gpt_4_turbo;//gpt_4o;//llama3_8b_8192;
+// export const BotLLMModel_TEMP = parseFloat(process.env.BOT_LLM_MODEL_TEMP) || 0.7;
+// export const ChatBackupLLMModel = 'claude-3-7-sonnet-20250219';//gpt_4o_mini;
+// export const ChatClankersMModel = 'claude-3-7-sonnet-20250219';//gpt_4o_mini;
 
-export const RAGLLMModel = 'claude-3-7-sonnet-20250219';//gpt_4o_mini;
-export const JSONLLMModel = 'claude-3-7-sonnet-20250219';//gpt_4o_mini;
-export const AssistentModel = 'claude-3-7-sonnet-20250219';//gpt_4o_mini;
-export const VisionModel = 'claude-3-7-sonnet-20250219';//gpt_4o_mini;
+// export const RAGLLMModel = gpt_4o_mini;
+// export const JSONLLMModel = 'claude-3-7-sonnet-20250219';//gpt_4o_mini;
+// export const AssistentModel = gpt_4o_mini;
+// export const VisionModel = gpt_4o_mini;
 
 // export const GROQ_API_KEY = process.env.GROQ_API_KEY!;
 export const OPENAI_API_KEY = process.env.OPENAI_API_KEY!;
 export const OPENAI_BASE_URL = process.env.OPENAI_BASE_URL || "";
+
+export const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY!;
+export const ANTHROPIC_BASE_URL = process.env.ANTHROPIC_BASE_URL || "";
 
 // export const NEYNAR_API_KEY = process.env.NEYNAR_API_KEY!;
 // export const HUB_RPC = process.env.HUB_RPC! || "nemes.farcaster.xyz:2283";

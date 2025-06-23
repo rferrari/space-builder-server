@@ -140,12 +140,18 @@ class BotCustomServer {
     this.logger.log(botConfig.LOG_MESSAGES ? `✅ LOG MESSAGES is ON` : "🚨 LOG MESSAGES is OFF");
 
 
-    this.logger.log("🙃 TEMPERAMENT: " + botConfig.BotLLMModel_TEMP);
-    this.logger.log("🤖 Agent Model: " + botConfig.BotLLMModel);
-    this.logger.log("📄 Workers Model: " + botConfig.RAGLLMModel);
-    this.logger.log("👀 Vision: " + botConfig.VisionModel);
-    this.logger.log("💻 Assistent: " + botConfig.AssistentModel);
+    this.logger.log("🙃 TEMPERAMENT: " + botConfig.CHAT_BOT_TEMP);
+    this.logger.log("🤖 Agent Model: " + botConfig.CHAT_BOT_MODEL);
     this.logger.log("")
+    this.logger.log("🙃 Workers Temp: " + botConfig.WORKERS_TEMP);
+    this.logger.log("📄 Workers Model: " + botConfig.WORKERS_MODEL);
+    this.logger.log("")
+    this.logger.log("🙃 JSON TEMP: " + botConfig.JSON_TEMP);
+    this.logger.log("📄 JSON MODEL: " + botConfig.JSON_MODEL);
+    // this.logger.log("👀 Vision: " + botConfig.VisionModel);
+    // this.logger.log("💻 Assistent: " + botConfig.AssistentModel);
+    this.logger.log("")
+    
     if (this.wss)
       this.wss.on('listening', () => {
         this.logger.log('✅ WS Server ready on port: ' + botConfig.WS_PORT);
