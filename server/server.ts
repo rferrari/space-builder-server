@@ -24,7 +24,7 @@ class BotCustomServer {
 
   constructor() {
     this.MEM_USED = process.memoryUsage();
-    this.logger = new FileLogger({ folder: './logs', printconsole: true, logtofile: true });
+    this.logger = new FileLogger({ folder: './logs', printconsole: true, logtofile: false });
     this.eventBus = new EventBusImpl();
     this.init();
   }

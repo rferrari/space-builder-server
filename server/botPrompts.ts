@@ -29,22 +29,19 @@ Determine if you should respond to the query
 export const FIDGET_CONTEXT_CATALOG_PLANNER = `
 ## AVAILABLE FIDGET TYPES
 
-**text** - Rich text content with markdown support
+**text** - Rich text content with markdown support, Hero sections, content blocks, instructions
 - **Purpose**: Announcements, welcome messages, formatted content, documentation
 - **Key Settings**: title, text (markdown), fontFamily, fontColor, headingsFontFamily, headingsFontColor, urlColor
-- **Common Use**: Hero sections, content blocks, instructions
 
-**gallery** - Display images from various sources
+**gallery** - Display images from various sources, Profile pictures, artwork displays, visual portfolios
 - **Purpose**: Photo galleries, NFT showcases, image collections, visual content
 - **Key Settings**: selectMediaSource (URL/Upload/NFT), imageUrl, uploadedImage, nftSelector, scale, redirectionURL, badgeColor
 - **Sources**: Direct URL, file upload, or NFT from blockchain
-- **Common Use**: Profile pictures, artwork displays, visual portfolios
 
 **Video** - YouTube, Vimeo, and video embeds
 - **Purpose**: Video content, tutorials, entertainment, presentations
 - **Key Settings**: url (auto-converts YouTube/Vimeo URLs), size (scale)
 - **Auto-conversion**: Automatically converts YouTube/Vimeo URLs to embeddable format
-- **Common Use**: Educational content, entertainment, demos
 
 ### Social & Communication Fidgets
 **feed** - X or Farcaster social feeds with advanced filtering
@@ -53,76 +50,62 @@ export const FIDGET_CONTEXT_CATALOG_PLANNER = `
 - **Feed Types**: Following or Filter (using Filter Options)
 - **Filter Options**: Channel feeds, user posts, keyword searches
 - **Platform Support**: Farcaster and X
-- **Common Use**: Community feeds, social walls, content discovery
 
 **cast** - Pin individual Farcaster posts
 - **Purpose**: Highlight specific posts, feature announcements, showcase content
 - **Key Settings**: castUrl (easiest), castHash + casterFid (advanced)
 - **Input Methods**: Warpcast share URL or manual hash/FID
-- **Common Use**: Featured posts, announcements, pinned content
 
 **Chat** - Interactive messaging interfaces
 - **Purpose**: Real-time communication, community discussions
-- **Common Use**: Live support, community chat, messaging
 
-**iframe** - Embed external websites and tools
+**iframe** - Embed external websites and tools, dashboards, web apps, embedded services
 - **Purpose**: Integration with external tools, dashboards, web applications
 - **Key Settings**: url, size (zoom level)
 - **Security**: Automatically sanitizes URLs and blocks malicious content
-- **Common Use**: External tools, dashboards, web apps, embedded services
 
-**frame** - Legacy Farcaster frames
+**frame** - Legacy Farcaster frames, Simple interactive content, legacy frame apps
 - **Purpose**: Interactive Farcaster applications, simple web experiences
 - **Key Settings**: url
-- **Common Use**: Simple interactive content, legacy frame apps
 
-**FramesV2** (Farcaster Mini App) - Next-generation interactive frames
+**FramesV2** (Farcaster Mini App) interactive frames
 - **Purpose**: Advanced interactive applications, mini-apps, rich experiences
 - **Key Settings**: url, collapsed/expanded (preview mode), title, headingFont
 - **Display Modes**: Full app or collapsed preview
-- **Common Use**: Interactive apps, games, advanced tools
 
 **links** - Organized link collections with rich display options
 - **Purpose**: Navigation, resource collections, social media links, quick access
 - **Key Settings**: title, links (array with text/url/avatar/description), viewMode (list/grid), itemBackground, scale
 - **Display Options**: List or grid layout with avatars and descriptions
 - **Link Properties**: Text, URL, optional avatar image, optional description
-- **Common Use**: Social links, resource lists, navigation menus
 
 **Rss** - RSS feed readers for external content
 - **Purpose**: News feeds, blog content, external content aggregation
 - **Key Settings**: rssUrl, fontFamily, fontColor, headingsFontFamily, headingsFontColor
 - **Content**: Automatically fetches and displays RSS feed items
-- **Common Use**: News feeds, blog aggregation, content curation
 
-**Swap** - Cryptocurrency trading interfaces
+**Swap** - Cryptocurrency trading interfaces, DEX interfaces, token trading, DeFi integration
 - **Purpose**: Token swapping, DeFi interactions, trading
 - **Key Settings**: defaultSellToken, defaultBuyToken, fromChain, toChain, background, fontFamily, fontColor, swapScale, optionalFeeRecipient
 - **Chain Support**: Multi-chain token swapping
-- **Common Use**: DEX interfaces, token trading, DeFi integration
 
-**Portfolio** - Cryptocurrency portfolio tracking
+**Portfolio** - Cryptocurrency portfolio tracking, , asset tracking, wallet monitoring
 - **Purpose**: Wallet tracking, portfolio analytics, asset monitoring
 - **Key Settings**: trackType (farcaster/address), farcasterUsername, walletAddresses
 - **Tracking Methods**: By Farcaster username or wallet addresses
-- **Common Use**: Portfolio dashboards, asset tracking, wallet monitoring
 
-**Market** - Cryptocurrency market data and pricing
+**Market** - Cryptocurrency market data and pricing, Price tickers, market overviews, trading dashboards
 - **Purpose**: Price displays, market information, trading data
-- **Common Use**: Price tickers, market overviews, trading dashboards
 
-**governance** - DAO proposals and voting interfaces
+**governance** - DAO proposals and voting interfaces, governance oversight
 - **Purpose**: Governance participation, proposal viewing, voting
-- **Common Use**: DAO dashboards, voting interfaces, governance oversight
 
-**SnapShot** - Snapshot governance integration
+**SnapShot** - Snapshot governance integration, Decentralized governance, community voting
 - **Purpose**: Snapshot proposal viewing and voting
-- **Common Use**: Decentralized governance, community voting
 
-**profile** - User profile displays
+**profile** - User profile displays, user cards, identity verification
 - **Purpose**: User information, profile cards, identity display
 - **Availability**: Development environment only
-- **Common Use**: Profile showcases, user cards, identity verification
 `;
 
 export const FIDGET_CONTEXT_CATALOG_BUILDER = `
@@ -306,22 +289,84 @@ export const FIDGET_CONFIG_GUIDE: Record<string, ExampleFidgetInstance> = {{
 
 
 
+// export const PLANING_SYSTEM = `
+// You are the *Planner Agent* for Nounspace.
+// Your job is to interpret a user's natural-language customization request and convert it into a clear, structured plan for the Builder Agent to generate or modify a fidget-based JSON layout.
+
+// You will be given a user query and some existing config.
+// Additionally, a JSON array called 'mediaJson' includes related images and video links. Use this media where relevant.
+
+
+// # TASK
+// → Analyse current_config 
+// → Analyse userRequest  
+// → Select 2 to 7 max fidgets from the catalog that best fulfill the request
+// → ONLY use valid urls. Check all urls before use.
+// → If URL choose is not valid, change it for valid or choose another fidge instead.
+// → Select the fidgets configurations, links and others depending on available basic or advanced configuration.
+// → Apply changes on top of the current config OR create new config from scratch if necessary
+// → Output a descriptive choosen fidgets and its configurations that the Builder Agent can follow.
+// → Remember builder is LLM, so make it clear and direct.
+
+// # INPUTS:
+
+// <fidgets_catalog>
+// ${FIDGET_CONTEXT_CATALOG_PLANNER}
+// </fidgets_catalog>
+
+// <current_config>
+// {currentConfig}
+// </current_config>
+
+// <userRequest>
+// {userQuery}
+// </userRequest>
+
+// <mediaJson>
+// {mediaJson}
+// </mediaJson>
+// `;
+
 export const PLANING_SYSTEM = `
-You are the *Planner Agent* for Nounspace.
-Your job is to interpret a user's natural-language customization request and convert it into a clear, structured plan for the Builder Agent to generate or modify a fidget-based JSON layout.
+**You are the Planner Agent for Nounspace.**
+Your role is to translate user requests into a structured configuration plan using only valid fidgets from the catalog. Your output will be used by the Builder Agent — it must be precise, easy to follow, and describe exactly what to build.
 
-# TASK
-→ Analyse current_config 
-→ Analyse userRequest  
-→ Select 2 to 7 max fidgets from the catalog that best fulfill the request
-→ ONLY use valid urls. Check all urls before use.
-→ If URL choose is not valid, change it for valid or choose another fidge instead.
-→ Select the fidgets configurations, links and others depending on available basic or advanced configuration.
-→ Apply changes on top of the current config OR create new config from scratch if necessary
-→ Output a descriptive choosen fidgets and its configurations that the Builder Agent can follow.
-→ Remember builder is LLM, so make it clear and direct.
+## OBJECTIVE
 
-# INPUTS:
+For each fidget in the plan, clearly describe:
+
+1. **Fidget type** (e.g., text, gallery, feed)
+2. **Suggested position** (e.g., top-left, center, sidebar)
+3. **What content or data it should show**
+4. **Exact settings** (from the catalog) — be complete and explicit
+5. **Valid URLs** (from '<mediaJson>' or trusted sources — replace or skip broken links)
+
+## FORMAT
+
+Use this format for each fidget block:
+
+\`\`\`
+**[fidgetType]** — [short purpose]  
+- **Position**: [semantic placement]  
+- **Settings**:  
+  - [key]: [value]  
+  - [key]: [value]  
+  - ...
+\`\`\`
+
+> 🔒 Do **not** include layout positions ('x', 'y', 'w', 'h').
+> 🔄 Do **not** use JSON, markdown, or explanations.
+> 🎯 Be **machine-readable**, concise, and directly usable by the builder.
+
+## RULES
+
+* Use only fidgets listed in '<fidgets_catalog>'
+* Always include full required settings
+* Use valid URLs (from '<mediaJson>' or reliable fallbacks)
+* Skip broken or untrusted media
+* Avoid ambiguity — be explicit
+
+## INPUTS
 
 <fidgets_catalog>
 ${FIDGET_CONTEXT_CATALOG_PLANNER}
@@ -334,8 +379,11 @@ ${FIDGET_CONTEXT_CATALOG_PLANNER}
 <userRequest>
 {userQuery}
 </userRequest>
-`;
 
+<mediaJson>
+{mediaJson}
+</mediaJson>
+`;
 
 export const COMMUNICATING_PROMPT = `
 You are receiving:
@@ -439,7 +487,10 @@ JUST OUTPUT each fidget settings size and position to fill up the grid.
               "items": {{
                 "type": "object",
                 "properties": {{
-                  "i": {{ "type": "string" }},
+                  "i": {{
+                    "type": "string",
+                    "pattern": "^[a-z]+:[a-zA-Z0-9_-]+$"
+                  }},
                   "x": {{ "type": "number" }},
                   "y": {{ "type": "number" }},
                   "w": {{ "type": "number" }},
@@ -461,7 +512,7 @@ JUST OUTPUT each fidget settings size and position to fill up the grid.
       "required": ["layoutFidget", "layoutConfig"]
     }},
 </LAYOUT.SCHEME>
-
+i: fidgetType:some-id (e.g.: "text:welcome", "video:intro-video", "feed:farcaster-news")
 x, y, w, h: match your design plan coordinates and size
 These values are used directly by the builder — do not leave them out or estimate vaguely
 MANDATORY: Ensure the full grid is filled with fidgets using these precise layout placements.

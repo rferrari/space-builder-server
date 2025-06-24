@@ -78,7 +78,7 @@ export class BotAvatar {
 
     // this.farcaster = farcaster;
     this.messagesLog = new FileLogger({ folder: './logs', printconsole: true });
-    this.memoryLog = new FileLogger({ folder: './logs', printconsole: false });
+    this.memoryLog = new FileLogger({ folder: './logs', printconsole: false, logtofile: false });
     // this.newCastsLogger = new FileLogger({ folder: './logs', printconsole: false });
     this.userMemories = new Map();
     this.maxMessageHistorySize = botConfig.maxMessageHistorySize; // Set the maximum history limit
@@ -259,8 +259,8 @@ export class BotAvatar {
     // console.warn("memorySummary");
     // console.warn(memorySummary);
 
-    this.memoryLog.log("MEMORYSUMMARY:", "MemUsed")
-    this.memoryLog.log(memorySummary, "MEMORYSUMMARY");
+    // this.memoryLog.log("MEMORYSUMMARY:", "MemUsed")
+    // this.memoryLog.log(memorySummary, "MEMORYSUMMARY");
 
     // }, 5 * 60 * 1000); // 5 minutes
   }

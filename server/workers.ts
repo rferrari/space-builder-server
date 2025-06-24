@@ -16,16 +16,15 @@ import {
 } from "./botPrompts";
 // import {  } from "./one-shot-builder-v2";
 
-// import OpenAI from "openai";
-// const client = new OpenAI();
+import OpenAI from "openai";
+const client = new OpenAI();
 
-// const response = await client.responses.create({
-//     model: "gpt-4.1",
-//     tools: [ { type: "web_search_preview" } ],
-//     input: "What was a positive news story from today?",
-// });
+type Annotation = {
+    type: string;
+    title: string;
+    url: string;
+};
 
-// console.log(response.output_text);
 
 export interface GraphInterface {
     currentConfig: any;
@@ -38,12 +37,51 @@ export interface GraphInterface {
     designerOutput: string;
     builderOutput: string;
     communicatorOutput: string;
-    // current_space?: string;
+    mediaJson: any;
 }
 
 function escapeBraces(str: string): string {
     return str.replace(/{{/g, '{{{{').replace(/}}/g, '}}}}');
 }
+
+const isValidRss = async (url: string): Promise<boolean> => {
+    try {
+        const res = await fetch(url, { method: 'HEAD' });
+        const type = res.headers.get('content-type') || "";
+        return type.includes("application/rss+xml") || type.includes("application/xml") || type.includes("text/xml");
+    } catch {
+        return false;
+    }
+};
+
+const isValidImage = async (url: string): Promise<boolean> => {
+    try {
+        const res = await fetch(url, { method: 'HEAD' });
+        const type = res.headers.get('content-type') || "";
+        return type.startsWith("image/"); // allows png, jpeg, etc.
+    } catch {
+        return false;
+    }
+};
+
+
+const validateMediaArray = async (mediaArray: any[]) => {
+    const validated = [];
+
+    for (const item of mediaArray) {
+        if (item.type === "rss" && await isValidRss(item.url)) {
+            validated.push(item);
+        }
+        if (item.type === "image" && await isValidImage(item.url)) {
+            validated.push(item);
+        }
+        if (item.type === "video" || item.type === "social") {
+            validated.push(item); // optionally add further checks
+        }
+    }
+
+    return validated;
+};
 
 
 export class WorkersSystem {
@@ -71,24 +109,26 @@ export class WorkersSystem {
             communicatorOutput: null,
             model: null,
             jsonResponseModel: null,
-            currentConfig: null
+            currentConfig: null,
+            mediaJson: null,
         };
 
         this.graph = new StateGraph<GraphInterface>({ channels: graphState })
             .addNode("create_model", this.createModel.bind(this))
             .addNode("create_json_response_model", this.createJsonResponseModel.bind(this))
+            .addNode("researcher", this.researcher.bind(this))
             .addNode("planning", this.planning.bind(this))
             .addNode("designing", this.designing.bind(this))
             .addNode("building", this.building.bind(this))
             .addNode("communicating", this.communicating.bind(this))
             .addEdge(START, "create_model")
             .addEdge("create_model", "create_json_response_model")
-            .addEdge("create_json_response_model", "planning")
+            .addEdge("create_json_response_model", "researcher")
+            .addEdge("researcher", "planning")
             .addEdge("planning", "designing")
             .addEdge("designing", "building")
             .addEdge("building", "communicating")
             .addEdge("communicating", END) as StateGraph<GraphInterface>;
-
 
         this.ragApp = this.graph.compile({ checkpointer: new MemorySaver() });
     }
@@ -120,22 +160,129 @@ export class WorkersSystem {
         };
     }
 
+    private async researcher(state: GraphInterface): Promise<Partial<GraphInterface>> {
+        const logPublish = {
+            name: "Researcher",
+            type: "PLANNER_LOGS",
+            clientId: state.clientId, // ensure clientId is preserved
+            message: ""
+        }
+        logPublish.message = "☕ Preparing coffee..."
+        this.eventBus.publish("AGENT_LOGS", logPublish);
+
+        const research = await client.responses.create({
+            model: "gpt-4.1",
+            tools: [{ type: "web_search_preview" }],
+            tool_choice: { type: "web_search_preview" },
+            // input: `Search the web for websites links, images url, and videos related to: "${state.userQuery}"`,
+            // input: ``,
+
+            input: `
+Search the web and return a JSON array of valid, direct links related to main subject from user query: "${state.userQuery}".
+
+item in the array must include:
+- "type": one of "information", "image", "video", "rss", or "social"
+- "info": a short descriptive
+- "url": the direct, valid link
+
+Strict rules:
+- "information": summary of information about main subject on user query
+- "image": only include direct links that end with .png, .jpg, or .jpeg — skip pages that host images or download portals
+- "video": only include direct links ending in .mp4 or full YouTube video URLs (not playlist pages or channels)
+- "rss": Only include RSS feeds if the URL returns a valid XML feed (Content-Type: application/rss+xml, application/xml, or text/xml). If unsure or not verifiable, do not include the RSS item.
+- "social": only include public profile URLs (e.g., Twitter, Instagram, Facebook)
+
+Important:
+- Do not include links to image search sites (e.g., Unsplash, Pixabay, Getty)
+- Do not include general websites or pages that don't directly serve media
+- Do not include portals or download pages pretending to be image links
+- Do not include links unless they end with the correct file extension (for images or videos)
+
+Return only a valid JSON array inside a \`\`\`json code block. Do not include any text or explanation outside the JSON.
+`
+
+            // Do not return:
+            // - Search portals (e.g., Unsplash search pages, image collections)
+            // - General websites or homepages
+            // - Any links that require further navigation to access media or feeds
+
+        });
+
+        // const results = research.tool_outputs?.[0]?.output?.results || [];
+        // const links = results.map(item => ({
+        //     title: item.title,
+        //     url: item.url,
+        //     image: item.image_url || item.thumbnail || null,
+        //     video: item.video_url || (item.url?.includes("youtube.com") || item.url?.includes("vimeo.com") ? item.url : null),
+        // }));
+        // console.log(links);
+
+        const jsonMatch = research.output_text.match(/```json\s*([\s\S]*?)\s*```/);
+        let mediaJson = "[]";
+
+        if (jsonMatch) {
+            try {
+                const mediaArray = JSON.parse(jsonMatch[1]);
+                const validatedMediaArray = await validateMediaArray(mediaArray); // ✅ await it
+                mediaJson = JSON.stringify(validatedMediaArray, null, 2); // ✅ use the cleaned array
+                // mediaJson = JSON.stringify(mediaArray, null, 2);
+            } catch (err) {
+                console.error("Failed to parse media JSON:", err);
+            }
+        }
+
+        // const jsonMatch = research.output_text.match(/```json\s*([\s\S]*?)\s*```/);
+        // if (!jsonMatch) {
+        //     console.error("No JSON block found.");
+        // } else {
+        //     try {
+        //         const mediaArray = JSON.parse(jsonMatch[1]);
+        //         console.log(mediaArray); // ready to use!
+        return {
+            mediaJson
+        }
+        //     } catch (err) {
+        //         console.error("Failed to parse JSON:", err);
+        //         return {
+        //             mediaArray: null
+        //         }
+        //     }
+        // }
+        // const researchResult = research.output_text;
+        // console.dir(extractedLinks)
+
+        // const researchResult = research.;
+        // tool_choice parameter, and setting it to 
+
+    }
+
     private async planning(state: GraphInterface): Promise<Partial<GraphInterface>> {
         // log the inputs
-        console.log(`\n`+'=--'.repeat(250)+`\n`);
+        const msgPublish = {
+            name: "Researcher",
+            type: "PLANNER_LOGS",
+            clientId: state.clientId, // ensure clientId is preserved
+            message: ""
+        }
+        msgPublish.message = "🔎 searching web..."
+        this.eventBus.publish("AGENT_LOGS", msgPublish);
+
+        console.log(`\n` + '=--'.repeat(250) + `\n`);
         console.log(`[PLANNER] Inputs: 
             currentConfig: ${state.currentConfig}
             userQuery: ${state.userQuery}
+            mediaJson: ${state.mediaJson}
             `);
 
         const prompt = new PromptTemplate({
             template: PLANING_SYSTEM,
-            inputVariables: ["currentConfig", "userQuery"]
+            inputVariables: ["currentConfig", "userQuery", "mediaJson"]
         });
 
         const filledPrompt = await prompt.format({
             currentConfig: state.currentConfig,
-            userQuery: state.userQuery
+            userQuery: state.userQuery,
+            mediaJson: state.mediaJson
         });
 
         console.log(`
@@ -153,27 +300,29 @@ export class WorkersSystem {
 
         // console.log(filledPrompt);
 
-        const output = await state.model.invoke(filledPrompt);
-        // prompt.pipe(state.model).pipe(new StringOutputParser()).invoke({
-        //     // const output = await prompt.pipe(state.jsonResponseModel).pipe(new StringOutputParser()).invoke({
-        //     currentConfig: state.currentConfig,
-        //     userQuery: state.userQuery
-        // });
 
-        const result = output.content.toString()
+        const result = await state.model.invoke(filledPrompt);
+        prompt.pipe(state.model).pipe(new StringOutputParser()).invoke({
+            // const output = await prompt.pipe(state.jsonResponseModel).pipe(new StringOutputParser()).invoke({
+            currentConfig: state.currentConfig,
+            userQuery: state.userQuery,
+            mediaJson: state.mediaJson
+        });
+
+        const output = result.content.toString()
 
         this.log.log("[PLANNER] Plan generated:", "PLANNER");
-        this.log.log(result, "PLANNER");
+        this.log.log(output, "PLANNER");
         const logPublish = {
             name: "Planner",
             type: "PLANNER_LOGS",
             clientId: state.clientId, // ensure clientId is preserved
-            message: result
+            message: output
         };
         this.eventBus.publish("PLANNER_LOGS", logPublish);
         logPublish.message = "🎨 Designer doodling something radical..."
         this.eventBus.publish("AGENT_LOGS", logPublish);
-        return { plannerOutput: escapeBraces(result) };
+        return { plannerOutput: escapeBraces(output) };
     }
 
     private async designing(state: GraphInterface): Promise<Partial<GraphInterface>> {
@@ -207,7 +356,7 @@ export class WorkersSystem {
         //     plan: state.plannerOutput
         // });
 
-        this.log.log("[DESIGN] Plan generated:", "PLANNER");
+        this.log.log("[DESIGN] Plan generated:", "DESIGN");
         this.log.log(output, "DESIGN");
         const logPublish = {
             name: "DESIGNER",
