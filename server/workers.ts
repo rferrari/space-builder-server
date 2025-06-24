@@ -200,12 +200,12 @@ Strict rules:
     - for example, https://solana.com/news/rss.xml looks valid, but is not. choose another
 
 Important:
-- Do not include links to image search sites (e.g., Unsplash, Pixabay, Getty)
 - Do not include general websites or pages that don't directly serve media
 - Do not include portals or download pages pretending to be image links
 - Do not include links unless they end with the correct file extension (for images or videos)
 
-Return only a valid JSON array inside a \`\`\`json code block. Do not include any text or explanation outside the JSON.
+Return only a valid JSON array inside a \`\`\`json code block.
+Do not include any text or explanation outside the JSON.
 `
 
             // Do not return:
