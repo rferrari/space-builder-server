@@ -29,83 +29,70 @@ Determine if you should respond to the query
 export const FIDGET_CONTEXT_CATALOG_PLANNER = `
 ## AVAILABLE FIDGET TYPES
 
-**text** - Rich text content with markdown support, Hero sections, content blocks, instructions
-- **Purpose**: Announcements, welcome messages, formatted content, documentation
-- **Key Settings**: title, text (markdown), fontFamily, fontColor, headingsFontFamily, headingsFontColor, urlColor
+### Classic fidgets
 
-**gallery** - Display images from various sources, Profile pictures, artwork displays, visual portfolios
-- **Purpose**: Photo galleries, NFT showcases, image collections, visual content
-- **Key Settings**: selectMediaSource (URL/Upload/NFT), imageUrl, uploadedImage, nftSelector, scale, redirectionURL, badgeColor
-- **Sources**: Direct URL, file upload, or NFT from blockchain
+**text**
+- Purpose: Rich text content with markdown support, Hero sections, content blocks, instructions
+- Key Settings: title, text (markdown)
 
-**Video** - YouTube, Vimeo, and video embeds
-- **Purpose**: Video content, tutorials, entertainment, presentations
-- **Key Settings**: url (auto-converts YouTube/Vimeo URLs), size (scale)
-- **Auto-conversion**: Automatically converts YouTube/Vimeo URLs to embeddable format
+**gallery**
+- Purpose: Display images from various sources, Profile pictures, artwork displays, GIFs
+- Key Settings: selectMediaSource (URL), imageUrl, redirectionURL
 
-### Social & Communication Fidgets
-**feed** - X or Farcaster social feeds with advanced filtering
-- **Purpose**: Social media streams, community content, trending posts
-- **Key Settings**: selectPlatform (Farcaster/X)
-- **Feed Types**: Following or Filter (using Filter Options)
-- **Filter Options**: Channel feeds, user posts, keyword searches
-- **Platform Support**: Farcaster and X
+**Video**
+- Purpose: Video content, tutorials, entertainment, presentations
+- Key Settings: url (auto-converts YouTube/Vimeo URLs)
 
-**cast** - Pin individual Farcaster posts
-- **Purpose**: Highlight specific posts, feature announcements, showcase content
-- **Key Settings**: castUrl (easiest), castHash + casterFid (advanced)
-- **Input Methods**: Warpcast share URL or manual hash/FID
+**iframe**
+- Purpose: Embed external websites and tools, dashboards, web apps, embedded services
+- Key Settings: url
 
-**Chat** - Interactive messaging interfaces
-- **Purpose**: Real-time communication, community discussions
+**links**
+- Purpose: Organized link collections with rich display options, navigation, resource collections, social media links, quick access
+- Key Settings: title, links (array with text/url/avatar/description), viewMode (list/grid), itemBackground
+- Display Options: List or grid layout with avatars and descriptions
+- Link Properties: Text, URL, optional avatar image, optional description
 
-**iframe** - Embed external websites and tools, dashboards, web apps, embedded services
-- **Purpose**: Integration with external tools, dashboards, web applications
-- **Key Settings**: url, size (zoom level)
-- **Security**: Automatically sanitizes URLs and blocks malicious content
+**Rss**
+- Purpose: News feeds, blog content, external content aggregation
+- Key Settings: rssUrl
 
-**frame** - Legacy Farcaster frames, Simple interactive content, legacy frame apps
-- **Purpose**: Interactive Farcaster applications, simple web experiences
-- **Key Settings**: url
+**Chat**
+- Purpose: Interactive messaging interfaces, community discussions
 
-**FramesV2** (Farcaster Mini App) interactive frames
-- **Purpose**: Advanced interactive applications, mini-apps, rich experiences
-- **Key Settings**: url, collapsed/expanded (preview mode), title, headingFont
-- **Display Modes**: Full app or collapsed preview
+### On-chain
 
-**links** - Organized link collections with rich display options
-- **Purpose**: Navigation, resource collections, social media links, quick access
-- **Key Settings**: title, links (array with text/url/avatar/description), viewMode (list/grid), itemBackground, scale
-- **Display Options**: List or grid layout with avatars and descriptions
-- **Link Properties**: Text, URL, optional avatar image, optional description
+**Swap**
+- Purpose: Token swapping, DeFi interactions, trading
+- Key Settings: defaultSellToken, defaultBuyToken, fromChain, toChain
 
-**Rss** - RSS feed readers for external content
-- **Purpose**: News feeds, blog content, external content aggregation
-- **Key Settings**: rssUrl, fontFamily, fontColor, headingsFontFamily, headingsFontColor
-- **Content**: Automatically fetches and displays RSS feed items
+**Portfolio**
+- Purpose: Wallet tracking, portfolio analytics, asset monitoring
+- Key Settings: trackType (farcaster/address), farcasterUsername, walletAddresses (ethereum address)
 
-**Swap** - Cryptocurrency trading interfaces, DEX interfaces, token trading, DeFi integration
-- **Purpose**: Token swapping, DeFi interactions, trading
-- **Key Settings**: defaultSellToken, defaultBuyToken, fromChain, toChain, background, fontFamily, fontColor, swapScale, optionalFeeRecipient
-- **Chain Support**: Multi-chain token swapping
+**Market**
+- Purpose: Price chart display, market information, trading data
 
-**Portfolio** - Cryptocurrency portfolio tracking, , asset tracking, wallet monitoring
-- **Purpose**: Wallet tracking, portfolio analytics, asset monitoring
-- **Key Settings**: trackType (farcaster/address), farcasterUsername, walletAddresses
-- **Tracking Methods**: By Farcaster username or wallet addresses
+### Farcaster native
 
-**Market** - Cryptocurrency market data and pricing, Price tickers, market overviews, trading dashboards
-- **Purpose**: Price displays, market information, trading data
+**feed**
+- Purpose: Social media streams, community content, trending posts
+- Key Settings: selectPlatform (Farcaster/X)
+- Feed Types: Following or Filter
+- Feed Filter Options: Channel feeds, user posts, keyword searches
+- Platform Support: Farcaster and X
 
-**governance** - DAO proposals and voting interfaces, governance oversight
-- **Purpose**: Governance participation, proposal viewing, voting
+**cast**
+- Purpose: Pin individual Farcaster posts, highlight specific posts, feature announcements, showcase content
+- Key Settings: castUrl (easiest), castHash + casterFid (advanced)
 
-**SnapShot** - Snapshot governance integration, Decentralized governance, community voting
-- **Purpose**: Snapshot proposal viewing and voting
+**frame**
+- Purpose: Legacy Farcaster frames, Simple interactive content, legacy frame apps
+- Key Settings: url
 
-**profile** - User profile displays, user cards, identity verification
-- **Purpose**: User information, profile cards, identity display
-- **Availability**: Development environment only
+**FramesV2** 
+- Purpose: (Farcaster Mini App) interactive frames, mini-apps
+- Key Settings: url, collapsed/expanded (preview mode), title, headingFont
 `;
 
 export const FIDGET_CONTEXT_CATALOG_BUILDER = `
