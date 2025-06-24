@@ -187,14 +187,12 @@ item in the array must include:
 
 Strict rules:
 - "information": summary of information about main subject on user query
-- "image": only include direct links that:
-    - End with .png, .jpg, or .jpeg
-    - Are hosted on a reputable image CDN (e.g. imgur.com, cdn.*, *.cloudfront.net, not *.wikipedia.org or random blogs)
-    - Do not come from encyclopedic/media archive sites (e.g. upload.wikimedia.org, wikimedia.org)
-    - Point to standalone image files — not pages, thumbnails, or hotlinked media from unrelated domains
-    - Skip images that show watermarks, are low resolution, or part of galleries
 - "video": only include direct links ending in .mp4 or full YouTube video URLs (not playlist pages or channels)
-- "social": only include public profile URLs (e.g., Twitter, Instagram, Facebook)
+- "social": only include public profile URLs from Twitter
+- "image":
+    - Give priority to cdn.pexels.com, images.pexels.com
+    - Must be a direct link ending in .jpg, .jpeg, or .png
+    - Must contain the subject in the filename
 - "rss": give priority to https://cointelegraph.com/rss/tag/<coins> feeds. ONLY include if:
     - URL ends with '.xml' or includes '/feed'
     - AND it returns Content-Type: application/rss+xml, application/xml, or text/xml
