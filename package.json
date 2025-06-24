@@ -10,7 +10,10 @@
     "build:dev": "tsc -p .",
     "start:dev": "tsc -p . && node build/server.js",
     "start:prod": "node build/server.js",
-    "build": "tsc -p ."
+    "build": "tsc -p .",
+    "test:workers": "tsc -p . && node build/test/workers-test.js",
+    "test:simple": "tsc -p . && node build/test/simple-test.js",
+    "test:queries": "tsc -p . && node build/test/query-tests.js"
   },
   "dependencies": {
     "@langchain/community": "^0.3.47",

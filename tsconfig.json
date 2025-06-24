@@ -19,7 +19,8 @@
     }
   },
   "include": [
-    "server/**/*"
+    "server/**/*",
+    "test/**/*"
   ],
   "exclude": [
     "node_modules/*"
