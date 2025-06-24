@@ -12,12 +12,14 @@ interface LogOptions {
 class FileLogger {
     private folder: string;
     private printconsole: boolean;
+    private options: any;
     private level: string;
 
     constructor(options: LogOptions) {
         this.folder = path.join(__dirname, '../../', options.folder);
         this.level = options.level || "warn";
         this.printconsole = (options.printconsole === true)
+        this.options = options;
 
         this.createDirectoryIfNotExists(this.folder);
     }
@@ -50,7 +52,7 @@ class FileLogger {
 
     private logtofile(message: any, logKey: string = ""): void {
         const logFile = this.getLogFile(logKey);
-        if (this.logtofile)
+        if (this.options.logtofile)
             fs.appendFileSync(logFile, message + '\n');
     }
 

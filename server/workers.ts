@@ -10,8 +10,8 @@ import { BotChatMessage } from "./bot.types";
 import {
     PLANING_SYSTEM,
     COMMUNICATING_PROMPT,
-    SINGLE_WORKER_SYSTEM_PROMPT,
-    SPACE_DESIGNER_SYSTEM_PROMPT,
+    BUILDER_SYSTEM_PROMPT,
+    DESIGNER_SYSTEM_PROMPT,
     MAIN_SYSTEM_PROMPT
 } from "./botPrompts";
 // import {  } from "./one-shot-builder-v2";
@@ -187,10 +187,19 @@ item in the array must include:
 
 Strict rules:
 - "information": summary of information about main subject on user query
-- "image": only include direct links that end with .png, .jpg, or .jpeg — skip pages that host images or download portals
+- "image": only include direct links that:
+    - End with .png, .jpg, or .jpeg
+    - Are hosted on a reputable image CDN (e.g. imgur.com, cdn.*, *.cloudfront.net, not *.wikipedia.org or random blogs)
+    - Do not come from encyclopedic/media archive sites (e.g. upload.wikimedia.org, wikimedia.org)
+    - Point to standalone image files — not pages, thumbnails, or hotlinked media from unrelated domains
+    - Skip images that show watermarks, are low resolution, or part of galleries
 - "video": only include direct links ending in .mp4 or full YouTube video URLs (not playlist pages or channels)
-- "rss": Only include RSS feeds if the URL returns a valid XML feed (Content-Type: application/rss+xml, application/xml, or text/xml). If unsure or not verifiable, do not include the RSS item.
 - "social": only include public profile URLs (e.g., Twitter, Instagram, Facebook)
+- "rss": give priority to https://cointelegraph.com/rss/tag/<coins> feeds. ONLY include if:
+    - URL ends with '.xml' or includes '/feed'
+    - AND it returns Content-Type: application/rss+xml, application/xml, or text/xml
+    - If the RSS URL returns HTML or is not verifiable, skip it
+    - for example, https://solana.com/news/rss.xml looks valid, but is not. choose another
 
 Important:
 - Do not include links to image search sites (e.g., Unsplash, Pixabay, Getty)
@@ -334,7 +343,7 @@ Return only a valid JSON array inside a \`\`\`json code block. Do not include an
 
 
         const prompt = new PromptTemplate({
-            template: SPACE_DESIGNER_SYSTEM_PROMPT,
+            template: DESIGNER_SYSTEM_PROMPT,
             inputVariables: ["plan"]
         });
 
@@ -381,7 +390,7 @@ Return only a valid JSON array inside a \`\`\`json code block. Do not include an
             designerOutput: ${state.designerOutput}`);
 
         const prompt = new PromptTemplate({
-            template: SINGLE_WORKER_SYSTEM_PROMPT,
+            template: BUILDER_SYSTEM_PROMPT,
             inputVariables: [
                 "plan",
                 "designer",

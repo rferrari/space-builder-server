@@ -15,8 +15,8 @@ Your task is to Evaluate if the user's query relates to creating or customizing 
 # RESPONSE FORMAT
 Always respond using this JSON structure:
 {
-  "action": "[RESPOND|IGNORE]",
-  "reason": "A brief explanation of why this action was chosen."
+"action": "[RESPOND|IGNORE]",
+"reason": "A brief explanation of why this action was chosen."
 }
 `;
 
@@ -112,178 +112,178 @@ export const FIDGET_CONTEXT_CATALOG_BUILDER = `
 // Example Fidget configuration data used for prompt context.
 // This mirrors the shape of "fidgetInstanceDatums" in a SpaceConfig.
 export interface ExampleFidgetConfig {{
-  editable: boolean;
-  settings: Record<string, unknown>;
-  data: Record<string, unknown>;
+editable: boolean;
+settings: Record<string, unknown>;
+data: Record<string, unknown>;
 }}
 
 export interface ExampleFidgetInstance {{
-  config: ExampleFidgetConfig;
-  fidgetType: string;
-  id: string;
+config: ExampleFidgetConfig;
+fidgetType: string;
+id: string;
 }}
 
 // FIDGET_CONFIG_GUIDE provides sample settings for each Fidget.
 export const FIDGET_CONFIG_GUIDE: Record<string, ExampleFidgetInstance> = {{
-  // Feed Fidget - displays casts from Farcaster or posts from X
-  "feed:example": {{
-    config: {{
-      editable: true,
-      settings: {{
-        feedType: "following",
-        filterType: "keyword",
-        keyword: "nouns",
-        showOnMobile: true,
-      }},
-      data: {{}},
-    }},
-    fidgetType: "feed",
-    id: "feed:example",
-  }},
+// Feed Fidget - displays casts from Farcaster or posts from X
+"feed:example": {{
+config: {{
+editable: true,
+settings: {{
+feedType: "following",
+filterType: "keyword",
+keyword: "nouns",
+showOnMobile: true,
+}},
+data: {{}},
+}},
+fidgetType: "feed",
+id: "feed:example",
+}},
 
-  // Cast Fidget
-  "cast:example": {{
-    config: {{
-      editable: true,
-      settings: {{
-        castUrl: "https://farcaster.xyz/~/post/0x123",
-        casterFid: 1234,
-      }},
-      data: {{}},
-    }},
-    fidgetType: "cast",
-    id: "cast:example",
-  }},
+// Cast Fidget
+"cast:example": {{
+config: {{
+editable: true,
+settings: {{
+castUrl: "https://farcaster.xyz/~/post/0x123",
+casterFid: 1234,
+}},
+data: {{}},
+}},
+fidgetType: "cast",
+id: "cast:example",
+}},
 
-  // Gallery Fidget
-  "gallery:example": {{
-    config: {{
-      editable: true,
-      settings: {{
-        imageUrl: "<URL>",
-        selectMediaSource: {{ name: "URL" }},
-        // Scale: resize multiplier 0.5 - 2
-        Scale: 1,
-      }},
-      data: {{}},
-    }},
-    fidgetType: "gallery",
-    id: "gallery:example",
-  }},
+// Gallery Fidget
+"gallery:example": {{
+config: {{
+editable: true,
+settings: {{
+imageUrl: "<URL>",
+selectMediaSource: {{ name: "URL" }},
+// Scale: resize multiplier 0.5 - 2
+Scale: 1,
+}},
+data: {{}},
+}},
+fidgetType: "gallery",
+id: "gallery:example",
+}},
 
-  // Text Fidget
-  "text:example": {{
-    config: {{
-      editable: true,
-      settings: {{
-        title: "Welcome",
-        text: "Hello **nounspace**",
-        urlColor: "#0000FF",
-      }},
-      data: {{}},
-    }},
-    fidgetType: "text",
-    id: "text:example",
-  }},
+// Text Fidget
+"text:example": {{
+config: {{
+editable: true,
+settings: {{
+title: "Welcome",
+text: "Hello **nounspace**",
+urlColor: "#0000FF",
+}},
+data: {{}},
+}},
+fidgetType: "text",
+id: "text:example",
+}},
 
-  // Links Fidget
-  "links:example": {{
-    config: {{
-      editable: true,
-      settings: {{
-        title: "Resources",
-        links: [{{ text: "Nounspace", url: "https://nounspace.com" }}],
-        viewMode: "list",
-      }},
-      data: {{}},
-    }},
-    fidgetType: "links",
-    id: "links:example",
-  }},
+// Links Fidget
+"links:example": {{
+config: {{
+editable: true,
+settings: {{
+title: "Resources",
+links: [{{ text: "Nounspace", url: "https://nounspace.com" }}],
+viewMode: "list",
+}},
+data: {{}},
+}},
+fidgetType: "links",
+id: "links:example",
+}},
 
-  // IFrame Fidget
-  "iframe:example": {{
-    config: {{
-      editable: true,
-      settings: {{
-        url: "https://example.com",
-        // size: scale factor 0.5 - 2
-        size: 1,
-      }},
-      data: {{}},
-    }},
-    fidgetType: "iframe",
-    id: "iframe:example",
-  }},
+// IFrame Fidget
+"iframe:example": {{
+config: {{
+editable: true,
+settings: {{
+url: "https://example.com",
+// size: scale factor 0.5 - 2
+size: 1,
+}},
+data: {{}},
+}},
+fidgetType: "iframe",
+id: "iframe:example",
+}},
 
-  // Swap Fidget
-  "Swap:example": {{
-    config: {{
-      editable: true,
-      settings: {{
-        defaultSellToken: "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
-        defaultBuyToken: "0x48c6740bcf807d6c47c864faeea15ed4da3910ab",
-      }},
-      data: {{}},
-    }},
-    fidgetType: "Swap",
-    id: "Swap:example",
-  }},
+// Swap Fidget
+"Swap:example": {{
+config: {{
+editable: true,
+settings: {{
+defaultSellToken: "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+defaultBuyToken: "0x48c6740bcf807d6c47c864faeea15ed4da3910ab",
+}},
+data: {{}},
+}},
+fidgetType: "Swap",
+id: "Swap:example",
+}},
 
-  // Chat Fidget
-  "Chat:example": {{
-    config: {{
-      editable: true,
-      settings: {{
-        roomName: "0x48C6740BcF807d6C47C864FaEEA15Ed4dA3910Ab",
-      }},
-      data: {{}},
-    }},
-    fidgetType: "Chat",
-    id: "Chat:example",
-  }},
+// Chat Fidget
+"Chat:example": {{
+config: {{
+editable: true,
+settings: {{
+roomName: "0x48C6740BcF807d6C47C864FaEEA15Ed4dA3910Ab",
+}},
+data: {{}},
+}},
+fidgetType: "Chat",
+id: "Chat:example",
+}},
 
-  // SnapShot Fidget
-  "SnapShot:example": {{
-    config: {{
-      editable: true,
-      settings: {{
-        snapshotEns: "gnars.eth",
-        daoContractAddress: "0x0000000000000000000000000000000000000000",
-      }},
-      data: {{}},
-    }},
-    fidgetType: "SnapShot",
-    id: "SnapShot:example",
-  }},
+// SnapShot Fidget
+"SnapShot:example": {{
+config: {{
+editable: true,
+settings: {{
+snapshotEns: "gnars.eth",
+daoContractAddress: "0x0000000000000000000000000000000000000000",
+}},
+data: {{}},
+}},
+fidgetType: "SnapShot",
+id: "SnapShot:example",
+}},
 
-  // Video Fidget
-  "Video:example": {{
-    config: {{
-      editable: true,
-      settings: {{
-        url: "https://www.youtube.com/watch?v=YF5z9quheqk",
-        size: 1,
-      }},
-      data: {{}},
-    }},
-    fidgetType: "Video",
-    id: "Video:example",
-  }},
+// Video Fidget
+"Video:example": {{
+config: {{
+editable: true,
+settings: {{
+url: "https://www.youtube.com/watch?v=YF5z9quheqk",
+size: 1,
+}},
+data: {{}},
+}},
+fidgetType: "Video",
+id: "Video:example",
+}},
 
-  // RSS Fidget
-  "Rss:example": {{
-    config: {{
-      editable: true,
-      settings: {{
-        title: "News",
-        rssUrl: "https://rss.nytimes.com/services/xml/rss/nyt/HomePage.xml",
-      }},
-      data: {{}},
-    }},
-    fidgetType: "Rss",
-    id: "Rss:example",
-  }},
+// RSS Fidget
+"Rss:example": {{
+config: {{
+editable: true,
+settings: {{
+title: "News",
+rssUrl: "https://rss.nytimes.com/services/xml/rss/nyt/HomePage.xml",
+}},
+data: {{}},
+}},
+fidgetType: "Rss",
+id: "Rss:example",
+}},
 }};
 `;
 
@@ -299,7 +299,7 @@ export const FIDGET_CONFIG_GUIDE: Record<string, ExampleFidgetInstance> = {{
 
 // # TASK
 // → Analyse current_config 
-// → Analyse userRequest  
+// → Analyse userRequest
 // → Select 2 to 7 max fidgets from the catalog that best fulfill the request
 // → ONLY use valid urls. Check all urls before use.
 // → If URL choose is not valid, change it for valid or choose another fidge instead.
@@ -336,7 +336,6 @@ Your role is to translate user requests into a structured configuration plan usi
 For each fidget in the plan, clearly describe:
 
 1. **Fidget type** (e.g., text, gallery, feed)
-2. **Suggested position** (e.g., top-left, center, sidebar)
 3. **What content or data it should show**
 4. **Exact settings** (from the catalog) — be complete and explicit
 5. **Valid URLs** (from '<mediaJson>' or trusted sources — replace or skip broken links)
@@ -346,12 +345,11 @@ For each fidget in the plan, clearly describe:
 Use this format for each fidget block:
 
 \`\`\`
-**[fidgetType]** — [short purpose]  
-- **Position**: [semantic placement]  
-- **Settings**:  
-  - [key]: [value]  
-  - [key]: [value]  
-  - ...
+**[fidgetType]** — [short purpose]
+- **Settings**:
+- [key]: [value]
+- [key]: [value]
+- ...
 \`\`\`
 
 > 🔒 Do **not** include layout positions ('x', 'y', 'w', 'h').
@@ -406,7 +404,7 @@ Do not end message signing your name. you are in private chat.
 {communicatorOutput}
 `;
 
-export const SPACE_DESIGNER_SYSTEM_PROMPT = `
+export const DESIGNER_SYSTEM_PROMPT = `
 You are the **Nounspace Space Designer Agent** - a comprehensive AI system that creates design space based on user requests.
 
 ## TASK
@@ -423,15 +421,15 @@ for each component maximazing it to use all grid. no empty spaces.
 - **Position**: x,y coordinates (top-left origin)
 - **Size**: w,h in grid units
 - **Constraints**: **CRITICAL**: 
-  - x + w ≤ ${GRID_SIZES.columns} (cannot exceed grid column)
-  - y + h ≤ ${GRID_SIZES.rows} (cannot exceed grid row)
-  - No overlapping items
+- x + w ≤ ${GRID_SIZES.columns} (cannot exceed grid column)
+- y + h ≤ ${GRID_SIZES.rows} (cannot exceed grid row)
+- No overlapping items
 
 ## VERTICAL FIDGET SIZE PREFERENCES
 **STRONGLY PRIORITIZE THESE TALL ASPECT RATIOS:**
 
 ### Preferred Vertical Sizes (Height > Width)
-### Acceptable Balanced Sizes (Height = Width)  
+### Acceptable Balanced Sizes (Height = Width)
 ### AVOID Horizontal Sizes (Width > Height)
 
 **RULE: Aim for 70%+ of fidgets to have h > w (height greater than width)**
@@ -476,41 +474,41 @@ for each component maximazing it to use all grid. no empty spaces.
 JUST OUTPUT each fidget settings size and position to fill up the grid.
 <LAYOUT.SCHEME>
 "layoutDetails": {{
-      "type": "object",
-      "properties": {{
-        "layoutFidget": {{ "type": "string" }},
-        "layoutConfig": {{
-          "type": "object",
-          "properties": {{
-            "layout": {{
-              "type": "array",
-              "items": {{
-                "type": "object",
-                "properties": {{
-                  "i": {{
-                    "type": "string",
-                    "pattern": "^[a-z]+:[a-zA-Z0-9_-]+$"
-                  }},
-                  "x": {{ "type": "number" }},
-                  "y": {{ "type": "number" }},
-                  "w": {{ "type": "number" }},
-                  "h": {{ "type": "number" }},
-                  "minW": {{ "type": "number" }},
-                  "maxW": {{ "type": "number" }},
-                  "minH": {{ "type": "number" }},
-                  "maxH": {{ "type": "number" }},
-                  "moved": {{ "type": "boolean" }},
-                  "static": {{ "type": "boolean" }}
-                }},
-                "required": ["i", "x", "y", "w", "h", "minW", "maxW", "minH", "maxH", "moved", "static"]
-              }}
-            }}
-          }},
-          "required": ["layout"]
-        }}
-      }},
-      "required": ["layoutFidget", "layoutConfig"]
-    }},
+"type": "object",
+"properties": {{
+"layoutFidget": {{ "type": "string" }},
+"layoutConfig": {{
+"type": "object",
+"properties": {{
+"layout": {{
+"type": "array",
+"items": {{
+"type": "object",
+"properties": {{
+"i": {{
+"type": "string",
+"pattern": "^[a-z]+:[a-zA-Z0-9_-]+$"
+}},
+"x": {{ "type": "number" }},
+"y": {{ "type": "number" }},
+"w": {{ "type": "number" }},
+"h": {{ "type": "number" }},
+"minW": {{ "type": "number" }},
+"maxW": {{ "type": "number" }},
+"minH": {{ "type": "number" }},
+"maxH": {{ "type": "number" }},
+"moved": {{ "type": "boolean" }},
+"static": {{ "type": "boolean" }}
+}},
+"required": ["i", "x", "y", "w", "h", "minW", "maxW", "minH", "maxH", "moved", "static"]
+}}
+}}
+}},
+"required": ["layout"]
+}}
+}},
+"required": ["layoutFidget", "layoutConfig"]
+}},
 </LAYOUT.SCHEME>
 i: fidgetType:some-id (e.g.: "text:welcome", "video:intro-video", "feed:farcaster-news")
 x, y, w, h: match your design plan coordinates and size
@@ -526,7 +524,7 @@ Never leave gaps or let the builder guess sizes or positions.
 OUTPUT:
 `;
 
-export const SINGLE_WORKER_SYSTEM_PROMPT = `
+export const BUILDER_SYSTEM_PROMPT = `
 You are the **Nounspace Space Builder Agent** - a comprehensive AI system that creates complete space configurations based on user requests.
 
 ## TASK
@@ -535,9 +533,11 @@ These positions go into layoutDetails and must not be changed.
 
 ## PROCESSING STEPS
 1. **Respect Designer Layout**: DO NOT alter x, y, w, h values from designer_specification.
+2. **Normalize Fidget IDs to Lowercase:** All fidget instance keys and "id" values inside fidgetInstanceDatums must be in lowercase (e.g., "video:intro-bitcoin", not "Video:intro-bitcoin").
 
 # CRITICAL RULE
 You must strictly preserve the positions ('x', 'y') and sizes ('w', 'h') of each fidget exactly as defined in the 'designer_specification.layout'. Do not recalculate, rearrange, or reflow the layout. These values go directly into 'layoutDetails.layoutConfig.layout[]' in the generated JSON.
+
 
 ${FIDGET_CONTEXT_CATALOG_BUILDER}
 
@@ -548,19 +548,19 @@ theme: {{
 id: string,
 name: string,
 properties: {{
-font: string,               // Font family (Inter, Poppins, Roboto, etc.)
-fontColor: string,          // Main text color (hex, rgb, etc.)
-headingsFont: string,       // Headings font family
+font: string, // Font family (Inter, Poppins, Roboto, etc.)
+fontColor: string,  // Main text color (hex, rgb, etc.)
+headingsFont: string, // Headings font family
 headingsFontColor: string,  // Headings color
-background: string,         // Page background (color, gradient, image)
-backgroundHTML: string,     // Custom HTML background
-musicURL: string,           // Background music URL
-fidgetBackground: string,   // Default fidget background
+background: string, // Page background (color, gradient, image)
+backgroundHTML: string, // Custom HTML background
+musicURL: string, // Background music URL
+fidgetBackground: string, // Default fidget background
 fidgetBorderWidth: string,  // Border width (px, em, etc.)
 fidgetBorderColor: string,  // Border color
-fidgetShadow: string,       // CSS shadow property
+fidgetShadow: string, // CSS shadow property
 fidgetBorderRadius: string, // Border radius
-gridSpacing: string         // Grid gap spacing
+gridSpacing: string // Grid gap spacing
 }}
 }}
 \`\`\`
@@ -570,38 +570,38 @@ Return ONLY a valid JSON object. No markdown, no code blocks, no explanations, n
 
 The JSON must follow this exact structure:
 {{
-  "fidgetInstanceDatums": {{
-    // Fidget instances with unique IDs
-  }},
-  "layoutID": "unique-layout-identifier",
-  "layoutDetails": {{
-    "layoutFidget": "grid",
-    "layoutConfig": {{
-      "layout": [
-        // Grid items array
-      ]
-    }}
-  }},
-  "isEditable": true,
-  "fidgetTrayContents": [],
-  "theme": {{
-    // Complete theme object
-  }}
+"fidgetInstanceDatums": {{
+// Fidget instances with unique IDs
+}},
+"layoutID": "unique-layout-identifier",
+"layoutDetails": {{
+"layoutFidget": "grid",
+"layoutConfig": {{
+"layout": [
+// Grid items array
+]
+}}
+}},
+"isEditable": true,
+"fidgetTrayContents": [],
+"theme": {{
+// Complete theme object
+}}
 }}
 
 ## FIDGET CONFIGURATION PATTERN
 Each fidget follows this structure:
 \`\`\`json
 "fidgetType:unique-id": {{
-  "config": {{
-    "editable": true,
-    "settings": {{
-      // Fidget-specific settings
-    }},
-    "data": {{}}
-  }},
-  "fidgetType": "fidgetType",
-  "id": "fidgetType:unique-id"
+"config": {{
+"editable": true,
+"settings": {{
+// Fidget-specific settings
+}},
+"data": {{}}
+}},
+"fidgetType": "fidgetType",
+"id": "fidgetType:unique-id"
 }}
 \`\`\`
 
@@ -610,157 +610,157 @@ Each fidget follows this structure:
 ### Text Fidget Settings
 \`\`\`json
 "settings": {{
-  "title": "Optional title text",
-  "text": "Rich content with **markdown** support, [links](https://example.com), and embedded media",
-  "fontFamily": "var(--user-theme-font)",
-  "fontColor": "var(--user-theme-font-color)", 
-  "headingsFontFamily": "var(--user-theme-headings-font)",
-  "headingsFontColor": "var(--user-theme-headings-font-color)",
-  "urlColor": "#0066cc",
-  "background": "var(--user-theme-fidget-background)",
-  "showOnMobile": true
+"title": "Optional title text",
+"text": "Rich content with **markdown** support, [links](https://example.com), and embedded media",
+"fontFamily": "var(--user-theme-font)",
+"fontColor": "var(--user-theme-font-color)", 
+"headingsFontFamily": "var(--user-theme-headings-font)",
+"headingsFontColor": "var(--user-theme-headings-font-color)",
+"urlColor": "#0066cc",
+"background": "var(--user-theme-fidget-background)",
+"showOnMobile": true
 }}
 \`\`\`
 
 ### Feed Fidget Settings
 \`\`\`json
 "settings": {{
-  "feedType": "filter",          // "following" or "filter"
-  "filterType": "channel_id",    // "channel_id", "fids", or "keyword"
-  "channel": "nouns",           // Channel name (when filterType is "channel_id")
-  "username": "nounspace",      // Farcaster username (when filterType is "fids")
-  "keyword": "blockchain",      // Search keyword (when filterType is "keyword")
-  "selectPlatform": {{"name": "Farcaster", "icon": "/images/farcaster.jpeg"}},
-  "Xhandle": "nounspace",       // X/Twitter username (when platform is X)
-  "membersOnly": false,         // Channel members only filter
-  "showOnMobile": true
+"feedType": "filter",  // "following" or "filter"
+"filterType": "channel_id",  // "channel_id", "fids", or "keyword"
+"channel": "nouns", // Channel name (when filterType is "channel_id")
+"username": "nounspace",  // Farcaster username (when filterType is "fids")
+"keyword": "blockchain",  // Search keyword (when filterType is "keyword")
+"selectPlatform": {{"name": "Farcaster", "icon": "/images/farcaster.jpeg"}},
+"Xhandle": "nounspace", // X/Twitter username (when platform is X)
+"membersOnly": false, // Channel members only filter
+"showOnMobile": true
 }}
 \`\`\`
 
 ### Gallery (Image) Fidget Settings
 \`\`\`json
 "settings": {{
-  "selectMediaSource": {{"name": "URL"}},  // "URL", "Upload", or "NFT"
-  "imageUrl": "https://",
-  "uploadedImage": "",                   // Set when using upload source
-  "nftAddress": "0x...",                // NFT contract address
-  "nftTokenId": "123",                  // NFT token ID
-  "network": {{"id": "1", "name": "Ethereum"}}, // Blockchain network
-  "redirectionURL": "https://",     // Click destination
-  "scale": 100,                         // Image scale percentage
-  "badgeColor": "#00ff00",             // Verification badge color
-  "showOnMobile": true
+"selectMediaSource": {{"name": "URL"}},  // "URL", "Upload", or "NFT"
+"imageUrl": "https://",
+"uploadedImage": "", // Set when using upload source
+"nftAddress": "0x...",  // NFT contract address
+"nftTokenId": "123",  // NFT token ID
+"network": {{"id": "1", "name": "Ethereum"}}, // Blockchain network
+"redirectionURL": "https://", // Click destination
+"scale": 100, // Image scale percentage
+"badgeColor": "#00ff00", // Verification badge color
+"showOnMobile": true
 }}
 \`\`\`
 
 ### Links Fidget Settings
 \`\`\`json
 "settings": {{
-  "title": "My Links",
-  "links": [
-    {{
-      "text": "Website",
-      "url": "https://",
-      "avatar": "https://",
-      "description": "Website"
-    }}
-  ],
-  "viewMode": "list",               // "list" or "grid"
-  "itemBackground": "#ffffff",
-  "scale": 100,
-  "fontFamily": "var(--user-theme-font)",
-  "headingsFontFamily": "var(--user-theme-headings-font)",
-  "HeaderColor": "var(--user-theme-headings-font-color)",
-  "DescriptionColor": "var(--user-theme-font-color)",
-  "showOnMobile": true
+"title": "My Links",
+"links": [
+{{
+"text": "Website",
+"url": "https://",
+"avatar": "https://",
+"description": "Website"
+}}
+],
+"viewMode": "list", // "list" or "grid"
+"itemBackground": "#ffffff",
+"scale": 100,
+"fontFamily": "var(--user-theme-font)",
+"headingsFontFamily": "var(--user-theme-headings-font)",
+"HeaderColor": "var(--user-theme-headings-font-color)",
+"DescriptionColor": "var(--user-theme-font-color)",
+"showOnMobile": true
 }}
 \`\`\`
 
 ### Video Fidget Settings
 \`\`\`json
 "settings": {{
-  "url": "https://www.youtube.com/watch?v=YF5z9quheqk",  // Auto-converts YouTube/Vimeo
-  "size": 100,                      // Scale percentage
-  "showOnMobile": true
+"url": "https://www.youtube.com/watch?v=YF5z9quheqk",  // Auto-converts YouTube/Vimeo
+"size": 100,  // Scale percentage
+"showOnMobile": true
 }}
 \`\`\`
 
 ### Cast (Pinned Cast) Fidget Settings
 \`\`\`json
 "settings": {{
-  "castUrl": "https://farcaster.xyz/user/cast-hash",  // Easiest method
-  "castHash": "0x...",              // Alternative: manual hash
-  "casterFid": 12345,              // Alternative: manual FID
-  "useDefaultColors": true,
-  "showOnMobile": true
+"castUrl": "https://farcaster.xyz/user/cast-hash",  // Easiest method
+"castHash": "0x...",  // Alternative: manual hash
+"casterFid": 12345,  // Alternative: manual FID
+"useDefaultColors": true,
+"showOnMobile": true
 }}
 \`\`\`
 
 ### IFrame (Web Embed) Fidget Settings
 \`\`\`json
 "settings": {{
-  "url": "https://example.com",
-  "size": 100,                     // Zoom level percentage
-  "showOnMobile": true
+"url": "https://example.com",
+"size": 100, // Zoom level percentage
+"showOnMobile": true
 }}
 \`\`\`
 
 ### FramesV2 (Farcaster Mini App) Settings
 \`\`\`json
 "settings": {{
-  "url": "https://frame.example.com",
-  "collapsed": false,              // true for preview mode
-  "title": "My Mini App",
-  "headingFont": "var(--user-theme-headings-font)",
-  "showOnMobile": true
+"url": "https://frame.example.com",
+"collapsed": false,  // true for preview mode
+"title": "My Mini App",
+"headingFont": "var(--user-theme-headings-font)",
+"showOnMobile": true
 }}
 \`\`\`
 
 ### RSS Fidget Settings
 \`\`\`json
 "settings": {{
-  "rssUrl": "https://",
-  "fontFamily": "var(--user-theme-font)",
-  "fontColor": "var(--user-theme-font-color)",
-  "headingsFontFamily": "var(--user-theme-headings-font)",
-  "headingsFontColor": "var(--user-theme-headings-font-color)",
-  "showOnMobile": true
+"rssUrl": "https://",
+"fontFamily": "var(--user-theme-font)",
+"fontColor": "var(--user-theme-font-color)",
+"headingsFontFamily": "var(--user-theme-headings-font)",
+"headingsFontColor": "var(--user-theme-headings-font-color)",
+"showOnMobile": true
 }}
 \`\`\`
 
 ### Swap Fidget Settings
 \`\`\`json
 "settings": {{
-  "defaultSellToken": "ETH",
-  "defaultBuyToken": "USDC",
-  "fromChain": {{"id": "1", "name": "Ethereum"}},
-  "toChain": {{"id": "1", "name": "Ethereum"}},
-  "background": "#ffffff",
-  "fontFamily": "var(--user-theme-font)",
-  "fontColor": "var(--user-theme-font-color)",
-  "swapScale": 100,
-  "optionalFeeRecipient": "0x...",  // Optional fee recipient address
-  "showOnMobile": true
+"defaultSellToken": "ETH",
+"defaultBuyToken": "USDC",
+"fromChain": {{"id": "1", "name": "Ethereum"}},
+"toChain": {{"id": "1", "name": "Ethereum"}},
+"background": "#ffffff",
+"fontFamily": "var(--user-theme-font)",
+"fontColor": "var(--user-theme-font-color)",
+"swapScale": 100,
+"optionalFeeRecipient": "0x...",  // Optional fee recipient address
+"showOnMobile": true
 }}
 \`\`\`
 
 ### Portfolio Fidget Settings
 \`\`\`json
 "settings": {{
-  "trackType": "farcaster",        // "farcaster" or "address"
-  "farcasterUsername": "nounspace", // When trackType is "farcaster"
-  "walletAddresses": "0x...",      // When trackType is "address"
-  "showOnMobile": true
+"trackType": "farcaster",  // "farcaster" or "address"
+"farcasterUsername": "nounspace", // When trackType is "farcaster"
+"walletAddresses": "0x...",  // When trackType is "address"
+"showOnMobile": true
 }}
 \`\`\`
 
 ## COLOR SCHEME & CONTRAST GUIDELINES
 **CRITICAL COLOR REQUIREMENTS:**
 - **Always use theme variables** for colors instead of hardcoded values:
-  - \`var(--user-theme-font-color)\` for text colors
-  - \`var(--user-theme-headings-font-color)\` for heading colors  
-  - \`var(--user-theme-fidget-background)\` for fidget backgrounds
-  - \`var(--user-theme-font)\` and \`var(--user-theme-headings-font)\` for fonts
+- \`var(--user-theme-font-color)\` for text colors
+- \`var(--user-theme-headings-font-color)\` for heading colors
+- \`var(--user-theme-fidget-background)\` for fidget backgrounds
+- \`var(--user-theme-font)\` and \`var(--user-theme-headings-font)\` for fonts
 - **Perfect Contrast**: Ensure 4.5:1 minimum contrast ratio for accessibility
 - **Avoid Black Backgrounds**: Use colorful, vibrant backgrounds that match the theme
 - **Theme Harmony**: All fidgets should use coordinated colors from the selected theme
@@ -770,20 +770,20 @@ Each fidget follows this structure:
 All fidgets support these additional style properties. **ALWAYS use theme variables for colors:**
 \`\`\`json
 "settings": {{
-  // Content settings above...
-  
-  // Universal style properties - USE THEME VARIABLES
-  "background": "var(--user-theme-fidget-background)",
-  "fontFamily": "var(--user-theme-font)",
-  "fontColor": "var(--user-theme-font-color)",
-  "headingsFontFamily": "var(--user-theme-headings-font)",
-  "headingsFontColor": "var(--user-theme-headings-font-color)",
-  "fidgetBorderWidth": "var(--user-theme-fidget-border-width)", 
-  "fidgetBorderColor": "var(--user-theme-fidget-border-color)",
-  "fidgetShadow": "var(--user-theme-fidget-shadow)",
-  "useDefaultColors": true,         // Use theme colors instead of custom
-  "showOnMobile": true,            // Display on mobile devices
-  "customMobileDisplayName": "Custom Tab Name"  // Custom mobile tab name
+// Content settings above...
+
+// Universal style properties - USE THEME VARIABLES
+"background": "var(--user-theme-fidget-background)",
+"fontFamily": "var(--user-theme-font)",
+"fontColor": "var(--user-theme-font-color)",
+"headingsFontFamily": "var(--user-theme-headings-font)",
+"headingsFontColor": "var(--user-theme-headings-font-color)",
+"fidgetBorderWidth": "var(--user-theme-fidget-border-width)", 
+"fidgetBorderColor": "var(--user-theme-fidget-border-color)",
+"fidgetShadow": "var(--user-theme-fidget-shadow)",
+"useDefaultColors": true, // Use theme colors instead of custom
+"showOnMobile": true,  // Display on mobile devices
+"customMobileDisplayName": "Custom Tab Name"  // Custom mobile tab name
 }}
 \`\`\`
 
@@ -792,282 +792,282 @@ All fidgets support these additional style properties. **ALWAYS use theme variab
 ### Vibrant Sunset
 \`\`\`json
 {{
-  "id": "vibrant-sunset",
-  "name": "Vibrant Sunset",
-  "properties": {{
-    "font": "Inter",
-    "fontColor": "#ffffff",
-    "headingsFont": "Poppins",
-    "headingsFontColor": "#ffffff",
-    "background": "linear-gradient(135deg, #ff6b6b 0%, #ee5a24 50%, #ff9ff3 100%)",
-    "backgroundHTML": "",
-    "musicURL": "",
-    "fidgetBackground": "rgba(180, 50, 80, 0.95)",
-    "fidgetBorderWidth": "2px",
-    "fidgetBorderColor": "rgba(255, 255, 255, 0.4)",
-    "fidgetShadow": "0 8px 32px rgba(0, 0, 0, 0.4)",
-    "fidgetBorderRadius": "16px",
-    "gridSpacing": "12"
-  }}
+"id": "vibrant-sunset",
+"name": "Vibrant Sunset",
+"properties": {{
+"font": "Inter",
+"fontColor": "#ffffff",
+"headingsFont": "Poppins",
+"headingsFontColor": "#ffffff",
+"background": "linear-gradient(135deg, #ff6b6b 0%, #ee5a24 50%, #ff9ff3 100%)",
+"backgroundHTML": "",
+"musicURL": "",
+"fidgetBackground": "rgba(180, 50, 80, 0.95)",
+"fidgetBorderWidth": "2px",
+"fidgetBorderColor": "rgba(255, 255, 255, 0.4)",
+"fidgetShadow": "0 8px 32px rgba(0, 0, 0, 0.4)",
+"fidgetBorderRadius": "16px",
+"gridSpacing": "12"
+}}
 }}
 \`\`\`
 
 ### Electric Neon
 \`\`\`json
 {{
-  "id": "electric-neon",
-  "name": "Electric Neon",
-  "properties": {{
-    "font": "Inter",
-    "fontColor": "#ffffff",
-    "headingsFont": "Roboto",
-    "headingsFontColor": "#00ffff",
-    "background": "linear-gradient(45deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)",
-    "backgroundHTML": "",
-    "musicURL": "",
-    "fidgetBackground": "rgba(30, 100, 150, 0.95)",
-    "fidgetBorderWidth": "1px",
-    "fidgetBorderColor": "#00ffff",
-    "fidgetShadow": "0 0 20px rgba(0, 255, 255, 0.5)",
-    "fidgetBorderRadius": "12px",
-    "gridSpacing": "16"
-  }}
+"id": "electric-neon",
+"name": "Electric Neon",
+"properties": {{
+"font": "Inter",
+"fontColor": "#ffffff",
+"headingsFont": "Roboto",
+"headingsFontColor": "#00ffff",
+"background": "linear-gradient(45deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)",
+"backgroundHTML": "",
+"musicURL": "",
+"fidgetBackground": "rgba(30, 100, 150, 0.95)",
+"fidgetBorderWidth": "1px",
+"fidgetBorderColor": "#00ffff",
+"fidgetShadow": "0 0 20px rgba(0, 255, 255, 0.5)",
+"fidgetBorderRadius": "12px",
+"gridSpacing": "16"
+}}
 }}
 \`\`\`
 
 ### Ocean Breeze
 \`\`\`json
 {{
-  "id": "ocean-breeze",
-  "name": "Ocean Breeze",
-  "properties": {{
-    "font": "Poppins",
-    "fontColor": "#ffffff",
-    "headingsFont": "Poppins",
-    "headingsFontColor": "#ffffff",
-    "background": "linear-gradient(135deg, #667eea 0%, #764ba2 25%, #4facfe 50%, #00f2fe 100%)",
-    "backgroundHTML": "",
-    "musicURL": "",
-    "fidgetBackground": "rgba(70, 130, 180, 0.95)",
-    "fidgetBorderWidth": "1px",
-    "fidgetBorderColor": "rgba(255, 255, 255, 0.4)",
-    "fidgetShadow": "0 4px 20px rgba(0, 0, 0, 0.2)",
-    "fidgetBorderRadius": "20px",
-    "gridSpacing": "14"
-  }}
+"id": "ocean-breeze",
+"name": "Ocean Breeze",
+"properties": {{
+"font": "Poppins",
+"fontColor": "#ffffff",
+"headingsFont": "Poppins",
+"headingsFontColor": "#ffffff",
+"background": "linear-gradient(135deg, #667eea 0%, #764ba2 25%, #4facfe 50%, #00f2fe 100%)",
+"backgroundHTML": "",
+"musicURL": "",
+"fidgetBackground": "rgba(70, 130, 180, 0.95)",
+"fidgetBorderWidth": "1px",
+"fidgetBorderColor": "rgba(255, 255, 255, 0.4)",
+"fidgetShadow": "0 4px 20px rgba(0, 0, 0, 0.2)",
+"fidgetBorderRadius": "20px",
+"gridSpacing": "14"
+}}
 }}
 \`\`\`
 
 ### Warm Gradient
 \`\`\`json
 {{
-  "id": "warm-gradient",
-  "name": "Warm Gradient",
-  "properties": {{
-    "font": "Inter",
-    "fontColor": "#2d1810",
-    "headingsFont": "Poppins",
-    "headingsFontColor": "#1a0f08",
-    "background": "linear-gradient(135deg, #ff9a9e 0%, #fecfef 50%, #fecfef 100%)",
-    "backgroundHTML": "",
-    "musicURL": "",
-    "fidgetBackground": "rgba(255, 240, 245, 0.95)",
-    "fidgetBorderWidth": "2px",
-    "fidgetBorderColor": "rgba(200, 150, 180, 0.6)",
-    "fidgetShadow": "0 6px 24px rgba(0, 0, 0, 0.25)",
-    "fidgetBorderRadius": "18px",
-    "gridSpacing": "14"
-  }}
+"id": "warm-gradient",
+"name": "Warm Gradient",
+"properties": {{
+"font": "Inter",
+"fontColor": "#2d1810",
+"headingsFont": "Poppins",
+"headingsFontColor": "#1a0f08",
+"background": "linear-gradient(135deg, #ff9a9e 0%, #fecfef 50%, #fecfef 100%)",
+"backgroundHTML": "",
+"musicURL": "",
+"fidgetBackground": "rgba(255, 240, 245, 0.95)",
+"fidgetBorderWidth": "2px",
+"fidgetBorderColor": "rgba(200, 150, 180, 0.6)",
+"fidgetShadow": "0 6px 24px rgba(0, 0, 0, 0.25)",
+"fidgetBorderRadius": "18px",
+"gridSpacing": "14"
+}}
 }}
 \`\`\`
 
 ### Cyber Purple
 \`\`\`json
 {{
-  "id": "cyber-purple",
-  "name": "Cyber Purple",
-  "properties": {{
-    "font": "Roboto",
-    "fontColor": "#ffffff",
-    "headingsFont": "Roboto",
-    "headingsFontColor": "#ff00ff",
-    "background": "linear-gradient(45deg, #2d1b69 0%, #11998e 50%, #38ef7d 100%)",
-    "backgroundHTML": "",
-    "musicURL": "",
-    "fidgetBackground": "rgba(80, 40, 120, 0.95)",
-    "fidgetBorderWidth": "1px",
-    "fidgetBorderColor": "#ff00ff",
-    "fidgetShadow": "0 0 25px rgba(255, 0, 255, 0.4)",
-    "fidgetBorderRadius": "15px",
-    "gridSpacing": "16"
-  }}
+"id": "cyber-purple",
+"name": "Cyber Purple",
+"properties": {{
+"font": "Roboto",
+"fontColor": "#ffffff",
+"headingsFont": "Roboto",
+"headingsFontColor": "#ff00ff",
+"background": "linear-gradient(45deg, #2d1b69 0%, #11998e 50%, #38ef7d 100%)",
+"backgroundHTML": "",
+"musicURL": "",
+"fidgetBackground": "rgba(80, 40, 120, 0.95)",
+"fidgetBorderWidth": "1px",
+"fidgetBorderColor": "#ff00ff",
+"fidgetShadow": "0 0 25px rgba(255, 0, 255, 0.4)",
+"fidgetBorderRadius": "15px",
+"gridSpacing": "16"
+}}
 }}
 \`\`\`
 
 ### Modern Clean
 \`\`\`json
 {{
-  "id": "modern-clean",
-  "name": "Modern Clean",
-  "properties": {{
-    "font": "Inter",
-    "fontColor": "#1a202c",
-    "headingsFont": "Poppins",
-    "headingsFontColor": "#2d3748",
-    "background": "#ffffff",
-    "backgroundHTML": "",
-    "musicURL": "",
-    "fidgetBackground": "#ffffff",
-    "fidgetBorderWidth": "1px",
-    "fidgetBorderColor": "#e2e8f0",
-    "fidgetShadow": "0 1px 3px rgba(0,0,0,0.12)",
-    "fidgetBorderRadius": "8px",
-    "gridSpacing": "16"
-  }}
+"id": "modern-clean",
+"name": "Modern Clean",
+"properties": {{
+"font": "Inter",
+"fontColor": "#1a202c",
+"headingsFont": "Poppins",
+"headingsFontColor": "#2d3748",
+"background": "#ffffff",
+"backgroundHTML": "",
+"musicURL": "",
+"fidgetBackground": "#ffffff",
+"fidgetBorderWidth": "1px",
+"fidgetBorderColor": "#e2e8f0",
+"fidgetShadow": "0 1px 3px rgba(0,0,0,0.12)",
+"fidgetBorderRadius": "8px",
+"gridSpacing": "16"
+}}
 }}
 \`\`\`
 
 ### Dark Mode
 \`\`\`json
 {{
-  "id": "dark-theme",
-  "name": "Dark Theme",
-  "properties": {{
-    "font": "Inter",
-    "fontColor": "#ffffff",
-    "headingsFont": "Inter",
-    "headingsFontColor": "#ffffff",
-    "background": "#1a1a1a",
-    "backgroundHTML": "",
-    "musicURL": "",
-    "fidgetBackground": "#2d2d2d",
-    "fidgetBorderWidth": "1px",
-    "fidgetBorderColor": "#404040",
-    "fidgetShadow": "0 2px 8px rgba(0,0,0,0.4)",
-    "fidgetBorderRadius": "12px",
-    "gridSpacing": "16"
-  }}
+"id": "dark-theme",
+"name": "Dark Theme",
+"properties": {{
+"font": "Inter",
+"fontColor": "#ffffff",
+"headingsFont": "Inter",
+"headingsFontColor": "#ffffff",
+"background": "#1a1a1a",
+"backgroundHTML": "",
+"musicURL": "",
+"fidgetBackground": "#2d2d2d",
+"fidgetBorderWidth": "1px",
+"fidgetBorderColor": "#404040",
+"fidgetShadow": "0 2px 8px rgba(0,0,0,0.4)",
+"fidgetBorderRadius": "12px",
+"gridSpacing": "16"
+}}
 }}
 \`\`\`
 
 ### Colorful Gradient
 \`\`\`json
 {{
-  "id": "colorful-gradient",
-  "name": "Colorful Gradient",
-  "properties": {{
-    "font": "Poppins",
-    "fontColor": "#2d3748",
-    "headingsFont": "Poppins",
-    "headingsFontColor": "#1a202c",
-    "background": "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-    "backgroundHTML": "",
-    "musicURL": "",
-    "fidgetBackground": "rgba(255, 255, 255, 0.9)",
-    "fidgetBorderWidth": "1px",
-    "fidgetBorderColor": "rgba(255, 255, 255, 0.2)",
-    "fidgetShadow": "0 4px 6px rgba(0, 0, 0, 0.1)",
-    "fidgetBorderRadius": "12px",
-    "gridSpacing": "16"
-  }}
+"id": "colorful-gradient",
+"name": "Colorful Gradient",
+"properties": {{
+"font": "Poppins",
+"fontColor": "#2d3748",
+"headingsFont": "Poppins",
+"headingsFontColor": "#1a202c",
+"background": "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+"backgroundHTML": "",
+"musicURL": "",
+"fidgetBackground": "rgba(255, 255, 255, 0.9)",
+"fidgetBorderWidth": "1px",
+"fidgetBorderColor": "rgba(255, 255, 255, 0.2)",
+"fidgetShadow": "0 4px 6px rgba(0, 0, 0, 0.1)",
+"fidgetBorderRadius": "12px",
+"gridSpacing": "16"
+}}
 }}
 \`\`\`
 
 <RESPONSE_SCHEME>
 {{
-  "type": "object",
-  "properties": {{
-    "fidgetInstanceDatums": {{
-      "type": "object",
-      "patternProperties": {{
-        "^[a-zA-Z]+:[a-zA-Z0-9_-]+$": {{
-          "type": "object",
-          "properties": {{
-            "config": {{
-              "type": "object",
-              "properties": {{
-                "editable": {{ "type": "boolean" }},
-                "settings": {{ "type": "object" }},
-                "data": {{ "type": "object" }}
-              }},
-              "required": ["editable", "settings", "data"]
-            }},
-            "fidgetType": {{ "type": "string" }},
-            "id": {{ "type": "string" }}
-          }},
-          "required": ["config", "fidgetType", "id"]
-        }}
-      }},
-      "additionalProperties": false
-    }},
-    "layoutID": {{ "type": "string" }},
-    "layoutDetails": {{
-      "type": "object",
-      "properties": {{
-        "layoutFidget": {{ "type": "string" }},
-        "layoutConfig": {{
-          "type": "object",
-          "properties": {{
-            "layout": {{
-              "type": "array",
-              "items": {{
-                "type": "object",
-                "properties": {{
-                  "i": {{ "type": "string" }},
-                  "x": {{ "type": "number" }},
-                  "y": {{ "type": "number" }},
-                  "w": {{ "type": "number" }},
-                  "h": {{ "type": "number" }},
-                  "minW": {{ "type": "number" }},
-                  "maxW": {{ "type": "number" }},
-                  "minH": {{ "type": "number" }},
-                  "maxH": {{ "type": "number" }},
-                  "moved": {{ "type": "boolean" }},
-                  "static": {{ "type": "boolean" }}
-                }},
-                "required": ["i", "x", "y", "w", "h", "minW", "maxW", "minH", "maxH", "moved", "static"]
-              }}
-            }}
-          }},
-          "required": ["layout"]
-        }}
-      }},
-      "required": ["layoutFidget", "layoutConfig"]
-    }},
-    "isEditable": {{ "type": "boolean" }},
-    "fidgetTrayContents": {{
-      "type": "array",
-      "items": {{}}
-    }},
-    "theme": {{
-      "type": "object",
-      "properties": {{
-        "id": {{ "type": "string" }},
-        "name": {{ "type": "string" }},
-        "properties": {{
-          "type": "object",
-          "properties": {{
-            "font": {{ "type": "string" }},
-            "fontColor": {{ "type": "string" }},
-            "headingsFont": {{ "type": "string" }},
-            "headingsFontColor": {{ "type": "string" }},
-            "background": {{ "type": "string" }},
-            "backgroundHTML": {{ "type": "string" }},
-            "musicURL": {{ "type": "string" }},
-            "fidgetBackground": {{ "type": "string" }},
-            "fidgetBorderWidth": {{ "type": "string" }},
-            "fidgetBorderColor": {{ "type": "string" }},
-            "fidgetShadow": {{ "type": "string" }},
-            "fidgetBorderRadius": {{ "type": "string" }},
-            "gridSpacing": {{ "type": "string" }}
-          }},
-          "required": ["font", "fontColor", "headingsFont", "headingsFontColor", "background"]
-        }}
-      }},
-      "required": ["id", "name", "properties"]
-    }}
-  }},
-  "required": ["fidgetInstanceDatums", "layoutID", "layoutDetails", "isEditable", "fidgetTrayContents", "theme"]
+"type": "object",
+"properties": {{
+"fidgetInstanceDatums": {{
+"type": "object",
+"patternProperties": {{
+"^[a-zA-Z]+:[a-zA-Z0-9_-]+$": {{
+"type": "object",
+"properties": {{
+"config": {{
+"type": "object",
+"properties": {{
+"editable": {{ "type": "boolean" }},
+"settings": {{ "type": "object" }},
+"data": {{ "type": "object" }}
+}},
+"required": ["editable", "settings", "data"]
+}},
+"fidgetType": {{ "type": "string" }},
+"id": {{ "type": "string" }}
+}},
+"required": ["config", "fidgetType", "id"]
+}}
+}},
+"additionalProperties": false
+}},
+"layoutID": {{ "type": "string" }},
+"layoutDetails": {{
+"type": "object",
+"properties": {{
+"layoutFidget": {{ "type": "string" }},
+"layoutConfig": {{
+"type": "object",
+"properties": {{
+"layout": {{
+"type": "array",
+"items": {{
+"type": "object",
+"properties": {{
+"i": {{ "type": "string" }},
+"x": {{ "type": "number" }},
+"y": {{ "type": "number" }},
+"w": {{ "type": "number" }},
+"h": {{ "type": "number" }},
+"minW": {{ "type": "number" }},
+"maxW": {{ "type": "number" }},
+"minH": {{ "type": "number" }},
+"maxH": {{ "type": "number" }},
+"moved": {{ "type": "boolean" }},
+"static": {{ "type": "boolean" }}
+}},
+"required": ["i", "x", "y", "w", "h", "minW", "maxW", "minH", "maxH", "moved", "static"]
+}}
+}}
+}},
+"required": ["layout"]
+}}
+}},
+"required": ["layoutFidget", "layoutConfig"]
+}},
+"isEditable": {{ "type": "boolean" }},
+"fidgetTrayContents": {{
+"type": "array",
+"items": {{}}
+}},
+"theme": {{
+"type": "object",
+"properties": {{
+"id": {{ "type": "string" }},
+"name": {{ "type": "string" }},
+"properties": {{
+"type": "object",
+"properties": {{
+"font": {{ "type": "string" }},
+"fontColor": {{ "type": "string" }},
+"headingsFont": {{ "type": "string" }},
+"headingsFontColor": {{ "type": "string" }},
+"background": {{ "type": "string" }},
+"backgroundHTML": {{ "type": "string" }},
+"musicURL": {{ "type": "string" }},
+"fidgetBackground": {{ "type": "string" }},
+"fidgetBorderWidth": {{ "type": "string" }},
+"fidgetBorderColor": {{ "type": "string" }},
+"fidgetShadow": {{ "type": "string" }},
+"fidgetBorderRadius": {{ "type": "string" }},
+"gridSpacing": {{ "type": "string" }}
+}},
+"required": ["font", "fontColor", "headingsFont", "headingsFontColor", "background"]
+}}
+}},
+"required": ["id", "name", "properties"]
+}}
+}},
+"required": ["fidgetInstanceDatums", "layoutID", "layoutDetails", "isEditable", "fidgetTrayContents", "theme"]
 }}
 </RESPONSE_SCHEME>
 
