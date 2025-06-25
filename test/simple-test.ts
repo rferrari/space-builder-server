@@ -4,8 +4,8 @@ import { Reset, Blue, Green, Red, Yellow, Magenta, Cyan, Gray } from '../server/
 
 // Simple mock EventBus that doesn't log anything
 class SilentEventBus {
-    publish() {} // Silent - no console output
-    subscribe() {}
+    publish() { } // Silent - no console output
+    subscribe() { }
 }
 
 async function testSingleQuery() {
@@ -21,7 +21,7 @@ async function testSingleQuery() {
         message: "Create a simple space with a welcome message about Nouns DAO",
         clientId: 12345,
         type: "user_message",
-        spaceContext: "{}" 
+        spaceContext: "{}"
     };
 
     console.log(`${Gray}Query: "${userMessage.message}"${Reset}\n`);
@@ -33,12 +33,60 @@ async function testSingleQuery() {
         const endTime = Date.now();
         const duration = (endTime - startTime) / 1000;
 
-        console.log(`${Green}✅ Workflow completed successfully!${Reset}\n`);
-        console.log(`${Gray}⏱️  Total time: ${duration.toFixed(2)}s${Reset}\n`);
-
         // Display results
         const res = result as any;
+
+        if (res.mediaJson) {
+            console.log(`${Blue}📋 Media researcher:${Reset}`);
+            console.log(`${Blue}${"-".repeat(50)}${Reset}`);
+            console.log(`${Gray}${res.mediaJson}${Reset}`);
         
+            const mediaResults = {
+                images: { passed: true, message: '' },
+                videos: { passed: true, message: '' },
+                rss: { passed: true, message: '' }
+            };
+        
+            // Check for images
+            if (Array.isArray(res.mediaJson.images)) {
+                res.mediaJson.images.forEach(image => {
+                    // Validate image link (pseudo-code)
+                    if (!isValidImageLink(image)) {
+                        mediaResults.images.passed = false;
+                        mediaResults.images.message += `Invalid image link: ${image}\n`;
+                    }
+                });
+            }
+        
+            // Check for videos
+            if (Array.isArray(res.mediaJson.videos)) {
+                res.mediaJson.videos.forEach(video => {
+                    if (!isValidYouTubeLink(video)) {
+                        mediaResults.videos.passed = false;
+                        mediaResults.videos.message += `Invalid video link: ${video}\n`;
+                    }
+                });
+            }
+        
+            // Check for RSS
+            if (res.mediaJson.rss) {
+                if (!isValidXML(res.mediaJson.rss)) {
+                    mediaResults.rss.passed = false;
+                    mediaResults.rss.message = 'Invalid RSS XML response.';
+                }
+            }
+        
+            // Print results
+            console.log(`${Gray}Media Check Results:${Reset}`);
+            console.log(`Images: ${mediaResults.images.passed ? 'Passed' : 'Failed'} - ${mediaResults.images.message}`);
+            console.log(`Videos: ${mediaResults.videos.passed ? 'Passed' : 'Failed'} - ${mediaResults.videos.message}`);
+            console.log(`RSS: ${mediaResults.rss.passed ? 'Passed' : 'Failed'} - ${mediaResults.rss.message}`);
+            
+            console.log("\n");
+
+            console.log("\n");
+        }
+
         if (res.plannerOutput) {
             console.log(`${Blue}📋 PLANNER OUTPUT:${Reset}`);
             console.log(`${Blue}${"-".repeat(50)}${Reset}`);
@@ -72,6 +120,11 @@ async function testSingleQuery() {
             console.log("\n");
         }
 
+
+        // test end
+        console.log(`${Green}✅ Workflow completed successfully!${Reset}\n`);
+        console.log(`${Gray}⏱️  Total time: ${duration.toFixed(2)}s${Reset}\n`);
+
     } catch (error) {
         console.error(`${Red}❌ Error: ${error}${Reset}`);
     }
@@ -79,3 +132,23 @@ async function testSingleQuery() {
 
 // Run the test
 testSingleQuery().catch(console.error);
+
+function isValidImageLink(link: string): boolean {
+    const imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.svg'];
+    return imageExtensions.some(ext => link.endsWith(ext));
+}
+
+function isValidYouTubeLink(link: string): boolean {
+    const youtubeRegex = /^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.?be)\/.+$/;
+    return youtubeRegex.test(link);
+}
+
+function isValidXML(xmlString: string): boolean {
+    try {
+        const parser = new DOMParser();
+        const xmlDoc = parser.parseFromString(xmlString, "text/xml");
+        return xmlDoc.getElementsByTagName("parsererror").length === 0;
+    } catch (e) {
+        return false;
+    }
+}

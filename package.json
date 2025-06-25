@@ -2,7 +2,7 @@
   "name": "tom-ceo-bot",
   "version": "1.1.1",
   "description": "Tom Nounspace CEO AI powered",
-  "author": "vaipraonde",
+  "author": "nounspace Team",
   "main": "index.js",
   "scripts": {
     "serve": "nodemon --ext ts --exec \"pnpm dev\"",
@@ -13,6 +13,7 @@
     "build": "tsc -p .",
     "test:workers": "tsc -p . && node build/test/workers-test.js",
     "test:simple": "tsc -p . && node build/test/simple-test.js",
+    "test:websearch": "tsc -p . && node build/test/websearch-test.js",
     "test:queries": "tsc -p . && node build/test/query-tests.js"
   },
   "dependencies": {
@@ -23,6 +24,8 @@
     "@langchain/openai": "^0.3.17",
     "@langchain/textsplitters": "^0.1.0",
     "@neynar/nodejs-sdk": "^2.46.0",
+    "axios": "^1.10.0",
+    "cheerio": "^1.1.0",
     "dotenv": "^16.5.0",
     "groq-sdk": "^0.7.0",
     "langchain": "^0.3.29",
