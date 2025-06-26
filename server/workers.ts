@@ -558,40 +558,40 @@ export class WorkersSystem {
             ${filledPrompt}`
         );
 
-        let result;
+        let result: any;
         try {
-            // using default claude
-            result = await state.jsonResponseModel.invoke(filledPrompt);
+            // using first VENICE
+            const jsonModel = new OpenAI({
+                apiKey: process.env.VENICE_API_KEY,
+                baseURL: process.env.VENICE_BASE_URL
+            });
+
+            const modelResult = await jsonModel.chat.completions.create({
+                model: VENICE_JSON_MODEL,
+                temperature: 0,
+                messages: [
+                    {
+                        role: "system",
+                        content: filledPrompt,
+                    },
+                    // {
+                    //     role: "user",
+                    //     content: "write a simple json example.",
+                    // },
+                ],
+                // @ts-expect-error Venice.ai paramters are unique to Venice.
+                venice_parameters: {
+                    include_venice_system_prompt: false,
+                },
+            });
+            // console.log(); // Log the result for each model            } catch (e) {
+            result = modelResult.choices[0].message;
+            result.content = result.content.replace(/```json\n?|```/g, '');
         } catch (error) {
             this.log.error(`[BUILDER.1] Error during building: ${error.message}`, "BUILDER");
+            // using fallback claude
             try {
-                // using first fallback Venice
-                const jsonModel = new OpenAI({
-                    apiKey: process.env.VENICE_API_KEY,
-                    baseURL: process.env.VENICE_BASE_URL
-                });
-
-                const modelResult = await jsonModel.chat.completions.create({
-                    model: VENICE_JSON_MODEL,
-                    temperature: 0,
-                    messages: [
-                        {
-                            role: "system",
-                            content: filledPrompt,
-                        },
-                        // {
-                        //     role: "user",
-                        //     content: "write a simple json example.",
-                        // },
-                    ],
-                    // @ts-expect-error Venice.ai paramters are unique to Venice.
-                    venice_parameters: {
-                        include_venice_system_prompt: false,
-                    },
-                });
-                // console.log(); // Log the result for each model            } catch (e) {
-                result = modelResult.choices[0].message;
-                result.content = result.content.replace(/```json\n?|```/g, '');
+                result = await state.jsonResponseModel.invoke(filledPrompt);
             } catch (error) {
                 this.log.error(`[BUILDER.2] Error during building: ${error.message}`, "BUILDER");
                 //using second fabllback open ai
