@@ -125,10 +125,12 @@ async function researcher(prompt: string): Promise<{
     model: 'gpt-4.1',
     tools: [{ type: 'web_search_preview' }],
     tool_choice: { type: 'web_search_preview' },
-    input: `Websites related to: "${prompt}". Logos included.`,
+    input: `Find and return great websites links about main subject from this query: "${prompt}".`,
   });
 
   const outputText = research.output_text || '';
+  console.log(outputText);
+  
   const extractedUrls = await extractImagesFromText(outputText);
   const seen = new Map<string, number>();
 
