@@ -7,6 +7,9 @@ import { Cyan, Reset } from './lib/colors';
 import { BotChatMessage } from './bot.types';
 import { IncomingMessage } from 'http';
 
+const port = process.env.PORT || botConfig.WS_PORT || "3040";
+
+
 // declare module 'ws' {
 //   interface WebSocket {
 //     id?: number; // Optional property
@@ -80,8 +83,6 @@ class BotCustomServer {
   }
 
   private initWebSockets() {
-    const port = process.env.PORT || botConfig.WS_PORT || "3040";
-    
     if (botConfig.USE_WS)
       this.wss = new WebSocket.Server({ port: parseInt(port) });
     // this.wss = new WebSocket.Server({ port: parseInt(botConfig.WS_PORT) });
@@ -180,7 +181,7 @@ class BotCustomServer {
 
     if (this.wss)
       this.wss.on('listening', () => {
-        this.logger.log('✅ WS Server ready on port: ' + botConfig.WS_PORT);
+        this.logger.log('✅ WS Server ready on port: ' + port);
         this.logger.log(`✅ Agent ${Cyan}${botConfig.BotName}${Reset} is up! ${Cyan}${botConfig.BotIcon}${Reset}`);
       });
   }
