@@ -104,7 +104,14 @@ export const OPENAI_API_KEY = process.env.OPENAI_API_KEY!;
 export const OPENAI_BASE_URL = process.env.OPENAI_BASE_URL || "";
 
 export const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY!;
-export const ANTHROPIC_BASE_URL = process.env.ANTHROPIC_BASE_URL || "";
+export const ANTHROPIC_BASE_URL = process.env.ANTHROPIC_BASE_URL || "https://api.anthropic.com/v1/";
+
+export const VENICE_API_KEY = process.env.VENICE_API_KEY! || "";
+export const VENICE_BASE_URL = process.env.VENICE_BASE_URL || "https://api.venice.ai/v1";
+export const VENICE_JSON_MODEL = process.env.VENICE_JSON_MODEL || "Venice-NLP-001";
+
+
+
 
 // export const NEYNAR_API_KEY = process.env.NEYNAR_API_KEY!;
 // export const HUB_RPC = process.env.HUB_RPC! || "nemes.farcaster.xyz:2283";

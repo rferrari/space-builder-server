@@ -6,10 +6,10 @@
   "main": "index.js",
   "scripts": {
     "serve": "nodemon --ext ts --exec \"pnpm dev\"",
-    "dev": "tsc -p . && node build/server.js",
+    "dev": "tsc -p . && node build/server/server.js",
     "build:dev": "tsc -p .",
-    "start:dev": "tsc -p . && node build/server.js",
-    "start:prod": "node build/server.js",
+    "start:dev": "tsc -p . && node build/server/server.js",
+    "start:prod": "node build/server/server.js",
     "build": "tsc -p .",
     "test:workers": "tsc -p . && node build/test/workers-test.js",
     "test:simple": "tsc -p . && node build/test/simple-test.js",

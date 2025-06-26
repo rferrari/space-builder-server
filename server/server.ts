@@ -5,6 +5,7 @@ import * as botConfig from "./config";
 import FileLogger from './lib/FileLogger';
 import { Cyan, Reset } from './lib/colors';
 import { BotChatMessage } from './bot.types';
+import { IncomingMessage } from 'http';
 
 // declare module 'ws' {
 //   interface WebSocket {
@@ -79,13 +80,17 @@ class BotCustomServer {
   }
 
   private initWebSockets() {
+    const port = process.env.PORT || botConfig.WS_PORT || "3040";
+
     if (botConfig.USE_WS)
-      this.wss = new WebSocket.Server({ port: parseInt(botConfig.WS_PORT) });
+      this.wss = new WebSocket.Server({ port: parseInt(port) });
+    // this.wss = new WebSocket.Server({ port: parseInt(botConfig.WS_PORT) });
 
     if (this.wss) {
       let clientId = 0; // Initialize a client ID counter
 
-      this.wss.on('connection', (ws: WebSocket & { id?: number }) => {
+      this.wss.on('connection', (ws: WebSocket & { id?: number }, req: IncomingMessage) => {
+        this.logger.log(`🧩 New WS connection from ${req.socket.remoteAddress}`);
         ws.id = clientId++;
 
         // const logPublish = {
@@ -99,13 +104,34 @@ class BotCustomServer {
         ws.on('message', (data: string) => {
           // Check if the message is a command
           const { name, message, spaceContext } = JSON.parse(data);
+          let extractedMessage = message;
+          let extractedSpaceContext = spaceContext;
+          if (!spaceContext) {
+            const userRequestMatch = message.match(/User request:(.*?)(\n\n)/s);
+            if (userRequestMatch) {
+              extractedMessage = userRequestMatch[1].trim();
+            }
+            const spaceContextMatch = message.match(/\n\nCurrent space configuration:\n(.*)/s);
+            if (spaceContextMatch) {
+              extractedSpaceContext = spaceContextMatch[1].trim();
+            }
+          }
           const commandObj: BotChatMessage = {
             name,
-            message,
+            message: extractedMessage,
             clientId: ws.id,
             type: null,
-            spaceContext
+            spaceContext: extractedSpaceContext
           };
+
+
+          // const commandObj: BotChatMessage = {
+          //   name,
+          //   message,
+          //   clientId: ws.id,
+          //   type: null,
+          //   spaceContext
+          // };
 
           //await
           this.botAvatar.processCommand(commandObj.message, commandObj);
@@ -151,7 +177,7 @@ class BotCustomServer {
     // this.logger.log("👀 Vision: " + botConfig.VisionModel);
     // this.logger.log("💻 Assistent: " + botConfig.AssistentModel);
     this.logger.log("")
-    
+
     if (this.wss)
       this.wss.on('listening', () => {
         this.logger.log('✅ WS Server ready on port: ' + botConfig.WS_PORT);

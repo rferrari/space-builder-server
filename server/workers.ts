@@ -3,7 +3,12 @@ import { ChatOpenAI } from "@langchain/openai";
 import { PromptTemplate } from "@langchain/core/prompts";
 import { StringOutputParser } from "@langchain/core/output_parsers";
 import { CompiledStateGraph, END, MemorySaver, START, StateDefinition, StateGraph } from "@langchain/langgraph";
-import { WORKERS_MODEL, JSON_MODEL, WORKERS_TEMP, JSON_TEMP, ANTHROPIC_BASE_URL, ANTHROPIC_API_KEY } from "./config";
+import {
+    WORKERS_MODEL, JSON_MODEL, WORKERS_TEMP, JSON_TEMP,
+    ANTHROPIC_BASE_URL, ANTHROPIC_API_KEY,
+    VENICE_BASE_URL, VENICE_API_KEY,
+    VENICE_JSON_MODEL
+} from "./config";
 import FileLogger from "./lib/FileLogger";
 import { EventBus } from "./eventBus.interface";
 import { BotChatMessage } from "./bot.types";
@@ -12,9 +17,14 @@ import {
     COMMUNICATING_PROMPT,
     BUILDER_SYSTEM_PROMPT,
     DESIGNER_SYSTEM_PROMPT,
-    MAIN_SYSTEM_PROMPT
+    MAIN_SYSTEM_PROMPT,
+    RESEARCHER_SYSTEM
 } from "./botPrompts";
-// import {  } from "./one-shot-builder-v2";
+// import { imageResearcher } from './lib/ImageWebSearch'; // path where your final image code is
+
+import { Reset, Blue, Green, Red, Cyan, Gray, Yellow } from '../server/lib/colors';
+import axios from 'axios';
+import * as cheerio from 'cheerio';
 
 import OpenAI from "openai";
 const client = new OpenAI();
@@ -64,24 +74,203 @@ const isValidImage = async (url: string): Promise<boolean> => {
     }
 };
 
-
 const validateMediaArray = async (mediaArray: any[]) => {
     const validated = [];
+
+    const isYouTubeUrl = (url: string) => {
+        return /^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.be)\//.test(url);
+    };
 
     for (const item of mediaArray) {
         if (item.type === "rss" && await isValidRss(item.url)) {
             validated.push(item);
         }
+
         if (item.type === "image" && await isValidImage(item.url)) {
             validated.push(item);
         }
-        if (item.type === "video" || item.type === "social") {
-            validated.push(item); // optionally add further checks
+
+        if (item.type === "video" && isYouTubeUrl(item.url)) {
+            validated.push(item);
+        }
+
+        if (item.type === "social") {
+            validated.push(item);
+        }
+
+        if (item.type === "information") {
+            validated.push(item);
         }
     }
 
     return validated;
 };
+
+
+export async function extractImagesFromPage(url: string): Promise<string[]> {
+    try {
+        const { data, headers } = await axios.get(url, {
+            headers: { 'User-Agent': 'Mozilla/5.0' },
+            timeout: 8000,
+        });
+
+        if (!headers['content-type']?.includes('text/html')) return [];
+
+        const $ = cheerio.load(data);
+        const images: string[] = [];
+
+        $('img').each((_, el) => {
+            let src = $(el).attr('src') || '';
+            if (src.startsWith('//')) src = 'https:' + src;
+            else if (src.startsWith('/')) src = new URL(src, url).href;
+            else if (!src.startsWith('http')) src = new URL(src, url).href;
+
+            if (/\.(jpg|jpeg|png|svg)$/i.test(src)) {
+                images.push(src);
+            }
+        });
+
+        console.log(`🔍 Found ${$('img').length} <img> tags, extracted ${images.length} valid images`);
+        return images;
+    } catch {
+        console.warn(`⚠️ Failed to extract from ${url}`);
+        return [];
+    }
+}
+
+export function scoreImage(url: string, query: string, seen: Map<string, number>): number {
+    let score = 0;
+    const urlLower = url.toLowerCase();
+    const filename = urlLower.split('/').pop() || '';
+    const baseName = filename.replace(/\.[a-z0-9]+$/, '');
+    const isLogoQuery = query.toLowerCase().includes('logo');
+
+    if (urlLower.includes('thumb') || urlLower.includes('small') || urlLower.includes('icon') || urlLower.includes('sprite')) score -= 2;
+    if (/\/\d{1,3}px-/.test(urlLower)) score -= 2;
+
+    if (urlLower.includes('large') || urlLower.includes('xlarge') || urlLower.includes('original') || urlLower.includes('hires')) score += 2;
+
+    if (filename.endsWith('.jpg') || filename.endsWith('.jpeg')) score += 2;
+    else if (filename.endsWith('.png') || filename.endsWith('.webp')) score += 1;
+    else if (filename.endsWith('.svg')) score += isLogoQuery ? 1 : -1;
+
+    seen.set(baseName, (seen.get(baseName) || 0) + 1);
+    if (seen.get(baseName)! > 1) score -= 1;
+
+    if (filename.includes('logo')) score += isLogoQuery ? 2 : -2;
+    if (filename.includes('banner') || filename.includes('icon')) score -= 1;
+    if (/\d{3,}/.test(filename)) score += 1;
+
+    if (urlLower.match(/\b(tui|roy|konrad|wothe|vermeer|fitzharris|gallery|photo|artwork|print)\b/)) score += 2;
+
+    const cleanedQuery = query
+        .toLowerCase()
+        .replace(/[^a-z0-9\s]/g, '')
+        .split(/\s+/)
+        .filter(w => w.length > 2 && !['the', 'and', 'with', 'from', 'for', 'of'].includes(w));
+
+    const tokens = filename.split(/[^a-z0-9]+/);
+    let matchCount = 0;
+
+    for (const word of cleanedQuery) {
+        const singular = word.replace(/s$/, '');
+        if (tokens.includes(word) || tokens.includes(singular)) {
+            matchCount++;
+            score += 2;
+        }
+    }
+
+    if (matchCount > 1) score += 1;
+
+    return score;
+}
+
+async function extractImagesFromText(text: string): Promise<string[]> {
+    const urlRegex = /https?:\/\/[^\s)\]]+/g;
+    const links = [...text.matchAll(urlRegex)].map(m => m[0]);
+    const allImages: string[] = [];
+
+    const results = await Promise.allSettled(
+        links.map(link => extractImagesFromPage(link).then(images => ({ link, images })))
+    );
+
+    for (const result of results) {
+        if (result.status === 'fulfilled') {
+            const { link, images } = result.value;
+            if (images.length) {
+                console.log(`🔗 ${link} → 🖼️ Found ${images.length} image(s)`);
+                allImages.push(...images);
+            } else {
+                console.warn(`🔗 ${link} → ❌ No valid images found`);
+            }
+        } else {
+            console.warn(`⚠️ Failed to extract from link due to error`);
+        }
+    }
+
+    console.log(`\n🎯 Total images extracted: ${allImages.length}`);
+    return allImages;
+}
+
+export async function imageResearcher(prompt: string): Promise<{
+    mediaJson: string;
+    validMedia: any[];
+    invalidMedia: any[];
+}> {
+    const research = await client.responses.create({
+        model: 'gpt-4.1',
+        tools: [{ type: 'web_search_preview' }],
+        tool_choice: { type: 'web_search_preview' },
+        input: `Find and return great websites links about main subject from this query: "${prompt}".`,
+    });
+
+    const outputText = research.output_text || '';
+    console.log(outputText);
+
+    const extractedUrls = await extractImagesFromText(outputText);
+    const seen = new Map<string, number>();
+
+    const validMedia = extractedUrls.map(url => {
+        const score = scoreImage(url, prompt, seen);
+        return {
+            type: 'image',
+            info: 'Extracted from page',
+            url,
+            score: typeof score === 'number' && !isNaN(score) ? score : -9999,
+        };
+    });
+
+    if (validMedia.length === 0) {
+        console.warn('⚠️ No valid media to score.');
+        return {
+            mediaJson: '[]',
+            validMedia: [],
+            invalidMedia: [],
+        };
+    }
+
+    const scores = validMedia.map(m => m.score);
+    const maxScore = Math.max(...scores);
+    const minScore = Math.min(...scores);
+    const cutoff = minScore + (maxScore - minScore) * 0.4;
+
+    validMedia.forEach(img =>
+        console.log(`${img.score >= cutoff ? "✅" : "❌"} ${img.score} - ${img.url}`)
+    );
+
+    const sorted = validMedia
+        .filter(img => img.score >= cutoff && img.score >= 0)
+        .sort((a, b) => b.score - a.score);
+
+    console.log(`\n${Yellow}🔢 Scored and sorted image list:${Reset}`);
+    sorted.forEach(item => console.log(`${Green}${item.score} - ${item.url}${Reset}`));
+
+    return {
+        mediaJson: JSON.stringify(sorted, null, 2),
+        validMedia: sorted,
+        invalidMedia: [],
+    };
+}
 
 
 export class WorkersSystem {
@@ -164,103 +353,66 @@ export class WorkersSystem {
         const logPublish = {
             name: "Researcher",
             type: "PLANNER_LOGS",
-            clientId: state.clientId, // ensure clientId is preserved
-            message: ""
-        }
-        logPublish.message = "☕ Preparing coffee..."
+            clientId: state.clientId,
+            message: "☕ Preparing coffee..."
+        };
         this.eventBus.publish("AGENT_LOGS", logPublish);
 
+        const userQuery = state.userQuery;
+
+        const RESEARCHER_PROMPT = new PromptTemplate({
+            template: RESEARCHER_SYSTEM,
+            inputVariables: ["userQuery"]
+        });
+
+        const filledPrompt = await RESEARCHER_PROMPT.format({
+            userQuery: userQuery,
+        });
+
+
+        // 🔍 Text + RSS + video search
         const research = await client.responses.create({
             model: "gpt-4.1",
             tools: [{ type: "web_search_preview" }],
             tool_choice: { type: "web_search_preview" },
-            // input: `Search the web for websites links, images url, and videos related to: "${state.userQuery}"`,
-            // input: ``,
-
-            input: `
-Search the web and return a JSON array of valid, direct links related to main subject from user query: "${state.userQuery}".
-
-item in the array must include:
-- "type": one of "information", "image", "video", "rss", or "social"
-- "info": a short descriptive
-- "url": the direct, valid link
-
-Strict rules:
-- "information": summary of information about main subject on user query
-- "video": only include direct links ending in .mp4 or full YouTube video URLs (not playlist pages or channels)
-- "social": only include public profile URLs from Twitter
-- "image":
-    - Give priority to cdn.pexels.com, images.pexels.com
-    - Must be a direct link ending in .jpg, .jpeg, or .png
-    - Must contain the subject in the filename
-- "rss": give priority to https://cointelegraph.com/rss/tag/<coins> feeds. ONLY include if:
-    - URL ends with '.xml' or includes '/feed'
-    - AND it returns Content-Type: application/rss+xml, application/xml, or text/xml
-    - If the RSS URL returns HTML or is not verifiable, skip it
-    - for example, https://solana.com/news/rss.xml looks valid, but is not. choose another
-
-Important:
-- Do not include general websites or pages that don't directly serve media
-- Do not include portals or download pages pretending to be image links
-- Do not include links unless they end with the correct file extension (for images or videos)
-
-Return only a valid JSON array inside a \`\`\`json code block.
-Do not include any text or explanation outside the JSON.
-`
-
-            // Do not return:
-            // - Search portals (e.g., Unsplash search pages, image collections)
-            // - General websites or homepages
-            // - Any links that require further navigation to access media or feeds
-
+            input: filledPrompt
         });
 
-        // const results = research.tool_outputs?.[0]?.output?.results || [];
-        // const links = results.map(item => ({
-        //     title: item.title,
-        //     url: item.url,
-        //     image: item.image_url || item.thumbnail || null,
-        //     video: item.video_url || (item.url?.includes("youtube.com") || item.url?.includes("vimeo.com") ? item.url : null),
-        // }));
-        // console.log(links);
-
         const jsonMatch = research.output_text.match(/```json\s*([\s\S]*?)\s*```/);
-        let mediaJson = "[]";
+        let baseMedia: any[] = [];
 
         if (jsonMatch) {
             try {
-                const mediaArray = JSON.parse(jsonMatch[1]);
-                const validatedMediaArray = await validateMediaArray(mediaArray); // ✅ await it
-                mediaJson = JSON.stringify(validatedMediaArray, null, 2); // ✅ use the cleaned array
-                // mediaJson = JSON.stringify(mediaArray, null, 2);
+                const rawMedia = JSON.parse(jsonMatch[1]);
+                baseMedia = await validateMediaArray(rawMedia);
             } catch (err) {
-                console.error("Failed to parse media JSON:", err);
+                console.error("❌ Failed to parse main media JSON:", err);
             }
         }
 
-        // const jsonMatch = research.output_text.match(/```json\s*([\s\S]*?)\s*```/);
-        // if (!jsonMatch) {
-        //     console.error("No JSON block found.");
-        // } else {
-        //     try {
-        //         const mediaArray = JSON.parse(jsonMatch[1]);
-        //         console.log(mediaArray); // ready to use!
+        // 🖼️ Now run image researcher
+        let imageMedia: any[] = [];
+        try {
+            const imageResult = await imageResearcher(userQuery);
+            imageMedia = imageResult.validMedia.map(item => ({
+                type: "image",
+                info: item.info,
+                url: item.url,
+                score: item.score
+            }));
+        } catch (err) {
+            console.error("❌ Image researcher failed:", err);
+        }
+
+        // ✅ Combine all media
+        console.log("Base Media:", baseMedia);
+        console.log("Image Media:", imageMedia);
+        const combinedMedia = [...baseMedia, ...imageMedia];
+        const mediaJson = JSON.stringify(combinedMedia, null, 2);
+
         return {
             mediaJson
-        }
-        //     } catch (err) {
-        //         console.error("Failed to parse JSON:", err);
-        //         return {
-        //             mediaArray: null
-        //         }
-        //     }
-        // }
-        // const researchResult = research.output_text;
-        // console.dir(extractedLinks)
-
-        // const researchResult = research.;
-        // tool_choice parameter, and setting it to 
-
+        };
     }
 
     private async planning(state: GraphInterface): Promise<Partial<GraphInterface>> {
@@ -407,10 +559,37 @@ Do not include any text or explanation outside the JSON.
 
         let result;
         try {
+            // using default claude
             result = await state.jsonResponseModel.invoke(filledPrompt);
         } catch (error) {
-            this.log.log(`[BUILDER] Error during building: ${error.message}`, "BUILDER");
-            throw error; // Re-throw the error after logging
+            this.log.error(`[BUILDER] Error during building: ${error.message}`, "BUILDER");
+            try {
+                // using first fallback Venice
+                const jsonModel = new ChatOpenAI({
+                    model: VENICE_JSON_MODEL,
+                    temperature: JSON_TEMP,
+                    apiKey: VENICE_API_KEY as string,
+                    configuration: {
+                        baseURL: VENICE_BASE_URL
+                    },
+                    modelKwargs: {
+                        response_format: { type: "json_object" }
+                    }
+                });
+
+                result = await jsonModel.invoke(filledPrompt);
+            } catch (error) {
+                //using second fabllback open ai
+                const jsonModel = new ChatOpenAI({
+                    modelName: "gpt-4o", // or "gpt-4-turbo"
+                    temperature: 0,
+                    openAIApiKey: process.env.OPENAI_API_KEY, // your OpenAI key
+                    modelKwargs: {
+                        response_format: "json" // required for strict JSON output
+                    }
+                });
+                result = await jsonModel.invoke(filledPrompt);
+            }
         }
         const output = result.content.toString()
 
@@ -418,7 +597,6 @@ Do not include any text or explanation outside the JSON.
         //     plan: state.plannerOutput,
         //     designer: state.designerOutput,
         // });
-
 
         this.log.log("[BUILDER] JSON generated:", "BUILDER");
         this.log.log(output, "BUILDER");
@@ -449,66 +627,14 @@ Do not include any text or explanation outside the JSON.
         return { builderOutput: output };
     }
 
-    // private async verify(state: GraphInterface): Promise<Partial<GraphInterface>> {
-    //     // log the inputs
-    //     console.log('-'.repeat(50));
-    //     console.log(`[VERIFY] Inputs:
-    //         designerOutput: ${state.designerOutput}, 
-    //         builderOutput: ${state.builderOutput}`);
-
-    //     const prompt = new PromptTemplate({
-    //         template: VERIFY_SYSTEM,
-    //         inputVariables: [
-    //             // "current_space",
-    //             "designerOutput",
-    //             "builderOutput"]
-    //     });
-
-
-    //     const output = await prompt.pipe(state.jsonResponseModel).pipe(new StringOutputParser()).invoke({
-    //         builderOutput: state.builderOutput,
-    //         designerOutput: state.designerOutput
-    //     });
-
-    //     try {
-    //         const parsed = JSON.parse(output);
-    //         const match = parsed?.match?.toUpperCase?.();
-    //         const jsonfixed = parsed?.jsonfixed || null;
-
-    //         if (match === "YES") return { builderOutput: state.builderOutput };
-    //         if (match === "NO") return { builderOutput: jsonfixed };
-    //     } catch (e) {
-    //         return {builderOutput: state.builderOutput}
-    //     }
-
-
-    //     // this.log.log("[VERIFY] Final message:\n", "VERIFY");
-    //     // this.log.log(output, "VERIFY");
-    //     // const logPublish = {
-    //     //     name: "VERIFY",
-    //     //     type: "COMM_LOGS",
-    //     //     clientId: state.clientId, // ensure clientId is preserved
-    //     //     message: output
-    //     // };
-    //     // this.eventBus.publish("COMM_LOGS", logPublish);
-
-    //     // return { builderOutput: output };
-    // }
-
     private async communicating(state: GraphInterface): Promise<Partial<GraphInterface>> {
+        return { communicatorOutput: "Done!" };
+
         // log the inputs
         console.log('-'.repeat(50));
         console.log(`[COMMUNICATOR] Inputs:
             User Query: ${state.userQuery}`
         );
-
-        // const prompt = new PromptTemplate({
-        //     template: COMMUNICATING_PROMPT,
-        //     inputVariables: [
-        //         "current_space",
-        //         "new_space",
-        //         "userQuery"]
-        // });
 
         const promptTemplate = PromptTemplate.fromTemplate(
             COMMUNICATING_PROMPT
@@ -537,8 +663,8 @@ Do not include any text or explanation outside the JSON.
             clientId: state.clientId, // ensure clientId is preserved
             message: output
         };
-        this.eventBus.publish("COMM_LOGS", logPublish);
 
+        // this.eventBus.publish("COMM_LOGS", logPublish);
         return { communicatorOutput: output };
     }
 
@@ -558,7 +684,6 @@ Do not include any text or explanation outside the JSON.
             { configurable: { thread_id: inputQuery.name + "_thread" } }
         );
 
-        // this.tokenRateLimiter.printTokensUsedPerMinute();
         return graphResponse;
     }
 }
