@@ -7,7 +7,8 @@ import {
     WORKERS_MODEL, JSON_MODEL, WORKERS_TEMP, JSON_TEMP,
     ANTHROPIC_BASE_URL, ANTHROPIC_API_KEY,
     VENICE_BASE_URL, VENICE_API_KEY,
-    VENICE_JSON_MODEL
+    VENICE_JSON_MODEL,
+    CHAT_BOT_MODEL
 } from "./config";
 import FileLogger from "./lib/FileLogger";
 import { EventBus } from "./eventBus.interface";
@@ -219,7 +220,7 @@ export async function imageResearcher(prompt: string): Promise<{
     invalidMedia: any[];
 }> {
     const research = await client.responses.create({
-        model: 'gpt-4.1',
+        model: WORKERS_MODEL || 'gpt-4.1',
         tools: [{ type: 'web_search_preview' }],
         tool_choice: { type: 'web_search_preview' },
         input: `Find and return great websites links about main subject from this query: "${prompt}".`,
@@ -373,7 +374,7 @@ export class WorkersSystem {
 
         // 🔍 Text + RSS + video search
         const research = await client.responses.create({
-            model: "gpt-4.1",
+            model: WORKERS_MODEL || "gpt-4.1",
             tools: [{ type: "web_search_preview" }],
             tool_choice: { type: "web_search_preview" },
             input: filledPrompt
@@ -596,7 +597,7 @@ export class WorkersSystem {
                 this.log.error(`[BUILDER.2] Error during building: ${error.message}`, "BUILDER");
                 //using second fabllback open ai
                 const jsonModel = new ChatOpenAI({
-                    modelName: "gpt-4o", // or "gpt-4-turbo"
+                    modelName: CHAT_BOT_MODEL || "gpt-4o", // or "gpt-4-turbo"
                     temperature: 0,
                     openAIApiKey: process.env.OPENAI_API_KEY, // your OpenAI key
                     modelKwargs: {

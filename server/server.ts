@@ -123,6 +123,8 @@ class BotCustomServer {
     // init checking options
     this.logger.log(botConfig.LOG_MESSAGES ? `✅ LOG MESSAGES is ON` : "🚨 LOG MESSAGES is OFF");
 
+    this.logger.log("")
+    this.logger.log("")
 
     this.logger.log("🙃 TEMPERAMENT: " + botConfig.CHAT_BOT_TEMP);
     this.logger.log("🤖 Agent Model: " + botConfig.CHAT_BOT_MODEL);
@@ -131,7 +133,9 @@ class BotCustomServer {
     this.logger.log("📄 Workers Model: " + botConfig.WORKERS_MODEL);
     this.logger.log("")
     this.logger.log("🙃 JSON TEMP: " + botConfig.JSON_TEMP);
-    this.logger.log("📄 JSON MODEL: " + botConfig.JSON_MODEL);
+    this.logger.log("📄 ANTHROPIC JSON MODEL: " + botConfig.JSON_MODEL);
+    this.logger.log("📄 VENICE JSON MODEL: " + botConfig.VENICE_JSON_MODEL);
+
     this.logger.log("")
 
     // if (this.wss)
