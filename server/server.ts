@@ -81,7 +81,7 @@ class BotCustomServer {
 
   private initWebSockets() {
     const port = process.env.PORT || botConfig.WS_PORT || "3040";
-
+    
     if (botConfig.USE_WS)
       this.wss = new WebSocket.Server({ port: parseInt(port) });
     // this.wss = new WebSocket.Server({ port: parseInt(botConfig.WS_PORT) });
