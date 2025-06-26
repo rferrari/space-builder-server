@@ -580,7 +580,6 @@ These positions go into layoutDetails and must not be changed.
 # CRITICAL RULE
 You must strictly preserve the positions ('x', 'y') and sizes ('w', 'h') of each fidget exactly as defined in the 'designer_specification.layout'. Do not recalculate, rearrange, or reflow the layout. These values go directly into 'layoutDetails.layoutConfig.layout[]' in the generated JSON.
 
-
 ${FIDGET_CONTEXT_CATALOG_BUILDER}
 
 ## THEME SYSTEM

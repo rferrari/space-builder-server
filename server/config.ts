@@ -108,7 +108,7 @@ export const ANTHROPIC_BASE_URL = process.env.ANTHROPIC_BASE_URL || "https://api
 
 export const VENICE_API_KEY = process.env.VENICE_API_KEY! || "";
 export const VENICE_BASE_URL = process.env.VENICE_BASE_URL || "https://api.venice.ai/v1";
-export const VENICE_JSON_MODEL = process.env.VENICE_JSON_MODEL || "Venice-NLP-001";
+export const VENICE_JSON_MODEL = "deepseek-coder-v2-lite" ;//|| process.env.VENICE_JSON_MODEL || "qwen3-4b";
 
 
 

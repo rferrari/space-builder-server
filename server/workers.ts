@@ -27,6 +27,7 @@ import axios from 'axios';
 import * as cheerio from 'cheerio';
 
 import OpenAI from "openai";
+import { err } from "neverthrow/dist";
 const client = new OpenAI();
 
 type Annotation = {
@@ -562,35 +563,55 @@ export class WorkersSystem {
             // using default claude
             result = await state.jsonResponseModel.invoke(filledPrompt);
         } catch (error) {
-            this.log.error(`[BUILDER] Error during building: ${error.message}`, "BUILDER");
+            this.log.error(`[BUILDER.1] Error during building: ${error.message}`, "BUILDER");
             try {
                 // using first fallback Venice
-                const jsonModel = new ChatOpenAI({
-                    model: VENICE_JSON_MODEL,
-                    temperature: JSON_TEMP,
-                    apiKey: VENICE_API_KEY as string,
-                    configuration: {
-                        baseURL: VENICE_BASE_URL
-                    },
-                    modelKwargs: {
-                        response_format: { type: "json_object" }
-                    }
+                const jsonModel = new OpenAI({
+                    apiKey: process.env.VENICE_API_KEY,
+                    baseURL: process.env.VENICE_BASE_URL
                 });
 
-                result = await jsonModel.invoke(filledPrompt);
+                const modelResult = await jsonModel.chat.completions.create({
+                    model: VENICE_JSON_MODEL,
+                    temperature: 0,
+                    messages: [
+                        {
+                            role: "system",
+                            content: filledPrompt,
+                        },
+                        // {
+                        //     role: "user",
+                        //     content: "write a simple json example.",
+                        // },
+                    ],
+                    // @ts-expect-error Venice.ai paramters are unique to Venice.
+                    venice_parameters: {
+                        include_venice_system_prompt: false,
+                    },
+                });
+                // console.log(); // Log the result for each model            } catch (e) {
+                result = modelResult.choices[0].message;
+                result.content = result.content.replace(/```json\n?|```/g, '');
             } catch (error) {
+                this.log.error(`[BUILDER.2] Error during building: ${error.message}`, "BUILDER");
                 //using second fabllback open ai
                 const jsonModel = new ChatOpenAI({
                     modelName: "gpt-4o", // or "gpt-4-turbo"
                     temperature: 0,
                     openAIApiKey: process.env.OPENAI_API_KEY, // your OpenAI key
                     modelKwargs: {
-                        response_format: "json" // required for strict JSON output
+                        response_format: { type: "json_object" } // required for strict JSON output
                     }
                 });
-                result = await jsonModel.invoke(filledPrompt);
+                try {
+                    result = await jsonModel.invoke(filledPrompt);
+                } catch (error) {
+                    this.log.error(`[BUILDER.3] Error during building: ${error.message}`, "BUILDER");
+                    return undefined
+                }
             }
         }
+
         const output = result.content.toString()
 
         // const output = await prompt.pipe(state.jsonResponseModel).pipe(new StringOutputParser()).invoke({
