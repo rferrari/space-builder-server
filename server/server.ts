@@ -50,16 +50,16 @@ class BotCustomServer {
   }
 
   private initWebSockets() {
-    if (botConfig.USE_WS) {
+    // if (botConfig.USE_WS) {
 
-      const app = http.createServer(); // You can use Express here too
-      this.wss = new WebSocket.Server({ server: app });
+    const app = http.createServer(); // You can use Express here too
+    this.wss = new WebSocket.Server({ server: app });
 
-      app.listen(parseInt(port), () => {
-        this.logger.log('✅ WS Server ready on port: ' + port);
-        this.logger.log(`✅ Agent ${Cyan}${botConfig.BotName}${Reset} is up! ${Cyan}${botConfig.BotIcon}${Reset}`);
-      });
-    }
+    app.listen(parseInt(port), () => {
+      this.logger.log('✅ WS Server ready on port: ' + port);
+      this.logger.log(`✅ Agent ${Cyan}${botConfig.BotName}${Reset} is up! ${Cyan}${botConfig.BotIcon}${Reset}`);
+    });
+    // }
     // this.wss = new WebSocket.Server({ port: parseInt(port) });
 
     if (this.wss) {
@@ -117,8 +117,8 @@ class BotCustomServer {
     const { dayPeriod } = await this.botAvatar.displayInternalClock();
 
     this.logger.log(botConfig.USE_WS ? "✅ Initializing WebSockets..." : "🚨 WebSockets OFF");
-    if (botConfig.USE_WS)
-      this.initWebSockets();
+    // if (botConfig.USE_WS)
+    this.initWebSockets();
 
     // init checking options
     this.logger.log(botConfig.LOG_MESSAGES ? `✅ LOG MESSAGES is ON` : "🚨 LOG MESSAGES is OFF");
