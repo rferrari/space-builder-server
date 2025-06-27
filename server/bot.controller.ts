@@ -320,7 +320,7 @@ export class BotAvatar {
 
 
 
-  private async getRAGContext(userQuery: BotChatMessage, history: string): Promise<string> {
+  private async getWorkersContext(userQuery: BotChatMessage, history: string): Promise<string> {
     var workersResponseContext = "";
 
     const workersResponse = await this.workersSystem
@@ -334,8 +334,9 @@ export class BotAvatar {
       workersResponseContext = workersResponse.communicatorOutput;
     }
 
-    const finalResponse = await this.createFinalResponse(workersResponseContext);
-    return finalResponse.toString();
+    // const finalResponse = await this.createFinalResponse(workersResponseContext);
+    // return finalResponse.toString();
+    return ""
   }
 
   private async sendReplyMessage(inputMessage: BotChatMessage, vision: string = "",
@@ -377,7 +378,7 @@ export class BotAvatar {
 
     // if using Workers system... include conversationContent + userQuery
     const ragHisstory = conversation.length > 0 ? combinedConversationHistory : memoryConversationContent;
-    const finalMessage = await this.getRAGContext(inputMessage, ragHisstory);
+    const finalMessage = await this.getWorkersContext(inputMessage, ragHisstory);
 
     this.addToBotMemory(inputMessage.name, inputMessage.message, finalMessage)
     await this.addToUserMemory(inputMessage.name, inputMessage.message, finalMessage)
