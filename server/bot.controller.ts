@@ -52,8 +52,8 @@ export class BotAvatar {
   private userRequestToStop: string;
   private bufferMemoryForPrompts: BufferMemory;
   private chatChain: ConversationChain;
-  private maxMessageHistorySize: number;
-  private memoryExpirationDuration: number;
+  private MAX_MESSAGE_HISTORY_SIZE: number;
+  private MEMORY_EXPIRATION_DURATION: number;
   private messagesLog: FileLogger;
   private memoryLog: FileLogger;
   private newCastsLogger: FileLogger;
@@ -81,15 +81,15 @@ export class BotAvatar {
     this.memoryLog = new FileLogger({ folder: './logs', printconsole: false, logtofile: false });
     // this.newCastsLogger = new FileLogger({ folder: './logs', printconsole: false });
     this.userMemories = new Map();
-    this.maxMessageHistorySize = botConfig.maxMessageHistorySize; // Set the maximum history limit
-    this.memoryExpirationDuration = botConfig.memoryExpirationDuration * 60 * 1000; // 24 hours
+    this.MAX_MESSAGE_HISTORY_SIZE = botConfig.MAX_MESSAGE_HISTORY_SIZE; // Set the maximum history limit
+    this.MEMORY_EXPIRATION_DURATION = botConfig.MEMORY_EXPIRATION_DURATION * 60 * 1000; // 24 hours
 
     this.updateInternalClockTime();
 
     this.chatBotLLM = new ChatOpenAI({
       openAIApiKey: botConfig.OPENAI_API_KEY,
       temperature: botConfig.CHAT_BOT_TEMP,
-      modelName: botConfig.CHAT_BOT_MODEL,
+      modelName: botConfig.DEFAULT_CHAT_BOT_MODEL,
     });
 
     this.chatPrompt = ChatPromptTemplate.fromMessages([
@@ -114,13 +114,13 @@ export class BotAvatar {
     // Schedule periodic cleanup
     setInterval(() =>
       this.cleanupOldMemories.call(this)
-      , botConfig.MEMORY_CLEANUP_MIN * 60 * 1000); // Run every hour
+      , botConfig.MEMORY_CLEANUP_INTERVAL_MINUTES * 60 * 1000); // Run every hour
   }
 
   private cleanupOldMemories() {
     const currentTime = Date.now();
     for (const [userId, userMemory] of this.userMemories.entries()) {
-      if (currentTime - userMemory.lastInteraction > this.memoryExpirationDuration) {
+      if (currentTime - userMemory.lastInteraction > this.MEMORY_EXPIRATION_DURATION) {
         this.userMemories.delete(userId); // Remove outdated memory
         this.memoryLog.log(`Memory for user ${userId} removed due to inactivity.`, "MEM_CLEAN_UP")
       }
@@ -244,7 +244,7 @@ export class BotAvatar {
     const memoryVariables = await this.bufferMemoryForPrompts.loadMemoryVariables({});
 
     // Check if the number of messages exceeds the limit
-    if (memoryVariables.length > this.maxMessageHistorySize) {
+    if (memoryVariables.length > this.MAX_MESSAGE_HISTORY_SIZE) {
       // Trim the oldest messages
       // const trimmedMemory = memoryVariables.slice(-this.maxMessageHistorySize); // Keep the latest messages
       // Clear the current memory and save the trimmed memory
@@ -358,10 +358,10 @@ export class BotAvatar {
     // set conversationContent
     // filter and create a conversation content history for RAG System
     const chatHistoryMessages = await relevantMemory.chatHistory.getMessages();
-    const filteredMessages = chatHistoryMessages.slice(botConfig.LAST_CONVERSATION_LIMIT); // Adjust the number as needed
+    const filteredMessages = chatHistoryMessages.slice(botConfig.MAX_LAST_CONVERSATION_LIMIT); // Adjust the number as needed
     const memoryConversationContent = filteredMessages.map((message) => {
       // Check the type of the message and assign the name accordingly
-      const name = message instanceof AIMessage ? botConfig.BotName :
+      const name = message instanceof AIMessage ? botConfig.BOT_NAME :
         message instanceof HumanMessage ? message.name : 'User'; // Fallback in case of an unexpected type
       return `@${name}: ${message.content}`;
     }).join('\n'); // Join all messages with a newline
@@ -385,14 +385,14 @@ export class BotAvatar {
     this.printMemorySummary();
 
     return {
-      name: botConfig.BotName,
+      name: botConfig.BOT_NAME,
       message: finalMessage,
     };
   }
 
   public async processCommand(command: string, message: BotChatMessage) {
     let agentReply: BotChatMessage = {
-      name: botConfig.BotName,
+      name: botConfig.BOT_NAME,
       message: "",
       clientId: message.clientId,
       type: "REPLY",
@@ -475,7 +475,7 @@ export class BotAvatar {
     return `${month} ${day}${ordinalSuffix(day)}`;
   }
 
-  async updateInternalClockTime(timeZone: string = botConfig.TIMEZONE) {
+  async updateInternalClockTime(timeZone: string = botConfig.DEFAULT_TIMEZONE) {
     this.agora = new Date();
 
     // Format the current time based on the provided timezone
@@ -509,10 +509,10 @@ export class BotAvatar {
     ${Yellow}
     ⌐◨-◨  ⌐◨-◨  ⌐◨-◨  ⌐◨-◨  ⌐◨-◨  ⌐◨-◨  ⌐◨-◨  ⌐◨-◨  ⌐◨-◨  ⌐◨-◨
     ⌐◨-◨  
-    ⌐◨-◨  Greetings from ${botConfig.BotName}!
+    ⌐◨-◨  Greetings from ${botConfig.BOT_NAME}!
     ⌐◨-◨  
     ⌐◨-◨  ${Magenta}Today is ${this.weekday}, ${this.today}. ${Yellow}
-    ⌐◨-◨  ${Magenta}It's currently ${this.nowis} in ${botConfig.TIMEZONE}, and we're in the ${this.dayPeriod}. ${Yellow}
+    ⌐◨-◨  ${Magenta}It's currently ${this.nowis} in ${botConfig.DEFAULT_TIMEZONE}, and we're in the ${this.dayPeriod}. ${Yellow}
     ⌐◨-◨  ${Magenta}Best Day Ever! ${Yellow}
     ⌐◨-◨      
     ⌐◨-◨  ⌐◨-◨  ⌐◨-◨  ⌐◨-◨  ⌐◨-◨  ⌐◨-◨  ⌐◨-◨  ⌐◨-◨  ⌐◨-◨  ⌐◨-◨
@@ -527,7 +527,7 @@ export class BotAvatar {
   }
 
   // async castNewMessagetoChannel(): Promise<BotChatMessage> {
-  //   if (this.isBotStopped) return { name: botConfig.BotName, message: "Zzzzzzzzzz" };
+  //   if (this.isBotStopped) return { name: botConfig.BOT_NAME, message: "Zzzzzzzzzz" };
 
   //   // update Space Time Awereness
   //   this.updateInternalClockTime();
@@ -553,12 +553,12 @@ export class BotAvatar {
   //   if (reply !== "") {
   //     this.bufferMemoryForPrompts.chatHistory.addMessage(new AIMessage({
   //       content: reply,
-  //       id: botConfig.BotName,
-  //       name: botConfig.BotName
+  //       id: botConfig.BOT_NAME,
+  //       name: botConfig.BOT_NAME
   //     }));
 
   //     const tomReply: BotChatMessage = {
-  //       name: botConfig.BotName,
+  //       name: botConfig.BOT_NAME,
   //       message: reply + " --- " + designerImage.name,
   //       imageUrl: designerImage.message,
   //     }

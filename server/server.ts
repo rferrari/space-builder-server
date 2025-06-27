@@ -8,7 +8,7 @@ import { Cyan, Reset } from './lib/colors';
 import { BotChatMessage } from './bot.types';
 import { IncomingMessage } from 'http';
 
-const port = process.env.PORT || botConfig.WS_PORT || "3040";
+const port = process.env.PORT || botConfig.WEBSOCKET_PORT || "3040";
 
 class BotCustomServer {
   public MEM_USED: NodeJS.MemoryUsage;
@@ -57,7 +57,7 @@ class BotCustomServer {
 
     app.listen(parseInt(port), () => {
       this.logger.log('✅ WS Server ready on port: ' + port);
-      this.logger.log(`✅ Agent ${Cyan}${botConfig.BotName}${Reset} is up! ${Cyan}${botConfig.BotIcon}${Reset}`);
+      this.logger.log(`✅ Agent ${Cyan}${botConfig.BOT_NAME}${Reset} is up! ${Cyan}${botConfig.BOT_ICON}${Reset}`);
     });
     // }
     // this.wss = new WebSocket.Server({ port: parseInt(port) });
@@ -116,38 +116,38 @@ class BotCustomServer {
     this.logger.log("✅ Initializing Events Bus...");
     this.initEventBus();
 
-    this.logger.log("✅ Waking up Bot " + botConfig.BotName + botConfig.BotIcon + "...");
+    this.logger.log("✅ Waking up Bot " + botConfig.BOT_NAME + botConfig.BOT_ICON + "...");
     this.botAvatar = new BotAvatar(this.eventBus);
 
     // display date time now
     const { dayPeriod } = await this.botAvatar.displayInternalClock();
 
-    this.logger.log(botConfig.USE_WS ? "✅ Initializing WebSockets..." : "🚨 WebSockets OFF");
+    this.logger.log(botConfig.ENABLE_WEBSOCKETS ? "✅ Initializing WebSockets..." : "🚨 WebSockets OFF");
     // if (botConfig.USE_WS)
     this.initWebSockets();
 
     // init checking options
-    this.logger.log(botConfig.LOG_MESSAGES ? `✅ LOG MESSAGES is ON` : "🚨 LOG MESSAGES is OFF");
+    this.logger.log(botConfig.ENABLE_LOGGING ? `✅ LOG MESSAGES is ON` : "🚨 LOG MESSAGES is OFF");
 
     this.logger.log("")
     this.logger.log("")
 
     this.logger.log("🙃 TEMPERAMENT: " + botConfig.CHAT_BOT_TEMP);
-    this.logger.log("🤖 Agent Model: " + botConfig.CHAT_BOT_MODEL);
+    this.logger.log("🤖 Agent Model: " + botConfig.DEFAULT_CHAT_BOT_MODEL);
     this.logger.log("")
     this.logger.log("🙃 Workers Temp: " + botConfig.WORKERS_TEMP);
-    this.logger.log("📄 Workers Model: " + botConfig.WORKERS_MODEL);
+    this.logger.log("📄 Workers Model: " + botConfig.DEFAULT_WORKERS_MODEL);
     this.logger.log("")
     this.logger.log("🙃 JSON TEMP: " + botConfig.JSON_TEMP);
     this.logger.log("📄 ANTHROPIC JSON MODEL: " + botConfig.JSON_MODEL);
-    this.logger.log("📄 VENICE JSON MODEL: " + botConfig.VENICE_JSON_MODEL);
+    this.logger.log("📄 VENICE JSON MODEL: " + botConfig.DEFAULT_VENICE_JSON_MODEL);
 
     this.logger.log("")
 
     // if (this.wss)
     //   this.wss.on('listening', () => {
     //     this.logger.log('✅ WS Server ready on port: ' + port);
-    //     this.logger.log(`✅ Agent ${Cyan}${botConfig.BotName}${Reset} is up! ${Cyan}${botConfig.BotIcon}${Reset}`);
+    //     this.logger.log(`✅ Agent ${Cyan}${botConfig.BOT_NAME}${Reset} is up! ${Cyan}${botConfig.BOT_ICON}${Reset}`);
     //   });
   }
 

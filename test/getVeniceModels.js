@@ -21,30 +21,30 @@ https.get('https://api.venice.ai/api/v1/models', (res) => {
                 const createdDate = new Date(model.created * 1000).toLocaleString();
                 console.log(`Testing model: ${model.id}, Created: ${createdDate}`);
 
-                const jsonModel = new OpenAI({
-                    apiKey: process.env.VENICE_API_KEY,
-                    baseURL: process.env.VENICE_BASE_URL
-                });
+                // const jsonModel = new OpenAI({
+                //     apiKey: process.env.VENICE_API_KEY,
+                //     baseURL: process.env.VENICE_BASE_URL
+                // });
 
-                const modelResult = await jsonModel.chat.completions.create({
-                    model: model.id,
-                    temperature: 0,
-                    messages: [
-                        {
-                            role: "system",
-                            content: "You are a Json file writer",
-                        },
-                        {
-                            role: "user",
-                            content: "write a simple json example.",
-                        },
-                    ],
-                    // @ts-expect-error Venice.ai paramters are unique to Venice.
-                    venice_parameters: {
-                        include_venice_system_prompt: false,
-                    },
-                });
-                console.log(modelResult.choices[0].message.content); // Log the result for each model            } catch (e) {
+                // const modelResult = await jsonModel.chat.completions.create({
+                //     model: model.id,
+                //     temperature: 0,
+                //     messages: [
+                //         {
+                //             role: "system",
+                //             content: "You are a Json file writer",
+                //         },
+                //         {
+                //             role: "user",
+                //             content: "write a simple json example.",
+                //         },
+                //     ],
+                //     // @ts-expect-error Venice.ai paramters are unique to Venice.
+                //     venice_parameters: {
+                //         include_venice_system_prompt: false,
+                //     },
+                // });
+                // console.log(modelResult.choices[0].message.content); // Log the result for each model            } catch (e) {
             } catch (e) {
                 // const modelResult = await jsonModel.invoke("create a json file example for music industry");
                 console.error('JSON parse error:', e.error, e.lc_error_code);

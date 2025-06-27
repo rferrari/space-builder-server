@@ -1,0 +1,121 @@
+Here’s a clean, ready-to-use `RssScorer` class that encapsulates all your logic — from validating RSS links, scoring them with LLM-informed topic context, rewarding good domains, and penalizing bad ones.
+
+```ts
+import { isValidRss } from './mediaUtils'; // your existing util
+import { DEFAULT_WORKERS_MODEL } from '../config';
+import OpenAI from 'openai';
+
+const BAD_DOMAINS = [
+  "blogspot.com", "wordpress.com", "medium.com",
+  "steemit.com", "reddit.com", "quora.com",
+  "tumblr.com", "livejournal.com"
+];
+
+const GOOD_DOMAINS = [
+  "cointelegraph.com", "reuters.com", "nytimes.com",
+  "bbc.com", "techcrunch.com", "engadget.com"
+];
+
+export interface ScoredRss {
+  url: string;
+  score: number;
+  reason: string;
+}
+
+export class RssScorer {
+  private openai: OpenAI;
+  private topic: string;
+
+  constructor(apiKey: string, topic: string) {
+    this.openai = new OpenAI({ apiKey });
+    this.topic = topic;
+  }
+
+  private getDomain(url: string): string {
+    try {
+      return new URL(url).hostname;
+    } catch {
+      return '';
+    }
+  }
+
+  private async enrichTopic(): Promise<string[]> {
+    const res = await this.openai.chat.completions.create({
+      model: DEFAULT_WORKERS_MODEL || 'gpt-4.1',
+      messages: [
+        { role: "system", content: "List 10 trustworthy websites (by domain) that publish high-quality RSS feeds for the topic below. Return as a JSON array of domains only." },
+        { role: "user", content: this.topic }
+      ]
+    });
+
+    try {
+      const json = JSON.parse(res.choices[0].message.content || "[]");
+      if (Array.isArray(json)) return json;
+    } catch {}
+
+    return [];
+  }
+
+  private scoreRssUrl(url: string, trustedDomains: string[]): ScoredRss {
+    const domain = this.getDomain(url).toLowerCase();
+    let score = 0;
+    let reason = '';
+
+    if (BAD_DOMAINS.some(d => domain.includes(d))) {
+      score -= 5;
+      reason += '❌ Bad domain. ';
+    }
+
+    if (trustedDomains.some(d => domain.includes(d))) {
+      score += 5;
+      reason += '✅ Trusted domain. ';
+    }
+
+    if (GOOD_DOMAINS.some(d => domain.includes(d))) {
+      score += 2;
+      reason += '👍 Preferred default domain. ';
+    }
+
+    if (url.includes('/comments')) {
+      score -= 3;
+      reason += '🚫 Looks like a comment feed. ';
+    }
+
+    if (url.includes('rss') || url.endsWith('.xml')) {
+      score += 2;
+      reason += '📡 Likely a proper RSS link. ';
+    }
+
+    return { url, score, reason: reason.trim() };
+  }
+
+  public async scoreRssList(rssUrls: string[]): Promise<ScoredRss[]> {
+    const trusted = await this.enrichTopic();
+    const results: ScoredRss[] = [];
+
+    for (const url of rssUrls) {
+      if (!(await isValidRss(url))) continue;
+      results.push(this.scoreRssUrl(url, trusted));
+    }
+
+    return results.sort((a, b) => b.score - a.score);
+  }
+}
+```
+
+---
+
+### ✅ Usage:
+
+```ts
+const scorer = new RssScorer(process.env.OPENAI_API_KEY, "climate change");
+const results = await scorer.scoreRssList([
+  "https://cointelegraph.com/rss",
+  "https://someblog.wordpress.com/feed",
+  "https://reuters.com/rss/environment.xml"
+]);
+
+console.log(results);
+```
+
+Let me know if you want `scoreRssUrl` to include LLM-based classification too (e.g. "Is this domain suitable for topic X?").
