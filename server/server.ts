@@ -103,6 +103,12 @@ class BotCustomServer {
           // });
         });
       });
+
+      this.wss.on('error', (error) => {
+        this.logger.log('🚨 WebSocket Server Error:');
+        this.logger.log(error.stack || error.toString());
+      });
+
     }
   }
 
