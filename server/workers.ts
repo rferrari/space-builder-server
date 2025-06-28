@@ -272,14 +272,28 @@ export class WorkersSystem {
             plannerOutput: ${state.plannerOutput}
             `);
 
+        const GRID_SIZES = {
+            columns: 12,
+            rows: 10
+        }
 
         const prompt = new PromptTemplate({
             template: DESIGNER_SYSTEM_PROMPT,
-            inputVariables: ["plan"]
+            inputVariables: [
+                "plan",
+                "GRID_SIZES_columns",
+                "GRID_SIZES_rows",
+                "GRID_SIZES_columns_1",
+                "GRID_SIZES_rows_1",
+            ]
         });
 
         const filledPrompt = await prompt.format({
             plan: state.plannerOutput,
+            GRID_SIZES_columns: GRID_SIZES.columns,
+            GRID_SIZES_rows: GRID_SIZES.rows,
+            GRID_SIZES_columns_1: GRID_SIZES.columns-1,
+            GRID_SIZES_rows_1: GRID_SIZES.rows-1
         });
 
 
