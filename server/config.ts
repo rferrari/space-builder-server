@@ -14,7 +14,13 @@ export const MEMORY_EXPIRATION_DURATION = parseInt(process.env.MEMORY_EXPIRATION
 export const MEMORY_CLEANUP_INTERVAL_MINUTES = parseInt(process.env.MEMORY_CLEANUP_MIN) || 60;
 export const DEFAULT_CHAT_BOT_MODEL = "gpt-4o-mini"; // or whatever the default is
 export const DEFAULT_WORKERS_MODEL = "gpt-4.1-2025-04-14"; // or whatever the default is
-export const DEFAULT_VENICE_JSON_MODEL = process.env.VENICE_JSON_MODEL || "qwen-2.5-qwq-32b";
+// export const DEFAULT_VENICE_JSON_MODEL = process.env.VENICE_JSON_MODEL || "qwen-2.5-qwq-32b";
+export const DEFAULT_VENICE_JSON_MODEL = process.env.VENICE_JSON_MODEL 
+|| "dolphin-2.9.2-qwen2-72b" 
+|| "qwen-2.5-coder-32b" 
+|| "mistral-31-24b" 
+|| "qwen-2.5-qwq-32b";
+
 export const OPENAI_API_KEY = process.env.OPENAI_API_KEY!;
 export const OPENAI_BASE_URL = process.env.OPENAI_BASE_URL || "";
 export const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY!;
