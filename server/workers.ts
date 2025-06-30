@@ -137,8 +137,7 @@ export class WorkersSystem {
             clientId: state.clientId,
             message: "☕ Preparing coffee..."
         };
-        // this.eventBus.publish("AGENT_LOGS", logPublish);
-        await this.communicateChanges(state, "Researcher will search web for: "+state.userQuery);
+        this.eventBus.publish("AGENT_LOGS", logPublish);
 
         const userQuery = state.userQuery;
 
@@ -191,6 +190,11 @@ export class WorkersSystem {
         console.log("Image Media:", imageMedia);
         const combinedMedia = [...baseMedia, ...imageMedia];
         const mediaJson = JSON.stringify(combinedMedia, null, 2);
+
+        this.communicateChanges(state, 
+            "Researcher",
+            `searched web for main subject from the user query: "${state.userQuery}"` 
+            );
 
         return {
             mediaJson
@@ -265,7 +269,9 @@ export class WorkersSystem {
         logPublish.message = "🎨 Designer doodling something radical..."
         // this.eventBus.publish("AGENT_LOGS", logPublish);
 
-        await this.communicateChanges(state, "Planner finised this: "+output);
+        await this.communicateChanges(state, 
+            "Planner",
+            `finised planing: ${output}`);
 
         return { plannerOutput: escapeBraces(output) };
     }
@@ -328,7 +334,8 @@ export class WorkersSystem {
         logPublish.message = "🔧 Builder hammering pixels into place..."
         // this.eventBus.publish("AGENT_LOGS", logPublish);
 
-        await this.communicateChanges(state, "Designer just finished: " + output);
+        await this.communicateChanges(state, "Designer",
+            "finished: " + state.plannerOutput);
 
         return { designerOutput: escapeBraces(output) };
     }
@@ -448,7 +455,8 @@ export class WorkersSystem {
         // logPublish.message = "🕵️ Checking what changed behind the curtains..."
         // this.eventBus.publish("AGENT_LOGS", logPublish);
 
-        await this.communicateChanges(state, "Finish Building: " + state.plannerOutput );
+        await this.communicateChanges(state, "Builder",
+            "Finished: "+state.plannerOutput );
 
         return { builderOutput: output };
     }
@@ -456,42 +464,42 @@ export class WorkersSystem {
     private async communicating(state: GraphInterface): Promise<Partial<GraphInterface>> {
         return { communicatorOutput: "Done!" };
 
-        // log the inputs
-        console.log('-'.repeat(50));
-        console.log(`[COMMUNICATOR] Inputs:
-            User Query: ${state.userQuery}`
-        );
+        // // log the inputs
+        // console.log('-'.repeat(50));
+        // console.log(`[COMMUNICATOR] Inputs:
+        //     User Query: ${state.userQuery}`
+        // );
 
-        const promptTemplate = PromptTemplate.fromTemplate(
-            COMMUNICATING_PROMPT
-        );
+        // const promptTemplate = PromptTemplate.fromTemplate(
+        //     COMMUNICATING_PROMPT
+        // );
 
-        const filledPrompt = await promptTemplate.format({
-            // current_space: state.currentConfig,
-            // new_space: state.plannerOutput,
-            userQuery: state.userQuery
-        });
+        // const filledPrompt = await promptTemplate.format({
+        //     // current_space: state.currentConfig,
+        //     // new_space: state.plannerOutput,
+        //     userQuery: state.userQuery
+        // });
 
-        const messages = [
-            { role: "system", content: MAIN_SYSTEM_PROMPT },
-            { role: "user", content: filledPrompt },
-        ];
+        // const messages = [
+        //     { role: "system", content: MAIN_SYSTEM_PROMPT },
+        //     { role: "user", content: filledPrompt },
+        // ];
 
-        // const result = await this.chatBotLLM.invoke(messages);
-        const result = await state.model.invoke(messages);
-        const output = result.content.toString();
+        // // const result = await this.chatBotLLM.invoke(messages);
+        // const result = await state.model.invoke(messages);
+        // const output = result.content.toString();
 
-        this.log.log("[COMMUNICATOR] Final message:\n", "COMMUNICATOR");
-        this.log.log(output, "COMMUNICATOR");
-        const logPublish = {
-            name: "COMMUNICATOR",
-            type: "COMM_LOGS",
-            clientId: state.clientId, // ensure clientId is preserved
-            message: output
-        };
+        // this.log.log("[COMMUNICATOR] Final message:\n", "COMMUNICATOR");
+        // this.log.log(output, "COMMUNICATOR");
+        // const logPublish = {
+        //     name: "COMMUNICATOR",
+        //     type: "COMM_LOGS",
+        //     clientId: state.clientId, // ensure clientId is preserved
+        //     message: output
+        // };
 
-        // this.eventBus.publish("COMM_LOGS", logPublish);
-        return { communicatorOutput: output };
+        // // this.eventBus.publish("COMM_LOGS", logPublish);
+        // return { communicatorOutput: output };
     }
 
 
@@ -513,13 +521,14 @@ export class WorkersSystem {
         return graphResponse;
     }
 
-    private async communicateChanges(state: GraphInterface, changes: string) {
+    private async communicateChanges(state: GraphInterface, stage: string, changes: string) {
         const promptTemplate = PromptTemplate.fromTemplate(
             COMMUNICATING_PROMPT
         );
 
         const filledPrompt = await promptTemplate.format({
-            userQuery: changes
+            userQuery: changes,
+            stageName: stage
         });
 
         const messages = [

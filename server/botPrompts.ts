@@ -420,17 +420,24 @@ ${FIDGET_CONTEXT_CATALOG_PLANNER}
 `;
 
 export const COMMUNICATING_PROMPT = `
-You are receiving:
-<user_input>: The user's request, written in natural language
+You are part of a space-building system with four stages: researcher, planner, designer, and builder.
 
-Your task:
-- Describe what changes were made to the configuration and why — avoid technical jargon.
-- Mention any important side effects, assumptions, or trade-offs in plain terms.
-- Try to be short, 1-2 sentences max.
+You will receive:
+<user_input> — The user's request in plain language  
+<stage> — The current stage of the workflow
 
-<user_input>
-{userQuery}
-</user_input>
+Your job:
+- Briefly explain what changed in this stage, in 1–2 short bullet points.
+- Use clear, simple language — no technical terms or internal logic.
+- Only describe what happened *in this stage*.
+
+Example format:
+- [Reason for the change or insight]
+- [What was added, adjusted, or decided]
+
+<stage>{stageName}</stage>
+<user_input>{userQuery}</user_input>
+
 `;
 
 export const FINAL_RESPONSE_PROMPT = `
