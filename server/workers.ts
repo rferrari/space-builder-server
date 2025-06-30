@@ -137,7 +137,8 @@ export class WorkersSystem {
             clientId: state.clientId,
             message: "☕ Preparing coffee..."
         };
-        this.eventBus.publish("AGENT_LOGS", logPublish);
+        // this.eventBus.publish("AGENT_LOGS", logPublish);
+        await this.communicateChanges(state, "Researcher will search web for: "+state.userQuery);
 
         const userQuery = state.userQuery;
 
@@ -205,7 +206,8 @@ export class WorkersSystem {
             message: ""
         }
         msgPublish.message = "🔎 searching web..."
-        this.eventBus.publish("AGENT_LOGS", msgPublish);
+        // await this.communicateChanges(state, "planning will choose your fidgets for: "+state.userQuery);
+        // this.eventBus.publish("AGENT_LOGS", msgPublish);
 
         console.log(`\n` + '=--'.repeat(250) + `\n`);
         console.log(`[PLANNER] Inputs: 
@@ -261,7 +263,10 @@ export class WorkersSystem {
         };
         this.eventBus.publish("PLANNER_LOGS", logPublish);
         logPublish.message = "🎨 Designer doodling something radical..."
-        this.eventBus.publish("AGENT_LOGS", logPublish);
+        // this.eventBus.publish("AGENT_LOGS", logPublish);
+
+        await this.communicateChanges(state, "Planner finised this: "+output);
+
         return { plannerOutput: escapeBraces(output) };
     }
 
@@ -292,8 +297,8 @@ export class WorkersSystem {
             plan: state.plannerOutput,
             GRID_SIZES_columns: GRID_SIZES.columns,
             GRID_SIZES_rows: GRID_SIZES.rows,
-            GRID_SIZES_columns_1: GRID_SIZES.columns-1,
-            GRID_SIZES_rows_1: GRID_SIZES.rows-1
+            GRID_SIZES_columns_1: GRID_SIZES.columns - 1,
+            GRID_SIZES_rows_1: GRID_SIZES.rows - 1
         });
 
 
@@ -321,7 +326,9 @@ export class WorkersSystem {
         this.eventBus.publish("DESIGN_LOGS", logPublish);
 
         logPublish.message = "🔧 Builder hammering pixels into place..."
-        this.eventBus.publish("AGENT_LOGS", logPublish);
+        // this.eventBus.publish("AGENT_LOGS", logPublish);
+
+        await this.communicateChanges(state, "Designer just finished: " + output);
 
         return { designerOutput: escapeBraces(output) };
     }
@@ -378,7 +385,8 @@ export class WorkersSystem {
                     include_venice_system_prompt: false,
                 },
             });
-            // console.log(); // Log the result for each model            } catch (e) {
+
+            // console.log(); // Log the result for each model
             result = modelResult.choices[0].message;
             result.content = result.content.replace(/<think>[\s\S]*?<\/think>\n?/g, '');
             result.content = result.content.replace(/```json\n?|```/g, '');
@@ -439,6 +447,8 @@ export class WorkersSystem {
 
         // logPublish.message = "🕵️ Checking what changed behind the curtains..."
         // this.eventBus.publish("AGENT_LOGS", logPublish);
+
+        await this.communicateChanges(state, "Finish Building: " + state.plannerOutput );
 
         return { builderOutput: output };
     }
@@ -501,5 +511,32 @@ export class WorkersSystem {
         );
 
         return graphResponse;
+    }
+
+    private async communicateChanges(state: GraphInterface, changes: string) {
+        const promptTemplate = PromptTemplate.fromTemplate(
+            COMMUNICATING_PROMPT
+        );
+
+        const filledPrompt = await promptTemplate.format({
+            userQuery: changes
+        });
+
+        const messages = [
+            { role: "system", content: MAIN_SYSTEM_PROMPT },
+            { role: "user", content: filledPrompt },
+        ];
+
+        const result = await state.model.invoke(messages);
+        const output = result.content.toString();
+
+        const logPublish = {
+            name: "COMMUNICATOR",
+            type: "COMM_LOGS",
+            clientId: state.clientId, // ensure clientId is preserved
+            message: output
+        };
+
+        this.eventBus.publish("AGENT_LOGS", logPublish);
     }
 }

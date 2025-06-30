@@ -424,8 +424,9 @@ You are receiving:
 <user_input>: The user's request, written in natural language
 
 Your task:
-- Clearly describe what changes were made to the configuration and why — avoid technical jargon.
+- Describe what changes were made to the configuration and why — avoid technical jargon.
 - Mention any important side effects, assumptions, or trade-offs in plain terms.
+- Try to be short, 1-2 sentences max.
 
 <user_input>
 {userQuery}
