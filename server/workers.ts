@@ -191,7 +191,7 @@ export class WorkersSystem {
         const combinedMedia = [...baseMedia, ...imageMedia];
         const mediaJson = JSON.stringify(combinedMedia, null, 2);
 
-        this.communicateChanges(state, 
+        await this.communicateChanges(state, 
             "Researcher",
             `searched web for main subject from the user query: "${state.userQuery}"` 
             );
