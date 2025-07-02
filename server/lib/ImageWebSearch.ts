@@ -180,7 +180,7 @@ export async function imageResearcher(prompt: string): Promise<{
         model: DEFAULT_WORKERS_MODEL || 'gpt-4.1',
         tools: [{ type: 'web_search_preview' }],
         tool_choice: { type: 'web_search_preview' },
-        input: `Find and return the best website link about main subject from this query: "${prompt}".`,
+        input: `Search the web for the main subject extracted from this query: "${prompt}".`,
     });
 
     const outputText = research.output_text || '';
