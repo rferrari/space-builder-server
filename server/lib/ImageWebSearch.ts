@@ -84,7 +84,7 @@ export async function extractImagesFromPage(url: string): Promise<string[]> {
             else if (src.startsWith('/')) src = new URL(src, url).href;
             else if (!src.startsWith('http')) src = new URL(src, url).href;
 
-            if (/\.(jpg|jpeg|png|svg)$/i.test(src)) {
+            if (/\.(gif|jpg|jpeg|png|svg)$/i.test(src)) {
                 images.push(src);
             }
         });
@@ -110,6 +110,7 @@ export function scoreImage(url: string, query: string, seen: Map<string, number>
     if (urlLower.includes('large') || urlLower.includes('xlarge') || urlLower.includes('original') || urlLower.includes('hires')) score += 2;
 
     if (filename.endsWith('.jpg') || filename.endsWith('.jpeg')) score += 2;
+    else if (filename.endsWith('.gif') || filename.endsWith('.gif')) score += 3;
     else if (filename.endsWith('.png') || filename.endsWith('.webp')) score += 1;
     else if (filename.endsWith('.svg')) score += isLogoQuery ? 1 : -1;
 
@@ -180,7 +181,7 @@ export async function imageResearcher(prompt: string): Promise<{
         model: DEFAULT_WORKERS_MODEL || 'gpt-4.1',
         tools: [{ type: 'web_search_preview' }],
         tool_choice: { type: 'web_search_preview' },
-        input: `Search the web for the main subject extracted from this query: "${prompt}".`,
+        input: `Search the web for .GIF images from main subject of this query: "${prompt}".`,
     });
 
     const outputText = research.output_text || '';
