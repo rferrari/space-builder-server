@@ -17,8 +17,8 @@ export const DEFAULT_WORKERS_MODEL = "gpt-4.1-2025-04-14"; // or whatever the de
 // export const DEFAULT_VENICE_JSON_MODEL = process.env.VENICE_JSON_MODEL || "qwen-2.5-qwq-32b";
 export const DEFAULT_VENICE_JSON_MODEL = process.env.VENICE_JSON_MODEL 
 // || "dolphin-2.9.2-qwen2-72b" 
-|| "qwen-2.5-coder-32b" 
-|| "mistral-31-24b" 
+// || "qwen-2.5-coder-32b" 
+// || "mistral-31-24b" 
 || "qwen-2.5-qwq-32b";
 
 export const OPENAI_API_KEY = process.env.OPENAI_API_KEY!;
