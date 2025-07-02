@@ -600,6 +600,7 @@ These positions go into layoutDetails and must not be changed.
 ## PROCESSING STEPS
 1. **Respect Designer Layout**: DO NOT alter x, y, w, h values from designer_specification.
 2. **Normalize Fidget IDs to Lowercase:** All fidget instance keys and "id" values inside fidgetInstanceDatums must be in lowercase (e.g., "video:intro-bitcoin", not "Video:intro-bitcoin").
+3. Dont forget to check font colors text background constrasts.
 
 # CRITICAL RULE
 You must strictly preserve the positions ('x', 'y') and sizes ('w', 'h') of each fidget exactly as defined in the 'designer_specification.layout'. Do not recalculate, rearrange, or reflow the layout. These values go directly into 'layoutDetails.layoutConfig.layout[]' in the generated JSON.
