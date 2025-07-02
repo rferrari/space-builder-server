@@ -191,10 +191,10 @@ export class WorkersSystem {
         const combinedMedia = [...baseMedia, ...imageMedia];
         const mediaJson = JSON.stringify(combinedMedia, null, 2);
 
-        await this.communicateChanges(state, 
-            "Researcher",
-            `searched web for main subject from the user query: "${state.userQuery}"` 
-            );
+        // await this.communicateChanges(state, 
+        //     "Researcher",
+        //     `searched web for main subject from the user query: "${state.userQuery}"` 
+        //     );
 
         return {
             mediaJson
@@ -211,7 +211,7 @@ export class WorkersSystem {
         }
         msgPublish.message = "🔎 searching web..."
         // await this.communicateChanges(state, "planning will choose your fidgets for: "+state.userQuery);
-        // this.eventBus.publish("AGENT_LOGS", msgPublish);
+        this.eventBus.publish("AGENT_LOGS", msgPublish);
 
         console.log(`\n` + '=--'.repeat(250) + `\n`);
         console.log(`[PLANNER] Inputs: 
@@ -267,11 +267,11 @@ export class WorkersSystem {
         };
         this.eventBus.publish("PLANNER_LOGS", logPublish);
         logPublish.message = "🎨 Designer doodling something radical..."
-        // this.eventBus.publish("AGENT_LOGS", logPublish);
+        this.eventBus.publish("AGENT_LOGS", logPublish);
 
-        await this.communicateChanges(state, 
-            "Planner",
-            `finised planing: ${output}`);
+        // await this.communicateChanges(state, 
+        //     "Planner",
+        //     `finised planing: ${output}`);
 
         return { plannerOutput: escapeBraces(output) };
     }
@@ -329,13 +329,13 @@ export class WorkersSystem {
             clientId: state.clientId, // ensure clientId is preserved
             message: output
         };
-        this.eventBus.publish("DESIGN_LOGS", logPublish);
+        // this.eventBus.publish("DESIGN_LOGS", logPublish);
 
         logPublish.message = "🔧 Builder hammering pixels into place..."
-        // this.eventBus.publish("AGENT_LOGS", logPublish);
+        this.eventBus.publish("AGENT_LOGS", logPublish);
 
-        await this.communicateChanges(state, "Designer",
-            "finished: " + state.plannerOutput);
+        // await this.communicateChanges(state, "Designer",
+        //     "finished: " + state.plannerOutput);
 
         return { designerOutput: escapeBraces(output) };
     }
@@ -455,8 +455,8 @@ export class WorkersSystem {
         // logPublish.message = "🕵️ Checking what changed behind the curtains..."
         // this.eventBus.publish("AGENT_LOGS", logPublish);
 
-        await this.communicateChanges(state, "Builder",
-            "Finished: "+state.plannerOutput );
+        // await this.communicateChanges(state, "Builder",
+        //     "Finished: "+state.plannerOutput );
 
         return { builderOutput: output };
     }

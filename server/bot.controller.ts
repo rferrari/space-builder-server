@@ -425,8 +425,8 @@ export class BotAvatar {
         break;
     }
 
-    this.eventBus.publish("AGENT_LOGS", agentReply);
-    // return agentReply;
+    // this.eventBus.publish("AGENT_LOGS", agentReply);
+    return agentReply;
   }
 
   // // Get Groq chat completion

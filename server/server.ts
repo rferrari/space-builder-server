@@ -71,21 +71,24 @@ class BotCustomServer {
 
         ws.on('message', (data: string) => {
           // Check if the message is a command
-          const { name, message, spaceContext } = JSON.parse(data);
-          let extractedMessage = message;
-          let extractedSpaceContext = spaceContext;
-          if (!spaceContext) {
-            const userRequestMatch = message.match(/User request:(.*?)(\n\n)/s);
+
+          const parsedData = JSON.parse(data);
+
+          // const { name, message, spaceContext } = JSON.parse(data);
+          let extractedMessage = parsedData.message;
+          let extractedSpaceContext = parsedData.spaceContext;
+          if (!parsedData.spaceContext) {
+            const userRequestMatch = parsedData.message.match(/User request:(.*?)(\n\n)/s);
             if (userRequestMatch) {
               extractedMessage = userRequestMatch[1].trim();
             }
-            const spaceContextMatch = message.match(/\n\nCurrent space configuration:\n(.*)/s);
+            const spaceContextMatch = parsedData.message.match(/\n\nCurrent space configuration:\n(.*)/s);
             if (spaceContextMatch) {
               extractedSpaceContext = spaceContextMatch[1].trim();
             }
           }
           const commandObj: BotChatMessage = {
-            name,
+            name: parsedData.name,
             message: extractedMessage,
             clientId: ws.id,
             type: null,
