@@ -98,12 +98,18 @@ export const FIDGET_CONTEXT_CATALOG_PLANNER = `
 
 ### Farcaster native
 
-**feed**
+**X/Twitter feed**
 - Purpose: Social media streams, community content, trending posts
-- Key Settings: selectPlatform (Farcaster/X)
+- Key Settings: X)
+- username: username
+- Platform Support: Twitter/X
+
+**Farcaster feed**
+- Purpose: Social media streams, community content, trending posts
+- Key Settings: Farcaster
 - Feed Types: Following or Filter
 - Feed Filter Options: Channel feeds, user posts, keyword searches
-- Platform Support: Farcaster and X
+- Platform Support: Farcaster
 
 **cast**
 - Purpose: Pin individual Farcaster posts, highlight specific posts, feature announcements, showcase content
@@ -143,6 +149,20 @@ settings: {{
 feedType: "following",
 filterType: "keyword",
 keyword: "nouns",
+showOnMobile: true,
+}},
+data: {{}},
+}},
+fidgetType: "feed",
+id: "feed:example",
+}},
+
+// Twitter/X Feed Fidget - displays casts from X
+"feed:example": {{
+config: {{
+editable: true,
+settings: {{
+username: "nouns",
 showOnMobile: true,
 }},
 data: {{}},
@@ -745,7 +765,7 @@ Each fidget follows this structure:
 \`\`\`json
 "settings": {{
 "url": "https://example.com",
-"size": 100, // Zoom level percentage
+"size": 50,
 "showOnMobile": true
 }}
 \`\`\`
