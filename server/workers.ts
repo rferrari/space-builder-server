@@ -257,15 +257,15 @@ export class WorkersSystem {
 
         const output = result.content.toString()
 
-        this.log.log("[PLANNER] Plan generated:", "PLANNER");
-        this.log.log(output, "PLANNER");
+        // this.log.log("[PLANNER] Plan generated:", "PLANNER");
+        // this.log.log(output, "PLANNER");
         const logPublish = {
             name: "Planner",
             type: "PLANNER_LOGS",
             clientId: state.clientId, // ensure clientId is preserved
             message: output
         };
-        this.eventBus.publish("PLANNER_LOGS", logPublish);
+        // this.eventBus.publish("PLANNER_LOGS", logPublish);
         logPublish.message = "🎨 Designer doodling something radical..."
         this.eventBus.publish("AGENT_LOGS", logPublish);
 
@@ -321,8 +321,8 @@ export class WorkersSystem {
         //     plan: state.plannerOutput
         // });
 
-        this.log.log("[DESIGN] Plan generated:", "DESIGN");
-        this.log.log(output, "DESIGN");
+        // this.log.log("[DESIGN] Plan generated:", "DESIGN");
+        // this.log.log(output, "DESIGN");
         const logPublish = {
             name: "DESIGNER",
             type: "DESIGNER_LOGS",
