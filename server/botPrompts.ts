@@ -766,7 +766,7 @@ Each fidget follows this structure:
 \`\`\`json
 "settings": {{
 "url": "https://example.com",
-"size": 50,
+"size": 50, //always 50
 "showOnMobile": true
 }}
 \`\`\`
