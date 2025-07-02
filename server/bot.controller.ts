@@ -266,37 +266,38 @@ export class BotAvatar {
   }
 
   private async determineShouldRespond(history: string, query: BotChatMessage): Promise<{ result: boolean; reason: string }> {
-    const promptTemplate = PromptTemplate.fromTemplate(
-      botPrompts.shouldRespondTemplate
-    );
+    // const promptTemplate = PromptTemplate.fromTemplate(
+    //   botPrompts.shouldRespondTemplate
+    // );
 
-    const filledPrompt = await promptTemplate.format({ history, query: query.message });
+    // const filledPrompt = await promptTemplate.format({ history, query: query.message });
 
-    const messages = [
-      { role: "system", content: botPrompts.SHOULDRESPOND_SYSTEM },
-      { role: "user", content: filledPrompt },
-    ];
+    // const messages = [
+    //   { role: "system", content: botPrompts.SHOULDRESPOND_SYSTEM },
+    //   { role: "user", content: filledPrompt },
+    // ];
 
-    const result = await this.chatBotLLM.invoke(messages);
+    // const result = await this.chatBotLLM.invoke(messages);
 
-    const responseText = Array.isArray(result.content)
-      ? result.content.map((c: any) => c.text || c.value || "").join(" ")
-      : String(result.content || "");
+    // const responseText = Array.isArray(result.content)
+    //   ? result.content.map((c: any) => c.text || c.value || "").join(" ")
+    //   : String(result.content || "");
 
-    try {
-      const parsed = JSON.parse(responseText);
-      const action = parsed?.action?.toUpperCase?.();
-      const reason = parsed?.reason || "No reason provided";
+    // try {
+    //   const parsed = JSON.parse(responseText);
+    //   const action = parsed?.action?.toUpperCase?.();
+    //   const reason = parsed?.reason || "No reason provided";
 
-      if (action === "RESPOND") return { result: true, reason };
-      if (action === "IGNORE") return { result: false, reason };
-    } catch (e) {
-      const lower = responseText.toLowerCase();
-      if (lower.includes("respond")) return { result: true, reason: responseText };
-      if (lower.includes("ignore")) return { result: false, reason: responseText };
-    }
+    //   if (action === "RESPOND") return { result: true, reason };
+    //   if (action === "IGNORE") return { result: false, reason };
+    // } catch (e) {
+    //   const lower = responseText.toLowerCase();
+    //   if (lower.includes("respond")) return { result: true, reason: responseText };
+    //   if (lower.includes("ignore")) return { result: false, reason: responseText };
+    // }
 
-    return { result: false, reason: "Unable to parse model response." };
+    // return { result: false, reason: "Unable to parse model response." };
+    return { result: true, reason: "Lets go." };
   }
 
   private async createFinalResponse(communicatorOutput: string): Promise<MessageContent> {
