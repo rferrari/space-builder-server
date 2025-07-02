@@ -368,6 +368,7 @@ export class WorkersSystem {
 
         let result: any;
         try {
+            this.log.error(`[BUILDER.1`, "BUILDER");
             // using first VENICE
             const jsonModel = new OpenAI({
                 apiKey: process.env.VENICE_API_KEY,
@@ -399,6 +400,7 @@ export class WorkersSystem {
             result.content = result.content.replace(/```json\n?|```/g, '');
         } catch (error) {
             this.log.error(`[BUILDER.1] Error during building: ${error.message}`, "BUILDER");
+            this.log.error(`[BUILDER.2`, "BUILDER");
             // using fallback claude
             try {
                 result = await state.jsonResponseModel.invoke(filledPrompt);
@@ -414,6 +416,7 @@ export class WorkersSystem {
                     }
                 });
                 try {
+                    this.log.error(`[BUILDER.3`, "BUILDER");
                     result = await jsonModel.invoke(filledPrompt);
                 } catch (error) {
                     this.log.error(`[BUILDER.3] Error during building: ${error.message}`, "BUILDER");
@@ -422,6 +425,7 @@ export class WorkersSystem {
             }
         }
 
+        this.log.error(`[BUILDER.Done`, "BUILDER");
         const output = result.content.toString()
 
         // const output = await prompt.pipe(state.jsonResponseModel).pipe(new StringOutputParser()).invoke({
