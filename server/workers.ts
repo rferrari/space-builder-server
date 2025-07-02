@@ -429,8 +429,8 @@ export class WorkersSystem {
         //     designer: state.designerOutput,
         // });
 
-        this.log.log("[BUILDER] JSON generated:", "BUILDER");
-        this.log.log(output, "BUILDER");
+        // this.log.log("[BUILDER] JSON generated:", "BUILDER");
+        // this.log.log(output, "BUILDER");
         let logPublish = {
             name: "BUILDER",
             type: "BUILDER_LOGS",
