@@ -181,7 +181,7 @@ export async function imageResearcher(prompt: string): Promise<{
         model: DEFAULT_WORKERS_MODEL || 'gpt-4.1',
         tools: [{ type: 'web_search_preview' }],
         tool_choice: { type: 'web_search_preview' },
-        input: `Search the web for .GIF images from main subject of this query: "${prompt}".`,
+        input: `Search the web for main subject of this query: "${prompt}".`,
     });
 
     const outputText = research.output_text || '';
