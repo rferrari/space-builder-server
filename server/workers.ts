@@ -209,7 +209,7 @@ export class WorkersSystem {
             clientId: state.clientId, // ensure clientId is preserved
             message: ""
         }
-        msgPublish.message = "🔎 searching web..."
+        msgPublish.message = "🔎 Searching the web..."
         // await this.communicateChanges(state, "planning will choose your fidgets for: "+state.userQuery);
         this.eventBus.publish("AGENT_LOGS", msgPublish);
 
@@ -266,7 +266,7 @@ export class WorkersSystem {
             message: output
         };
         // this.eventBus.publish("PLANNER_LOGS", logPublish);
-        logPublish.message = "🎨 Designer doodling something radical..."
+        logPublish.message = "🎨 Designer doodling"
         this.eventBus.publish("AGENT_LOGS", logPublish);
 
         // await this.communicateChanges(state, 
