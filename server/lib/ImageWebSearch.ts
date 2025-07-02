@@ -184,7 +184,7 @@ export async function imageResearcher(prompt: string): Promise<{
     });
 
     const outputText = research.output_text || '';
-    console.log(outputText);
+    // console.log(outputText);
 
     const extractedUrls = await extractImagesFromText(outputText);
     const seen = new Map<string, number>();

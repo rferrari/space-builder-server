@@ -213,12 +213,12 @@ export class WorkersSystem {
         // await this.communicateChanges(state, "planning will choose your fidgets for: "+state.userQuery);
         this.eventBus.publish("AGENT_LOGS", msgPublish);
 
-        console.log(`\n` + '=--'.repeat(250) + `\n`);
-        console.log(`[PLANNER] Inputs: 
-            currentConfig: ${state.currentConfig}
-            userQuery: ${state.userQuery}
-            mediaJson: ${state.mediaJson}
-            `);
+        // console.log(`\n` + '=--'.repeat(250) + `\n`);
+        // console.log(`[PLANNER] Inputs: 
+        //     currentConfig: ${state.currentConfig}
+        //     userQuery: ${state.userQuery}
+        //     mediaJson: ${state.mediaJson}
+        //     `);
 
         const prompt = new PromptTemplate({
             template: PLANING_SYSTEM,
@@ -231,10 +231,10 @@ export class WorkersSystem {
             mediaJson: state.mediaJson
         });
 
-        console.log(`
-            [PLANNER PROMPT]:
-            ${filledPrompt}`
-        );
+        // console.log(`
+        //     [PLANNER PROMPT]:
+        //     ${filledPrompt}`
+        // );
 
 
         // const messages = [
@@ -278,10 +278,10 @@ export class WorkersSystem {
 
     private async designing(state: GraphInterface): Promise<Partial<GraphInterface>> {
         // log the inputs
-        console.log('-'.repeat(50));
-        console.log(`[DESIGNER] Inputs: 
-            plannerOutput: ${state.plannerOutput}
-            `);
+        // console.log('-'.repeat(50));
+        // console.log(`[DESIGNER] Inputs: 
+        //     plannerOutput: ${state.plannerOutput}
+        //     `);
 
         const GRID_SIZES = {
             columns: 12,
@@ -308,10 +308,10 @@ export class WorkersSystem {
         });
 
 
-        console.log(`
-            [DESIGNER PROMPT]:
-            ${filledPrompt}`
-        );
+        // console.log(`
+        //     [DESIGNER PROMPT]:
+        //     ${filledPrompt}`
+        // );
 
 
         const result = await state.model.invoke(filledPrompt);
@@ -343,10 +343,10 @@ export class WorkersSystem {
 
     private async building(state: GraphInterface): Promise<Partial<GraphInterface>> {
         // log the inputs
-        console.log('-'.repeat(50));
-        console.log(`[BUILDER] Inputs: 
-            plannerOutput: ${state.plannerOutput}, 
-            designerOutput: ${state.designerOutput}`);
+        // console.log('-'.repeat(50));
+        // console.log(`[BUILDER] Inputs: 
+        //     plannerOutput: ${state.plannerOutput}, 
+        //     designerOutput: ${state.designerOutput}`);
 
         const prompt = new PromptTemplate({
             template: BUILDER_SYSTEM_PROMPT,
@@ -361,10 +361,10 @@ export class WorkersSystem {
             designer: state.designerOutput,
         });
 
-        console.log(`
-            [BUILDER PROMPT]:
-            ${filledPrompt}`
-        );
+        // console.log(`
+        //     [BUILDER PROMPT]:
+        //     ${filledPrompt}`
+        // );
 
         let result: any;
         try {
