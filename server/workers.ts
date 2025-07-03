@@ -301,6 +301,9 @@ export class WorkersSystem {
             clientId: state.clientId, // ensure clientId is preserved
             message: output
         };
+
+        console.warn("PLANNER output:")
+        console.warn(output)
         // this.eventBus.publish("PLANNER_LOGS", logPublish);
         logPublish.message = "🎨 Designer doodling"
         this.eventBus.publish("AGENT_LOGS", logPublish);
