@@ -95,13 +95,13 @@ export const FIDGET_CONTEXT_CATALOG_PLANNER = `
 **feed**
 - Purpose: X/Twitter streams
 - Key Settings: X)
-- username: username
+- Xhandle: username
 
 **feed**
 - Purpose: Farcaster Social Media posts
-- Key Settings: Farcaster
-- Feed Types: Filter
-- Feed Filter keyword
+- selectPlatform: Farcaster;
+- feedType: "filter",
+- filterType: "keyword",
 - Keyword: [keyword]
 
 **cast**
@@ -143,6 +143,7 @@ feedType: "following",
 filterType: "keyword",
 keyword: "nouns",
 showOnMobile: true,
+selectPlatform: Farcaster;
 }},
 data: {{}},
 }},
@@ -155,7 +156,7 @@ id: "feed:example",
 config: {{
 editable: true,
 settings: {{
-username: "nouns",
+Xhandle: Username;
 showOnMobile: true,
 }},
 data: {{}},
