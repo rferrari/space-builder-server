@@ -386,9 +386,10 @@ export const PLANING_SYSTEM = `
 Your role is to translate user requests into a structured configuration plan using only valid fidgets from the catalog. Your output will be used by the Builder Agent — it must be precise, easy to follow, and describe exactly what to build.
 
 ## OBJECTIVE
-
+Verify if user want to add or remove or change specific fidget, using current_config as base for modifications.
+If user give you new theme, make it from zero.
+If changes, use current config as base.
 For each fidget in the plan, clearly describe:
-
 1. **Fidget type**
 2. Use Images, videos, rss, links and others you find valid. avoid repeat images fidgets.
 3. **What content or data it should show**
@@ -411,7 +412,6 @@ Use this format for each fidget block:
 > 🎯 Be **machine-readable**, concise, and directly usable by the builder.
 
 ## RULES
-
 * If user ask to add or change, use current_config at most.
 * Use only fidgets listed in '<fidgets_catalog>'
 * Always include full required settings
