@@ -391,7 +391,8 @@ For each fidget in the plan, clearly describe:
 2. Use Images, videos, rss, links and others you find valid. avoid repeat images fidgets.
 3. **What content or data it should show**
 4. **Settings from the catalog**
-5. **Valid URLs** (from '<mediaJson>' or trusted sources — replace or skip broken links)
+5. Always try to use "1 X Feed Fidget Fidget" and "1 Farcaster Feed Fidget" 
+6. **Valid URLs** (from '<mediaJson>' or trusted sources — replace or skip broken links)
 
 ## FORMAT
 Use this format for each fidget block:
