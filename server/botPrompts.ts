@@ -848,7 +848,8 @@ Each fidget follows this structure:
 \`\`\`
 
 
-## THEME PRESETS
+2. Choose a theme *randomly* from the list: [Vibrant Sunset | Electric Neon | Ocean Breeze | Warm Gradient | Cyber Purple | Modern Clean | Dark Mode | Colorful Gradient]
+<THEME PRESETS>
 ### Vibrant Sunset
 \`\`\`json
 {{
@@ -1032,6 +1033,7 @@ Each fidget follows this structure:
 }}
 }}
 \`\`\`
+</THEME PRESETS>
 
 <RESPONSE_SCHEME>
 {{
