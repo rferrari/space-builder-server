@@ -185,7 +185,7 @@ export async function imageResearcher(prompt: string): Promise<{
         tools: [{ type: 'web_search_preview' }],
         tool_choice: { type: 'web_search_preview' },
         // input: `Search the web for main subject of this query: "${prompt}".`,
-        input: `Search the web for high-quality, relevant websites that contain large, high-resolution images directly related to this subject: "${prompt}". Prioritize pages with original photos, artwork, or logos. Exclude irrelevant or broken links.`
+        input: `Search the web for high-quality, relevant websites that contain large, high-resolution images directly related to this subject: "${prompt}". Prioritize pages with original photos, artwork, or logos. Exclude irrelevant or broken links. Search Location: Texas/USA`
     });
 
     const outputText = research.output_text || '';
