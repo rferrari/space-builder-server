@@ -223,7 +223,8 @@ export async function imageResearcher(prompt: string): Promise<{
 
     const sorted = validMedia
         .filter(img => img.score >= cutoff && img.score >= 0)
-        .sort((a, b) => b.score - a.score);
+        .sort((a, b) => b.score - a.score)
+        .slice(0, 10); // limit to top 10
 
     console.log(`\n${Yellow}🔢 Scored and sorted image list:${Reset}`);
     sorted.forEach(item => console.log(`${Green}${item.score} - ${item.url}${Reset}`));
