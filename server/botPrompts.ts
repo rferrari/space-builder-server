@@ -597,8 +597,7 @@ These positions go into layoutDetails and must not be changed.
 
 # CRITICAL RULES
 1. You must strictly preserve the positions ('x', 'y') and sizes ('w', 'h') of each fidget exactly as defined in the 'designer_specification.layout'. Do not recalculate, rearrange, or reflow the layout. These values go directly into 'layoutDetails.layoutConfig.layout[]' in the generated JSON.
-2. Choose a theme *randomly* from the list below. Avoid repeating the same theme in consecutive generations.
- Available Themes: [Vibrant Sunset | Electric Neon | Ocean Breeze | Warm Gradient | Cyber Purple | Modern Clean | Dark Mode | Colorful Gradient]
+2. Choose a theme *randomly* from the list: [Vibrant Sunset | Electric Neon | Ocean Breeze | Warm Gradient | Cyber Purple | Modern Clean | Dark Mode | Colorful Gradient]
 
 ${FIDGET_CONTEXT_CATALOG_BUILDER}
 
