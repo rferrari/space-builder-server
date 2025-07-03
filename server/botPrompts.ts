@@ -52,8 +52,6 @@ Determine if you should respond to the query
 export const FIDGET_CONTEXT_CATALOG_PLANNER = `
 ## AVAILABLE FIDGET TYPES
 
-### Classic fidgets
-
 **text**
 - Purpose: Rich text content with markdown support, Hero sections, content blocks, instructions
 - Key Settings: title, text (markdown)
@@ -83,8 +81,6 @@ export const FIDGET_CONTEXT_CATALOG_PLANNER = `
 **Chat**
 - Purpose: Interactive messaging interfaces, community discussions
 
-### On-chain
-
 **Swap**
 - Purpose: Token swapping, DeFi interactions, trading
 - Key Settings: defaultSellToken, defaultBuyToken, fromChain, toChain
@@ -96,20 +92,17 @@ export const FIDGET_CONTEXT_CATALOG_PLANNER = `
 **Market**
 - Purpose: Price chart display, market information, trading data
 
-### Farcaster native
-
-**X/Twitter feed**
-- Purpose: Social media streams, community content, trending posts
+**feed**
+- Purpose: X/Twitter streams
 - Key Settings: X)
 - username: username
-- Platform Support: Twitter/X
 
-**Farcaster feed**
-- Purpose: Social media streams, community content, trending posts
+**feed**
+- Purpose: Farcaster Social Media posts
 - Key Settings: Farcaster
-- Feed Types: Following or Filter
-- Feed Filter Options: Channel feeds, user posts, keyword searches
-- Platform Support: Farcaster
+- Feed Types: Filter
+- Feed Filter keyword
+- Keyword: [keyword]
 
 **cast**
 - Purpose: Pin individual Farcaster posts, highlight specific posts, feature announcements, showcase content
