@@ -26,11 +26,47 @@ import {
 import { Reset, Blue, Green, Red, Cyan, Gray, Yellow } from '../server/lib/colors';
 import axios from 'axios';
 import * as cheerio from 'cheerio';
-
+import contrast from 'get-contrast'; // npm install get-contrast
 import OpenAI from "openai";
 import { err } from "neverthrow/dist";
 import { escapeBraces, imageResearcher, validateMediaArray } from "./lib/ImageWebSearch";
 const client = new OpenAI();
+
+
+function fixLowContrastTheme(theme: any): any {
+    const { fontColor, background, fidgetBackground } = theme.properties;
+
+    // Extract actual color values from linear gradients or variables
+    const cleanBg = extractSolidColor(background) || '#ffffff';
+    const cleanFg = fontColor || '#000000';
+
+    const ratio = contrast.ratio(cleanFg, cleanBg);
+    const MIN_CONTRAST = 4.5;
+
+    if (ratio < MIN_CONTRAST) {
+        console.warn(`⚠️ Low contrast: ${cleanFg} on ${cleanBg} (ratio: ${ratio})`);
+        // Auto-fix to readable defaults
+        theme.properties.fontColor = isDark(cleanBg) ? '#ffffff' : '#000000';
+    }
+
+    return theme;
+}
+
+function extractSolidColor(color: string): string | null {
+    if (!color) return null;
+    const match = color.match(/#([0-9a-f]{6}|[0-9a-f]{3})/i);
+    return match ? match[0] : null;
+}
+
+function isDark(hex: string): boolean {
+    if (!hex.startsWith('#')) return false;
+    const rgb = hex.length === 7
+        ? [parseInt(hex.slice(1, 3), 16), parseInt(hex.slice(3, 5), 16), parseInt(hex.slice(5, 7), 16)]
+        : [0, 0, 0];
+    const brightness = (rgb[0] * 299 + rgb[1] * 587 + rgb[2] * 114) / 1000;
+    return brightness < 128;
+}
+
 
 type Annotation = {
     type: string;
@@ -425,9 +461,12 @@ export class WorkersSystem {
             }
         }
 
-        this.log.error(`[BUILDER.Done`, "BUILDER");
-        const output = result.content.toString()
+        const resJson = JSON.parse(result.content.toString()); // Step 1: Parse string to object
 
+        resJson.theme = fixLowContrastTheme(resJson.theme);     // Step 2: Fix contrast in theme
+
+        // If you need to return it as a string again:
+        const output = JSON.stringify(resJson, null, 2);  // Optional Step 3
         // const output = await prompt.pipe(state.jsonResponseModel).pipe(new StringOutputParser()).invoke({
         //     plan: state.plannerOutput,
         //     designer: state.designerOutput,
@@ -552,4 +591,7 @@ export class WorkersSystem {
 
         this.eventBus.publish("AGENT_LOGS", logPublish);
     }
+
+
 }
+
