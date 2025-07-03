@@ -49,6 +49,8 @@ function fixLowContrastTheme(theme: any): any {
         theme.properties.fontColor = isDark(cleanBg) ? '#ffffff' : '#000000';
     }
 
+    console.log(`Selected Theme: ${theme.id}`)
+
     return theme;
 }
 
