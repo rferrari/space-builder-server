@@ -235,7 +235,7 @@ id: "links:example",
 config: {{
 editable: true,
 settings: {{
-url: "https://example.com",
+url: "https://google.com",
 // size: scale factor 0.5 - 2
 size: 1,
 }},
@@ -674,7 +674,7 @@ Each fidget follows this structure:
 \`\`\`json
 "settings": {{
 "title": "Optional title text",
-"text": "Rich content with **markdown** support, [links](https://example.com), and embedded media",
+"text": "Rich content with **markdown** support, [links](https://google.com), and embedded media",
 "fontFamily": "var(--user-theme-font)",
 "fontColor": "var(--user-theme-font-color)", 
 "headingsFontFamily": "var(--user-theme-headings-font)",
@@ -762,7 +762,7 @@ Each fidget follows this structure:
 ### IFrame (Web Embed) Fidget Settings
 \`\`\`json
 "settings": {{
-"url": "https://example.com",
+"url": "https://google.com",
 "size": 50, //always 50
 "showOnMobile": true
 }}
