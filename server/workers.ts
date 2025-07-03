@@ -367,7 +367,7 @@ export class WorkersSystem {
         };
         // this.eventBus.publish("DESIGN_LOGS", logPublish);
 
-        logPublish.message = "🔧 Builder hammering pixels into place..."
+        logPublish.message = "🔧 Builder hammering pixels"
         this.eventBus.publish("AGENT_LOGS", logPublish);
 
         // await this.communicateChanges(state, "Designer",
@@ -462,11 +462,9 @@ export class WorkersSystem {
         }
 
         const resJson = JSON.parse(result.content.toString()); // Step 1: Parse string to object
-
         resJson.theme = fixLowContrastTheme(resJson.theme);     // Step 2: Fix contrast in theme
-
-        // If you need to return it as a string again:
         const output = JSON.stringify(resJson, null, 2);  // Optional Step 3
+        
         // const output = await prompt.pipe(state.jsonResponseModel).pipe(new StringOutputParser()).invoke({
         //     plan: state.plannerOutput,
         //     designer: state.designerOutput,

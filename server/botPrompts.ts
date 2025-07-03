@@ -526,16 +526,6 @@ for each component maximazing it to use all grid. no empty spaces.
 - **Tab Navigation**: Mobile uses tab-based navigation for multiple fidgets
 - **Touch Optimization**: All interactive elements are touch-friendly on mobile
 
-## THEME PRESETS
-### Vibrant Sunset
-### Electric Neon
-### Ocean Breeze
-### Warm Gradient
-### Cyber Purple
-### Modern Clean
-### Dark Mode
-### Colorful Gradient
-
 # OUTPUT
 
 JUST OUTPUT each fidget settings size and position to fill up the grid.
@@ -603,11 +593,22 @@ These positions go into layoutDetails and must not be changed.
 2. **Normalize Fidget IDs to Lowercase:** All fidget instance keys and "id" values inside fidgetInstanceDatums must be in lowercase (e.g., "video:intro-bitcoin", not "Video:intro-bitcoin").
 3. Dont forget to check font colors text background constrasts.
 4. If user ask to add or change, use current_config at most.
+5. Choose one Valid Color Theme
 
 # CRITICAL RULE
 You must strictly preserve the positions ('x', 'y') and sizes ('w', 'h') of each fidget exactly as defined in the 'designer_specification.layout'. Do not recalculate, rearrange, or reflow the layout. These values go directly into 'layoutDetails.layoutConfig.layout[]' in the generated JSON.
 
 ${FIDGET_CONTEXT_CATALOG_BUILDER}
+
+## THEME Choices:
+- Vibrant Sunset
+- Electric Neon
+- Ocean Breeze
+- Warm Gradient
+- Cyber Purple
+- Modern Clean
+- Dark Mode
+- Colorful Gradient
 
 ## THEME SYSTEM
 All configurations must include a complete theme object with these properties:
