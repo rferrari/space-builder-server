@@ -143,7 +143,10 @@ feedType: "following",
 filterType: "keyword",
 keyword: "nouns",
 showOnMobile: true,
-selectPlatform: Farcaster;
+selectPlatform: {{
+name: Farcaster
+icon: "/images/farcaster.jpeg",
+}}
 }},
 data: {{}},
 }},
@@ -157,6 +160,10 @@ config: {{
 editable: true,
 settings: {{
 Xhandle: Username;
+selectPlatform: {{
+name: X
+icon: "/images/twitter.avif",
+}}
 showOnMobile: true,
 }},
 data: {{}},
