@@ -108,9 +108,8 @@ export function scoreImage(url: string, query: string, seen: Map<string, number>
     if (/\/\d{1,3}px-/.test(urlLower)) score -= 2;
 
     if (urlLower.includes('large') || urlLower.includes('xlarge') || urlLower.includes('original') || urlLower.includes('hires')) score += 2;
-    if ((urlLower.includes('pinterest') || urlLower.includes('shutterstock') || urlLower.includes('istock'))) score -= 3;
-    if ((urlLower.includes('wikimedia') || urlLower.includes('unsplash') || urlLower.includes('pexels'))) score += 3;
-
+    if (urlLower.includes('pinterest') || urlLower.includes('shutterstock') || urlLower.includes('istock')) score -= 3;
+    if (urlLower.includes('unsplash') || urlLower.includes('pexels')) score += 3;
 
     if (filename.endsWith('.jpg') || filename.endsWith('.jpeg')) score += 2;
     else if (filename.endsWith('.gif') || filename.endsWith('.gif')) score += 3;
