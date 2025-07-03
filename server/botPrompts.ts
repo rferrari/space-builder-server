@@ -94,12 +94,12 @@ export const FIDGET_CONTEXT_CATALOG_PLANNER = `
 
 **feed**
 - Purpose: X/Twitter streams
-- Key Settings: X)
+- selectPlatform: X
 - Xhandle: username
 
 **feed**
 - Purpose: Farcaster Social Media posts
-- selectPlatform: Farcaster;
+- selectPlatform: Farcaster
 - feedType: "filter",
 - filterType: "keyword",
 - Keyword: [keyword]
