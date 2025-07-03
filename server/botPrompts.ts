@@ -597,12 +597,13 @@ These positions go into layoutDetails and must not be changed.
 4. If user ask to add or change, use current_config at most.
 5. Choose one Valid Color Theme
 
-# CRITICAL RULE
-You must strictly preserve the positions ('x', 'y') and sizes ('w', 'h') of each fidget exactly as defined in the 'designer_specification.layout'. Do not recalculate, rearrange, or reflow the layout. These values go directly into 'layoutDetails.layoutConfig.layout[]' in the generated JSON.
+# CRITICAL RULES
+1. You must strictly preserve the positions ('x', 'y') and sizes ('w', 'h') of each fidget exactly as defined in the 'designer_specification.layout'. Do not recalculate, rearrange, or reflow the layout. These values go directly into 'layoutDetails.layoutConfig.layout[]' in the generated JSON.
+2. Choose a theme *randomly* from the list below. Avoid repeating the same theme in consecutive generations.
+ Available Themes: [Vibrant Sunset | Electric Neon | Ocean Breeze | Warm Gradient | Cyber Purple | Modern Clean | Dark Mode | Colorful Gradient]
 
 ${FIDGET_CONTEXT_CATALOG_BUILDER}
 
-## Choise one of these Themes: [Vibrant Sunset | Electric Neon | Ocean Breeze | Warm Gradient | Cyber Purple | Modern Clean | Dark Mode | Colorful Gradient]
 
 ## THEME SYSTEM
 All configurations must include a complete theme object with these properties:
