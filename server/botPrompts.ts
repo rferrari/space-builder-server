@@ -94,7 +94,7 @@ export const FIDGET_CONTEXT_CATALOG_PLANNER = `
 - Purpose: Price chart display, market information, trading data
 
 **feed**
-- Purpose: X/Twitter streams
+- Purpose: X streams
 - selectPlatform: X
 - Xhandle: username
 
@@ -140,10 +140,10 @@ export const FIDGET_CONFIG_GUIDE: Record<string, ExampleFidgetInstance> = {{
 config: {{
 editable: true,
 settings: {{
-  feedType: string = Filter;
+  feedType: "Filter";
   filterType: string = "keyword";
   keyword?: string = [keyword];
-  selectPlatform: string = Farcaster;
+  selectPlatform: "Farcaster";
   style: string;
   useDefaultColors?: true;
   membersOnly?: boolean;
@@ -153,15 +153,13 @@ fidgetType: "feed",
 id: "feed:example",
 }},
 
-// Twitter/X Feed Fidget - displays casts from X
+// X Feed Fidget - displays casts from X
 "feed:example": {{
 config: {{
 editable: true,
 settings: {{
 selectPlatform: X
-  feedType: Filter;
-  filterType: keyword;
-  Xhandle: Username string;
+  Xhandle: "Username";
   selectPlatform: X;
   style: string;
 }},
@@ -368,7 +366,7 @@ Item in the Array must include:
 Strict rules:
 - "information": summary of information about main subject on user query
 - "video": YouTube video URLs (not playlist pages or channels)
-- "social": only include public profile URLs from Twitter
+- "social": only include public profile URLs from X.com
 - "rss": give priority to https://cointelegraph.com/rss/tag/ feeds. ONLY include if:
     - URL ends with '.xml' or includes '/feed'
     - AND it returns Content-Type: application/rss+xml, application/xml, or text/xml
@@ -685,17 +683,26 @@ Each fidget follows this structure:
 }}
 \`\`\`
 
-### Feed Fidget Settings
+### Farcaster Feed Fidget Settings
 \`\`\`json
 "settings": {{
 "feedType": "filter",  // "following" or "filter"
-"filterType": "channel_id",  // "channel_id", "fids", or "keyword"
-"channel": "nouns", // Channel name (when filterType is "channel_id")
-"username": "nounspace",  // Farcaster username (when filterType is "fids")
-"keyword": "blockchain",  // Search keyword (when filterType is "keyword")
-"selectPlatform": {{"name": "Farcaster", "icon": "/images/farcaster.jpeg"}},
-"Xhandle": "nounspace", // X/Twitter username (when platform is X)
+"filterType": "keyword"
+"channel": "keyword", // Channel name (when filterType is "channel_id")
+"username": "[Farcaster username]",  //  (when filterType is "fids")
+"keyword": "[keyword]",  // Search keyword (when filterType is "keyword")
+"selectPlatform": "Farcaster",
 "membersOnly": false, // Channel members only filter
+"showOnMobile": true
+}}
+\`\`\`
+\`\`\`
+
+### X Feed Fidget Settings
+\`\`\`json
+"settings": {{
+"Xhandle": "[X username]]",
+"membersOnly": false,
 "showOnMobile": true
 }}
 \`\`\`
