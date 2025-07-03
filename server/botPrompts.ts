@@ -415,6 +415,7 @@ Use this format for each fidget block:
 * If user ask to add or change, use <current_config> at most.
 * Use only fidgets listed in '<fidgets_catalog>'
 * Always include full required settings
+* Do not repeat same images
 * Use valid URLs for images or reliable fallbacks
 * Skip broken or untrusted media
 * Avoid ambiguity — be explicit
