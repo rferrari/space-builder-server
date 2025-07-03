@@ -139,15 +139,13 @@ export const FIDGET_CONFIG_GUIDE: Record<string, ExampleFidgetInstance> = {{
 config: {{
 editable: true,
 settings: {{
-feedType: "following",
-filterType: "keyword",
-keyword: "nouns",
-showOnMobile: true,
-selectPlatform: {{
-name: Farcaster
-icon: "/images/farcaster.jpeg",
-}}
-}},
+  feedType: string = Filter;
+  filterType: string = "keyword";
+  keyword?: string = [keyword];
+  selectPlatform: string = Farcaster;
+  style: string;
+  useDefaultColors?: true;
+  membersOnly?: boolean;
 data: {{}},
 }},
 fidgetType: "feed",
@@ -159,12 +157,12 @@ id: "feed:example",
 config: {{
 editable: true,
 settings: {{
-Xhandle: Username;
-selectPlatform: {{
-name: X
-icon: "/images/twitter.avif",
-}}
-showOnMobile: true,
+selectPlatform: X
+  feedType: Filter;
+  filterType: keyword;
+  Xhandle: Username string;
+  selectPlatform: X;
+  style: string;
 }},
 data: {{}},
 }},
