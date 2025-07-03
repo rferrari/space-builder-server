@@ -337,7 +337,7 @@ export class BotAvatar {
 
     // const finalResponse = await this.createFinalResponse(workersResponseContext);
     // return finalResponse.toString();
-    return ""
+    return "Done!"
   }
 
   private async sendReplyMessage(inputMessage: BotChatMessage, vision: string = "",
@@ -404,6 +404,9 @@ export class BotAvatar {
       case "ping":
         agentReply.message = "pong";
         break;
+      case "session":
+        agentReply.message = "client id: "+message.clientId;
+        break;
       default:
         // messages from discord dont have fid -1 set
         const shouldReply = await this.determineShouldRespond("", message)
@@ -425,7 +428,7 @@ export class BotAvatar {
         break;
     }
 
-    // this.eventBus.publish("AGENT_LOGS", agentReply);
+    this.eventBus.publish("AGENT_LOGS", agentReply);
     return agentReply;
   }
 

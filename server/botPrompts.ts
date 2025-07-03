@@ -600,15 +600,7 @@ You must strictly preserve the positions ('x', 'y') and sizes ('w', 'h') of each
 
 ${FIDGET_CONTEXT_CATALOG_BUILDER}
 
-## THEME Choices:
-- Vibrant Sunset
-- Electric Neon
-- Ocean Breeze
-- Warm Gradient
-- Cyber Purple
-- Modern Clean
-- Dark Mode
-- Colorful Gradient
+## Choise one of these Themes: [Vibrant Sunset | Electric Neon | Ocean Breeze | Warm Gradient | Cyber Purple | Modern Clean | Dark Mode | Colorful Gradient]
 
 ## THEME SYSTEM
 All configurations must include a complete theme object with these properties:
@@ -830,16 +822,6 @@ Each fidget follows this structure:
 - \`var(--user-theme-headings-font-color)\` for heading colors
 - \`var(--user-theme-fidget-background)\` for fidget backgrounds
 - \`var(--user-theme-font)\` and \`var(--user-theme-headings-font)\` for fonts
-- **Perfect Contrast**: Ensure 4.5:1 minimum contrast ratio for accessibility
-- **Avoid Black Backgrounds**: Use colorful, vibrant backgrounds that match the theme
-- **Theme Harmony**: All fidgets should use coordinated colors from the selected theme
-- **Readability First**: Text must be clearly readable against any background color
-
-## UNIVERSAL STYLE SETTINGS
-All fidgets support these additional style properties. **ALWAYS use theme variables for colors:**
-\`\`\`json
-"settings": {{
-// Content settings above...
 
 // Universal style properties - USE THEME VARIABLES
 "background": "var(--user-theme-fidget-background)",
