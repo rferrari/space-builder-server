@@ -67,6 +67,7 @@ export const FIDGET_CONTEXT_CATALOG_PLANNER = `
 **iframe**
 - Purpose: Embed external websites and tools, dashboards, web apps, embedded services
 - Key Settings: url
+- size = 50
 
 **links**
 - Purpose: Organized link collections with rich display options, navigation, resource collections, social media links, quick access
@@ -236,8 +237,7 @@ config: {{
 editable: true,
 settings: {{
 url: "https://google.com",
-// size: scale factor 0.5 - 2
-size: 1,
+size: 50
 }},
 data: {{}},
 }},
