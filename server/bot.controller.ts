@@ -409,6 +409,8 @@ export class BotAvatar {
         break;
       default:
         // messages from discord dont have fid -1 set
+        console.log(`\n\n------------------------------------------------`)
+        console.log(`Starting New Task: ${message}\n\n`)
         const shouldReply = await this.determineShouldRespond("", message)
         if (!shouldReply.result) {
           agentReply.message = shouldReply.reason;
