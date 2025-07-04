@@ -405,12 +405,14 @@ export class BotAvatar {
         agentReply.message = "pong";
         break;
       case "session":
-        agentReply.message = "client id: "+message.clientId;
+        agentReply.message = `client id: ${message.clientId}`;
         break;
       default:
         // messages from discord dont have fid -1 set
         console.log(`\n\n------------------------------------------------`)
-        console.log(`Starting New Task: ${message}\n\n`)
+        console.log(`Starting New Task:`)
+        console.dir(message)
+        console.log(`\n`)
         const shouldReply = await this.determineShouldRespond("", message)
         if (!shouldReply.result) {
           agentReply.message = shouldReply.reason;
